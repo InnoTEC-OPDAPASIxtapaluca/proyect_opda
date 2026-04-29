@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let debounceTimeout = null;
     
     // URLs de los endpoints
-    const VALIDATE_NOMINA_URL = 'php/login/validate_nomina.php';
-    const LOGIN_URL = 'php/login/login.php';
+    const VALIDATE_NOMINA_URL = '../../php/login/validate_nomina.php';
+    const LOGIN_URL = '../../php/login/login.php';
     
     // ============================================
     // FUNCIONES DEL EFECTO DE REVELADO
