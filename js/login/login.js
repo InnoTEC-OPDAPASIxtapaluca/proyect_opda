@@ -1,17 +1,16 @@
 // SISTEMA DE ACCESO INSTITUCIONAL - CON COMPORTAMIENTO CONDICIONAL Y EFECTO DE REVELADO
-// VERSIÓN COMPLETA - ÁREAS EDITABLES PARA INNOVACIÓN Y DIRECCIÓN GENERAL
+// VERSIÓN COMPLETA CORREGIDA - ÁREAS EDITABLES PARA INNOVACIÓN Y DIRECCIÓN GENERAL
 
 document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     // ELEMENTOS DOM PRINCIPALES
     // ============================================
     const form = document.getElementById('loginForm');
-    const nominaInput = document.getElementById('nomina');
-    const workerCodeInput = document.getElementById('workerCode') || nominaInput; // Compatibilidad
+    const workerCodeInput = document.getElementById('workerCode');
     const passwordInput = document.getElementById('password');
     const loginBtn = document.getElementById('loginBtn');
     const messageContainer = document.getElementById('errorMessage');
-    const togglePasswordBtn = document.getElementById('togglePassword');
+    const togglePasswordBtn = document.querySelector('.toggle-password');
     
     // Elementos del efecto de revelado
     const effectTrigger = document.getElementById('effectTriggerContainer');
@@ -74,8 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         setTimeout(() => {
-            if (nominaInput && isLoginVisible) {
-                nominaInput.focus();
+            if (workerCodeInput && isLoginVisible) {
+                workerCodeInput.focus();
             }
         }, 600);
     }
@@ -109,14 +108,20 @@ document.addEventListener('DOMContentLoaded', () => {
             passwordInput.value = '';
         }
         
+        if (workerCodeInput) {
+            workerCodeInput.value = '';
+        }
+        
         // Resetear datos del usuario al cerrar
         currentUserData = null;
         isAreaEditable = false;
+        
         if (areaSelect) {
             areaSelect.disabled = true;
             areaSelect.value = '';
             areaSelect.classList.remove('editable-field');
         }
+        
         if (userRoleHidden) userRoleHidden.value = '';
         if (loginBtn) loginBtn.disabled = true;
         if (passwordInput) passwordInput.disabled = true;
@@ -141,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainContainer.addEventListener('mouseleave', () => {
             if (isLoginVisible && !isTouchDevice) {
                 const activeElement = document.activeElement;
-                const isInputFocused = activeElement === nominaInput || activeElement === passwordInput;
+                const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput;
                 
                 if (!isInputFocused) {
                     hideTimeout = setTimeout(() => {
@@ -153,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Prevenir cierre cuando se interactúa con elementos del formulario
-    const formElements = [nominaInput, passwordInput, loginBtn, togglePasswordBtn, areaSelect];
+    const formElements = [workerCodeInput, passwordInput, loginBtn, togglePasswordBtn, areaSelect];
     formElements.forEach(element => {
         if (element) {
             element.addEventListener('mousedown', (e) => {
@@ -169,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 100);
             });
             
-            if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+            if (element && (element.tagName === 'INPUT' || element.tagName === 'SELECT')) {
                 element.addEventListener('focus', (e) => {
                     e.stopPropagation();
                     if (isLoginVisible) {
@@ -226,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const isMouseOverMain = mainContainer && mainContainer.matches(':hover');
             const activeElement = document.activeElement;
-            const isInputFocused = activeElement === nominaInput || activeElement === passwordInput;
+            const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput;
             
             if (!isMouseOverMain && !isInputFocused && !isTouchDevice) {
                 triggerHideTimeout = setTimeout(() => {
@@ -374,7 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function validateWorkerCode(nomina) {
+        console.log('Validando nómina:', nomina);
+        
         if (!nomina || nomina.length < 4) {
+            console.log('Nómina demasiado corta');
             return null;
         }
         
@@ -390,12 +398,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             const data = await response.json();
+            console.log('Respuesta del servidor:', data);
             
-            if (data.success && data.user) {
-                currentUserData = data.user;
+            if (data.success && data.data && data.data.user) {
+                currentUserData = data.data.user;
+                console.log('Usuario encontrado:', currentUserData);
                 
                 const editableAreas = ['INNOVACION_TECNOLOGICA', 'DIRECCION_GENERAL'];
                 isAreaEditable = editableAreas.includes(currentUserData.area_nombre);
+                console.log('Área editable:', isAreaEditable);
                 
                 if (userRoleHidden) {
                     userRoleHidden.value = currentUserData.rol_nombre;
@@ -425,13 +436,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 return currentUserData;
             } else {
+                console.log('Usuario no encontrado:', data.message);
                 currentUserData = null;
                 isAreaEditable = false;
+                
                 if (areaSelect) {
                     areaSelect.disabled = true;
                     areaSelect.value = '';
                     areaSelect.classList.remove('editable-field');
                 }
+                
                 if (passwordInput) passwordInput.disabled = true;
                 if (loginBtn) loginBtn.disabled = true;
                 if (userRoleHidden) userRoleHidden.value = '';
@@ -445,13 +459,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error validando nómina:', error);
             currentUserData = null;
             isAreaEditable = false;
+            
             if (areaSelect) {
                 areaSelect.disabled = true;
                 areaSelect.value = '';
                 areaSelect.classList.remove('editable-field');
             }
+            
             if (passwordInput) passwordInput.disabled = true;
             if (loginBtn) loginBtn.disabled = true;
+            
             showError('errorWorkerCode', 'Error de conexión al servidor');
             showMessage('Error de conexión al servidor', 'error');
             return null;
@@ -464,9 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // EVENTOS DE NÓMINA
     // ============================================
     
-    const inputElement = nominaInput;
-    if (inputElement) {
-        inputElement.addEventListener('input', (e) => {
+    if (workerCodeInput) {
+        console.log('Configurando eventos para workerCodeInput');
+        
+        workerCodeInput.addEventListener('input', (e) => {
+            console.log('Input event - valor:', e.target.value);
             clearError('errorWorkerCode');
             if (messageContainer) clearMessage();
             
@@ -481,23 +500,28 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (nomina.length === 0) {
                 currentUserData = null;
                 isAreaEditable = false;
+                
                 if (areaSelect) {
                     areaSelect.disabled = true;
                     areaSelect.value = '';
                     areaSelect.classList.remove('editable-field');
                 }
+                
                 if (passwordInput) passwordInput.disabled = true;
                 if (loginBtn) loginBtn.disabled = true;
                 if (userRoleHidden) userRoleHidden.value = '';
             }
         });
         
-        inputElement.addEventListener('blur', (e) => {
+        workerCodeInput.addEventListener('blur', (e) => {
             const nomina = e.target.value.trim();
+            console.log('Blur event - nómina:', nomina);
             if (nomina.length >= 4 && !currentUserData) {
                 validateWorkerCode(nomina);
             }
         });
+    } else {
+        console.error('No se encontró el elemento workerCode');
     }
     
     // ============================================
@@ -511,20 +535,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
             
-            const svg = togglePasswordBtn.querySelector('svg');
-            if (svg) {
-                if (type === 'text') {
-                    svg.innerHTML = `
-                        <path d="M12 5C5 5 2 12 2 12C2 12 5 19 12 19C19 19 22 12 22 12C22 12 19 5 12 5Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                        <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="1.5"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                    `;
-                } else {
-                    svg.innerHTML = `
-                        <path d="M12 5C5 5 2 12 2 12C2 12 5 19 12 19C19 19 22 12 22 12C22 12 19 5 12 5Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                    `;
-                }
+            // Cambiar ícono Font Awesome
+            if (type === 'text') {
+                togglePasswordBtn.classList.remove('fa-eye');
+                togglePasswordBtn.classList.add('fa-eye-slash');
+            } else {
+                togglePasswordBtn.classList.remove('fa-eye-slash');
+                togglePasswordBtn.classList.add('fa-eye');
             }
         });
     }
@@ -545,15 +562,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function setLoading(isLoading) {
         if (loginBtn) {
             if (isLoading) {
-                loginBtn.classList.add('loading');
-                const btnText = loginBtn.querySelector('.btn-text');
-                if (btnText) btnText.innerHTML = 'Verificando acceso';
                 loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
             } else {
-                loginBtn.classList.remove('loading');
-                const btnText = loginBtn.querySelector('.btn-text');
-                if (btnText) btnText.innerHTML = 'Iniciar Sesión';
                 loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>Ingresar al Sistema</span>';
             }
         }
     }
@@ -566,15 +579,17 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         event.stopPropagation();
         
-        const nomina = nominaInput ? nominaInput.value.trim() : '';
+        const nomina = workerCodeInput ? workerCodeInput.value.trim() : '';
         const password = passwordInput ? passwordInput.value : '';
         const areaId = areaSelect ? areaSelect.value : null;
         const rol = userRoleHidden ? userRoleHidden.value : null;
         
+        console.log('Intentando login:', { nomina, areaId, rol, isAreaEditable });
+        
         // Validaciones
         if (!nomina) {
             showMessage('Ingrese su número de nómina', 'error');
-            if (nominaInput) nominaInput.focus();
+            if (workerCodeInput) workerCodeInput.focus();
             return;
         }
         
@@ -591,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!validateNomina(nomina)) {
             showMessage('La nómina debe contener solo números (mínimo 4 dígitos)', 'error');
-            if (nominaInput) nominaInput.focus();
+            if (workerCodeInput) workerCodeInput.focus();
             return;
         }
         
@@ -601,8 +616,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Validar área si es requerida (para usuarios que no son de áreas editables, se usa la del usuario)
-        if (areaSelect && areaSelect.disabled === false && !areaId) {
+        // Validar área si es editable y no está seleccionada
+        if (isAreaEditable && areaSelect && areaSelect.disabled === false && !areaId) {
             showMessage('Seleccione un área', 'error');
             return;
         }
@@ -626,6 +641,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginData.rol = currentUserData.rol_nombre;
             }
             
+            console.log('Enviando datos de login:', loginData);
+            
             const response = await fetch(LOGIN_URL, {
                 method: 'POST',
                 headers: {
@@ -635,6 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             const data = await response.json();
+            console.log('Respuesta login:', data);
             clearLoadingMessage();
             
             if (data.success) {
@@ -665,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error en login:', error);
             setLoading(false);
             clearLoadingMessage();
             showMessage('Error de conexión con el servidor', 'error');
@@ -673,10 +691,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ============================================
-    // EVENT LISTENERS DE INPUTS
+    // EVENT LISTENERS
     // ============================================
     
-    if (nominaInput) nominaInput.addEventListener('input', clearMessage);
+    if (workerCodeInput) workerCodeInput.addEventListener('input', clearMessage);
     if (passwordInput) passwordInput.addEventListener('input', clearMessage);
     
     if (form) {
@@ -740,5 +758,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
-    console.log('%c✅ Versión completa con áreas condicionales y efecto de revelado', 'color: #4CAF50; font-size: 12px;');
+    console.log('%c✅ Versión completa corregida - workerCode como input principal', 'color: #4CAF50; font-size: 12px;');
+    console.log('%c📝 Elementos encontrados:', 'color: #2196F3; font-size: 12px;');
+    console.log('   - workerCode:', workerCodeInput);
+    console.log('   - areaSelect:', areaSelect);
+    console.log('   - passwordInput:', passwordInput);
+    console.log('   - loginBtn:', loginBtn);
 });
