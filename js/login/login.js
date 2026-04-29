@@ -1,5 +1,4 @@
-// SISTEMA DE ACCESO INSTITUCIONAL - CON COMPORTAMIENTO CONDICIONAL Y EFECTO DE REVELADO
-// VERSIÓN COMPLETA CORREGIDA - CON MANEJO DE ERRORES ROBUSTO
+// SISTEMA DE ACCESO INSTITUCIONAL - CON EFECTO DE REVELADO Y REDIRECCIÓN POR ÁREA
 
 document.addEventListener('DOMContentLoaded', () => {
     // ============================================
@@ -11,33 +10,116 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');
     const messageContainer = document.getElementById('errorMessage');
     const togglePasswordBtn = document.querySelector('.toggle-password');
+    const areaSelectorGroup = document.getElementById('areaSelectorGroup');
+    const areaSelect = document.getElementById('areaSelect');
     
     // Elementos del efecto de revelado
     const effectTrigger = document.getElementById('effectTriggerContainer');
     const mainContainer = document.getElementById('mainContainer');
     const effectImage = document.getElementById('effectImage');
     
-    // Elementos de área y rol
-    const areaSelect = document.getElementById('area');
-    const userRoleHidden = document.getElementById('userRole');
+    // Elementos de carga
     const nominaLoading = document.getElementById('nominaLoading');
     
     // ============================================
     // VARIABLES DE CONTROL
     // ============================================
     let currentUserData = null;
-    let isAreaEditable = false;
     let isLoginVisible = false;
     let hideTimeout = null;
     let isTouchDevice = false;
     let triggerHideTimeout = null;
     let isClickInsideForm = false;
     let debounceTimeout = null;
+    let allAreas = []; // Almacenar todas las áreas disponibles
     
     // URLs de los endpoints
     const VALIDATE_NOMINA_URL = 'php/login/validate_nomina.php';
-    const GET_AREAS_URL = 'php/login/get_areas.php';
     const LOGIN_URL = 'php/login/login.php';
+    const GET_AREAS_URL = 'php/login/get_areas.php';
+    
+    // ============================================
+    // MAPEO DE ÁREAS A URLs DE REDIRECCIÓN
+    // ============================================
+    const areaRedirectMap = {
+        'DIRECCION_GENERAL': '/proyect_opda/html/direccion_general/direccion_general.html',
+        'ATENCION_A_USUARIOS': '/proyect_opda/html/atencion_usuarios/atencion_usuarios.html',
+        'RECURSOS_HUMANOS': '/proyect_opda/html/recursos_humanos/recursos_humanos.html',
+        'INNOVACION_TECNOLOGICA': '/proyect_opda/html/innovacion_tecnologica/innovacion_tecnologica.html',
+        'USER_TESTING': '/proyect_opda/html/user_testing/user_testing.html'
+    };
+    
+    // URL por defecto si el área no está mapeada
+    const DEFAULT_REDIRECT = '/proyect_opda/dashboard.html';
+    
+    function getRedirectUrlByArea(areaNombre) {
+        return areaRedirectMap[areaNombre] || DEFAULT_REDIRECT;
+    }
+    
+    // ============================================
+    // FUNCIONES DE CARGA DE ÁREAS
+    // ============================================
+    
+    async function loadAreas() {
+        try {
+            const response = await fetch(GET_AREAS_URL);
+            const data = await response.json();
+            
+            if (data.success && data.areas) {
+                allAreas = data.areas;
+                populateAreaSelect(allAreas);
+                return true;
+            } else {
+                console.error('Error cargando áreas:', data.message);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error fetching areas:', error);
+            return false;
+        }
+    }
+    
+    function populateAreaSelect(areas) {
+        if (!areaSelect) return;
+        
+        areaSelect.innerHTML = '<option value="">Seleccione un área...</option>';
+        
+        areas.forEach(area => {
+            const option = document.createElement('option');
+            option.value = area.id;
+            option.textContent = formatAreaName(area.area);
+            areaSelect.appendChild(option);
+        });
+    }
+    
+    function formatAreaName(areaCode) {
+        const nameMap = {
+            'DIRECCION_GENERAL': 'Dirección General',
+            'ATENCION_A_USUARIOS': 'Atención a Usuarios',
+            'RECURSOS_HUMANOS': 'Recursos Humanos',
+            'INNOVACION_TECNOLOGICA': 'Innovación Tecnológica',
+            'USER_TESTING': 'Usuario de Pruebas'
+        };
+        return nameMap[areaCode] || areaCode.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    }
+    
+    // ============================================
+    // MOSTRAR/OCULTAR SELECTOR DE ÁREA
+    // ============================================
+    
+    function showAreaSelector(puedeCambiarArea, currentAreaId = null) {
+        if (!areaSelectorGroup) return;
+        
+        if (puedeCambiarArea) {
+            areaSelectorGroup.style.display = 'block';
+            if (currentAreaId && areaSelect) {
+                areaSelect.value = currentAreaId;
+            }
+        } else {
+            areaSelectorGroup.style.display = 'none';
+            if (areaSelect) areaSelect.value = '';
+        }
+    }
     
     // ============================================
     // FUNCIONES DEL EFECTO DE REVELADO
@@ -115,17 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Resetear datos del usuario al cerrar
         currentUserData = null;
-        isAreaEditable = false;
-        
-        if (areaSelect) {
-            areaSelect.disabled = true;
-            areaSelect.value = '';
-            areaSelect.classList.remove('editable-field');
-        }
-        
-        if (userRoleHidden) userRoleHidden.value = '';
         if (loginBtn) loginBtn.disabled = true;
         if (passwordInput) passwordInput.disabled = true;
+        showAreaSelector(false);
     }
     
     // ============================================
@@ -147,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainContainer.addEventListener('mouseleave', () => {
             if (isLoginVisible && !isTouchDevice) {
                 const activeElement = document.activeElement;
-                const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput;
+                const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput || activeElement === areaSelect;
                 
                 if (!isInputFocused) {
                     hideTimeout = setTimeout(() => {
@@ -175,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 100);
             });
             
-            if (element && (element.tagName === 'INPUT' || element.tagName === 'SELECT')) {
+            if (element && element.tagName === 'INPUT') {
                 element.addEventListener('focus', (e) => {
                     e.stopPropagation();
                     if (isLoginVisible) {
@@ -232,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const isMouseOverMain = mainContainer && mainContainer.matches(':hover');
             const activeElement = document.activeElement;
-            const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput;
+            const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput || activeElement === areaSelect;
             
             if (!isMouseOverMain && !isInputFocused && !isTouchDevice) {
                 triggerHideTimeout = setTimeout(() => {
@@ -272,16 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let displayText = text;
         
         if (type === 'success') {
-            if (text.includes('conectado') || text.includes('acceso') || text.includes('bienvenido')) {
-                displayText = '✓ Acceso concedido. Redirigiendo...';
-            }
+            displayText = '✓ Acceso concedido. Redirigiendo...';
         } else if (type === 'error') {
             if (text.includes('nómina') || text.includes('Identificador')) {
                 displayText = '⚠️ ' + text.replace('❌', '').trim();
             } else if (text.includes('contraseña')) {
                 displayText = '🔒 ' + text.replace('❌', '').trim();
-            } else if (text.includes('Credenciales')) {
-                displayText = '❌ Error en credenciales';
             } else {
                 displayText = '❌ ' + text;
             }
@@ -356,53 +426,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ============================================
-    // FUNCIONES DE ÁREAS Y VALIDACIÓN DE NÓMINA
+    // VALIDACIÓN DE NÓMINA
     // ============================================
     
-    async function loadAreas() {
-        try {
-            console.log('Cargando áreas...');
-            const response = await fetch(GET_AREAS_URL);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const textResponse = await response.text();
-            console.log('Respuesta raw de get_areas:', textResponse);
-            
-            let data;
-            try {
-                data = JSON.parse(textResponse);
-            } catch (e) {
-                console.error('Error parsing JSON:', e);
-                throw new Error('Respuesta inválida del servidor');
-            }
-            
-            if (data.success && data.areas && areaSelect) {
-                areaSelect.innerHTML = '<option value="">Seleccione un área</option>';
-                
-                data.areas.forEach(area => {
-                    const option = document.createElement('option');
-                    option.value = area.id;
-                    option.textContent = area.area.replace(/_/g, ' ');
-                    areaSelect.appendChild(option);
-                });
-                console.log('Áreas cargadas correctamente');
-            } else {
-                console.error('Error en respuesta de áreas:', data);
-            }
-        } catch (error) {
-            console.error('Error cargando áreas:', error);
-            showMessage('Error al cargar las áreas', 'error');
-        }
-    }
-    
     async function validateWorkerCode(nomina) {
-        console.log('Validando nómina:', nomina);
-        
         if (!nomina || nomina.length < 4) {
-            console.log('Nómina demasiado corta');
             return null;
         }
         
@@ -422,8 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const textResponse = await response.text();
-            console.log('Respuesta raw de validate_nomina:', textResponse);
-            
             let data;
             try {
                 data = JSON.parse(textResponse);
@@ -432,57 +458,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Respuesta inválida del servidor');
             }
             
-            console.log('Respuesta del servidor:', data);
-            
             if (data.success && data.data && data.data.user) {
                 currentUserData = data.data.user;
-                console.log('Usuario encontrado:', currentUserData);
                 
-                const editableAreas = ['INNOVACION_TECNOLOGICA', 'DIRECCION_GENERAL'];
-                isAreaEditable = editableAreas.includes(currentUserData.area_nombre);
-                console.log('Área editable:', isAreaEditable);
-                
-                if (userRoleHidden) {
-                    userRoleHidden.value = currentUserData.rol_nombre;
-                }
-                
-                if (areaSelect) {
-                    if (isAreaEditable) {
-                        areaSelect.disabled = false;
-                        if (currentUserData.area_id) {
-                            areaSelect.value = currentUserData.area_id;
-                        }
-                        areaSelect.classList.add('editable-field');
-                    } else {
-                        areaSelect.disabled = true;
-                        if (currentUserData.area_id) {
-                            areaSelect.value = currentUserData.area_id;
-                        }
-                        areaSelect.classList.remove('editable-field');
-                    }
-                }
+                // Mostrar u ocultar selector de área según permisos
+                showAreaSelector(currentUserData.puede_cambiar_area, currentUserData.area_id);
                 
                 if (passwordInput) passwordInput.disabled = false;
                 if (loginBtn) loginBtn.disabled = false;
                 
                 clearError('errorWorkerCode');
-                if (messageContainer) clearMessage();
+                clearMessage();
                 
                 return currentUserData;
             } else {
-                console.log('Usuario no encontrado:', data.message);
                 currentUserData = null;
-                isAreaEditable = false;
-                
-                if (areaSelect) {
-                    areaSelect.disabled = true;
-                    areaSelect.value = '';
-                    areaSelect.classList.remove('editable-field');
-                }
                 
                 if (passwordInput) passwordInput.disabled = true;
                 if (loginBtn) loginBtn.disabled = true;
-                if (userRoleHidden) userRoleHidden.value = '';
+                showAreaSelector(false);
                 
                 const errorMsg = data.message || 'Nómina no encontrada';
                 showError('errorWorkerCode', errorMsg);
@@ -492,19 +486,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error validando nómina:', error);
             currentUserData = null;
-            isAreaEditable = false;
-            
-            if (areaSelect) {
-                areaSelect.disabled = true;
-                areaSelect.value = '';
-                areaSelect.classList.remove('editable-field');
-            }
             
             if (passwordInput) passwordInput.disabled = true;
             if (loginBtn) loginBtn.disabled = true;
+            showAreaSelector(false);
             
             showError('errorWorkerCode', 'Error de conexión al servidor');
-            showMessage('Error de conexión al servidor. Verifica que los archivos PHP existan.', 'error');
+            showMessage('Error de conexión al servidor', 'error');
             return null;
         } finally {
             if (nominaLoading) nominaLoading.style.display = 'none';
@@ -516,12 +504,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     
     if (workerCodeInput) {
-        console.log('Configurando eventos para workerCodeInput');
-        
         workerCodeInput.addEventListener('input', (e) => {
-            console.log('Input event - valor:', e.target.value);
             clearError('errorWorkerCode');
-            if (messageContainer) clearMessage();
+            clearMessage();
             
             if (debounceTimeout) clearTimeout(debounceTimeout);
             
@@ -533,29 +518,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 500);
             } else if (nomina.length === 0) {
                 currentUserData = null;
-                isAreaEditable = false;
-                
-                if (areaSelect) {
-                    areaSelect.disabled = true;
-                    areaSelect.value = '';
-                    areaSelect.classList.remove('editable-field');
-                }
-                
                 if (passwordInput) passwordInput.disabled = true;
                 if (loginBtn) loginBtn.disabled = true;
-                if (userRoleHidden) userRoleHidden.value = '';
+                showAreaSelector(false);
             }
         });
         
         workerCodeInput.addEventListener('blur', (e) => {
             const nomina = e.target.value.trim();
-            console.log('Blur event - nómina:', nomina);
             if (nomina.length >= 4 && !currentUserData) {
                 validateWorkerCode(nomina);
             }
         });
-    } else {
-        console.error('No se encontró el elemento workerCode');
     }
     
     // ============================================
@@ -569,7 +543,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
             
-            // Cambiar ícono Font Awesome
             if (type === 'text') {
                 togglePasswordBtn.classList.remove('fa-eye');
                 togglePasswordBtn.classList.add('fa-eye-slash');
@@ -606,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ============================================
-    // HANDLE LOGIN
+    // HANDLE LOGIN CON REDIRECCIÓN POR ÁREA
     // ============================================
     
     async function handleLogin(event) {
@@ -615,12 +588,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const nomina = workerCodeInput ? workerCodeInput.value.trim() : '';
         const password = passwordInput ? passwordInput.value : '';
-        const areaId = areaSelect ? areaSelect.value : null;
-        const rol = userRoleHidden ? userRoleHidden.value : null;
+        const selectedAreaId = areaSelect && areaSelectorGroup.style.display !== 'none' 
+            ? parseInt(areaSelect.value) 
+            : null;
         
-        console.log('Intentando login:', { nomina, areaId, rol, isAreaEditable });
-        
-        // Validaciones
         if (!nomina) {
             showMessage('Ingrese su número de nómina', 'error');
             if (workerCodeInput) workerCodeInput.focus();
@@ -629,6 +600,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!currentUserData) {
             showMessage('Nómina no válida', 'error');
+            return;
+        }
+        
+        // Validar que haya seleccionado un área si tiene permiso para cambiar
+        if (currentUserData.puede_cambiar_area && (!selectedAreaId || selectedAreaId === '')) {
+            showMessage('Por favor, seleccione el área de trabajo', 'error');
+            if (areaSelect) areaSelect.focus();
             return;
         }
         
@@ -650,32 +628,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Validar área si es editable y no está seleccionada
-        if (isAreaEditable && areaSelect && areaSelect.disabled === false && !areaId) {
-            showMessage('Seleccione un área', 'error');
-            return;
-        }
-        
         setLoading(true);
         showLoadingMessage('🔍 Verificando credenciales...');
         
         try {
             const loginData = {
                 nomina: nomina,
-                password: password
+                password: password,
+                area_id: selectedAreaId || currentUserData.area_id
             };
-            
-            // Si el área es editable, enviar el área seleccionada
-            if (isAreaEditable && areaId) {
-                loginData.area_id = areaId;
-                loginData.rol = rol;
-            } else if (currentUserData && currentUserData.area_id) {
-                // Usar el área del usuario
-                loginData.area_id = currentUserData.area_id;
-                loginData.rol = currentUserData.rol_nombre;
-            }
-            
-            console.log('Enviando datos de login:', loginData);
             
             const response = await fetch(LOGIN_URL, {
                 method: 'POST',
@@ -690,8 +651,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const textResponse = await response.text();
-            console.log('Respuesta raw de login:', textResponse);
-            
             let data;
             try {
                 data = JSON.parse(textResponse);
@@ -700,28 +659,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Respuesta inválida del servidor');
             }
             
-            console.log('Respuesta login:', data);
             clearLoadingMessage();
             
             if (data.success) {
-                showMessage(`✅ Acceso concedido`, 'success');
+                const user = data.data.user;
+                // Determinar redirección según el ÁREA (no por rol)
+                const redirectUrl = getRedirectUrlByArea(user.area_nombre);
                 
-                if (data.data && data.data.user) {
-                    sessionStorage.setItem('usuario', JSON.stringify(data.data.user));
-                    const esPrimerInicio = data.data.user.primer_inicio === true;
-                    
-                    setTimeout(() => {
-                        if (esPrimerInicio) {
-                            window.location.href = 'html/cambio_contraseña/cambio_contraseña.html';
-                        } else {
-                            window.location.href = data.data.redirect || 'dashboard.html';
-                        }
-                    }, 1500);
-                } else {
-                    setTimeout(() => {
-                        window.location.href = data.data.redirect || 'dashboard.html';
-                    }, 1500);
+                showMessage(`✅ Acceso concedido - ${formatAreaName(user.area_nombre)}`, 'success');
+                
+                if (sessionStorage) {
+                    sessionStorage.setItem('usuario', JSON.stringify(user));
                 }
+                
+                const esPrimerInicio = user.primer_inicio === true;
+                
+                setTimeout(() => {
+                    if (esPrimerInicio) {
+                        window.location.href = 'html/cambio_contraseña/cambio_contraseña.html';
+                    } else {
+                        window.location.href = redirectUrl;
+                    }
+                }, 1500);
             } else {
                 setLoading(false);
                 showMessage(data.message || 'Error en credenciales', 'error');
@@ -734,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error en login:', error);
             setLoading(false);
             clearLoadingMessage();
-            showMessage('Error de conexión con el servidor. Verifica la ruta de los archivos PHP.', 'error');
+            showMessage('Error de conexión con el servidor', 'error');
         }
     }
     
@@ -750,66 +709,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ============================================
-    // ESTILOS ADICIONALES PARA CAMPO EDITABLE
-    // ============================================
-    
-    const style = document.createElement('style');
-    style.textContent = `
-        .editable-field {
-            background-color: #fff8e1 !important;
-            border-color: #ffc107 !important;
-        }
-        .editable-field option {
-            background-color: white;
-        }
-        .select-wrapper select:disabled {
-            background-color: #f5f5f5;
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
-        .input-field select:disabled {
-            background-color: #f5f5f5;
-            cursor: not-allowed;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // ============================================
     // INICIALIZACIÓN
     // ============================================
     
-    loadAreas();
-    setupTrigger();
-    setupHideOnTriggerLeave();
-    setupHideOnMouseLeaveDocument();
-    
-    // Inicialmente deshabilitar campos de login
-    if (passwordInput) passwordInput.disabled = true;
-    if (loginBtn) loginBtn.disabled = true;
-    if (areaSelect) {
-        areaSelect.disabled = true;
-        areaSelect.classList.remove('editable-field');
-    }
-    
-    // Efecto de focus en inputs
-    const inputs = document.querySelectorAll('.input-field input, .input-field select');
-    inputs.forEach(input => {
-        input.addEventListener('focus', () => {
-            const field = input.closest('.input-field');
-            if (field) field.style.transform = 'scale(1.01)';
+    async function init() {
+        await loadAreas();
+        
+        setupTrigger();
+        setupHideOnTriggerLeave();
+        setupHideOnMouseLeaveDocument();
+        
+        // Inicialmente deshabilitar campos de login
+        if (passwordInput) passwordInput.disabled = true;
+        if (loginBtn) loginBtn.disabled = true;
+        showAreaSelector(false);
+        
+        // Efecto de focus en inputs
+        const inputs = document.querySelectorAll('.input-field input, .input-field select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                const field = input.closest('.input-field');
+                if (field) field.style.transform = 'scale(1.01)';
+            });
+            
+            input.addEventListener('blur', () => {
+                const field = input.closest('.input-field');
+                if (field) field.style.transform = 'scale(1)';
+            });
         });
         
-        input.addEventListener('blur', () => {
-            const field = input.closest('.input-field');
-            if (field) field.style.transform = 'scale(1)';
-        });
-    });
+        console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
+        console.log('%c✅ Versión con efecto de revelado y redirección por ÁREA', 'color: #4CAF50; font-size: 12px;');
+    }
     
-    console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
-    console.log('%c✅ Versión completa con manejo de errores robusto', 'color: #4CAF50; font-size: 12px;');
-    console.log('%c📝 Elementos encontrados:', 'color: #2196F3; font-size: 12px;');
-    console.log('   - workerCode:', workerCodeInput);
-    console.log('   - areaSelect:', areaSelect);
-    console.log('   - passwordInput:', passwordInput);
-    console.log('   - loginBtn:', loginBtn);
+    init();
 });

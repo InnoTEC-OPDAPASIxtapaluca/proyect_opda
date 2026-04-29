@@ -38,7 +38,6 @@
     <div class="water-reflection"></div>
 
     <div class="container">
-        <!-- Fondo con animación sutil -->
         <div class="background-animation">
             <div class="shape shape-1"></div>
             <div class="shape shape-2"></div>
@@ -46,18 +45,15 @@
             <div class="shape shape-4"></div>
         </div>
 
-        <!-- Contenedor principal del login -->
         <div class="login-container animate__animated animate__fadeIn">
-            <!-- Logo y título -->
             <div class="header">
                 <h1 class="title">OPDAPAS<br>IXTAPALUCA</h1>
                 <p class="subtitle">Organismo Publico Descentralizado para la prestación de Servicios de Agua Potable, Alcantarillado y Saneamiento del Municipio de Ixtapaluca.</p>
             </div>
 
-            <!-- Formulario de login con nuevo orden -->
             <form id="loginForm" class="login-form">
                 <div class="form-fields-container">
-                    <!-- Número de trabajador (PRIMERO) -->
+                    <!-- Número de trabajador -->
                     <div class="form-group">
                         <label for="workerCode">
                             <i class="fas fa-id-badge"></i> Nómina de trabajador
@@ -75,16 +71,16 @@
                         <div class="error-message" id="errorWorkerCode"></div>
                     </div>
 
-                    <!-- Área (puede ser autocompletado o editable según el área del usuario) -->
-                    <div class="form-group">
-                        <label for="area">
-                            <i class="fas fa-building"></i> Área
+                    <!-- Selector de Área (SOLO visible para ciertos usuarios) -->
+                    <div class="form-group" id="areaSelectorGroup" style="display: none;">
+                        <label for="areaSelect">
+                            <i class="fas fa-building"></i> Área de trabajo
                         </label>
-                        <div class="select-wrapper">
-                            <select id="area" name="area" required>
-                                <option value="">Seleccione un área</option>
+                        <div class="input-with-icon">
+                            <i class="fas fa-map-marker-alt icon-left"></i>
+                            <select id="areaSelect" class="area-select">
+                                <option value="">Cargando áreas...</option>
                             </select>
-                            <i class="fas fa-chevron-down select-icon"></i>
                         </div>
                         <div class="error-message" id="errorArea"></div>
                     </div>
@@ -107,10 +103,8 @@
                     </div>
                 </div>
                 
-                <!-- Campo oculto para almacenar el rol del usuario -->
                 <input type="hidden" id="userRole" name="userRole" value="">
                 
-                <!-- Botón de ingreso -->
                 <div class="buttons-container">
                     <button type="submit" class="btn btn-primary" id="loginBtn" disabled>
                         <i class="fas fa-sign-in-alt"></i>
@@ -121,7 +115,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/login/login.js"></script>
 </body>

@@ -18,13 +18,13 @@ class LoginHandler {
         }
     }
     
-    public function login($nomina, $password, $selectedAreaId = null, $selectedRol = null) {
+    public function login($nomina, $password, $selectedAreaId = null) {
         if (empty($nomina) || empty($password)) {
             $this->sendResponse(false, "Nómina y contraseña son requeridos");
         }
         
         try {
-            // Primero obtener el usuario por nómina
+            // Obtener usuario por nómina
             $query = "SELECT u.*, a.area as area_nombre, r.rol as rol_nombre 
                       FROM usuarios_internos u 
                       JOIN areas a ON u.area_id = a.id 
@@ -46,11 +46,15 @@ class LoginHandler {
                 $this->sendResponse(false, "Nómina o contraseña incorrectos");
             }
             
-            // Verificar si el área seleccionada es válida para este usuario
-            $esAreaEditable = in_array($usuario['area_nombre'], ['INNOVACION_TECNOLOGICA', 'DIRECCION_GENERAL']);
+            // Validar si el usuario puede cambiar de área
+            $areasPermitidasCambio = ['INNOVACION_TECNOLOGICA', 'DIRECCION_GENERAL'];
+            $puedeCambiarArea = in_array($usuario['area_nombre'], $areasPermitidasCambio);
             
-            if ($esAreaEditable && $selectedAreaId) {
-                // Para usuarios de INNOVACIÓN y DIRECCIÓN GENERAL, validar que el área seleccionada existe
+            // Si seleccionó un área diferente y tiene permiso, actualizar el área
+            $areaFinalId = $usuario['area_id'];
+            $areaFinalNombre = $usuario['area_nombre'];
+            
+            if ($puedeCambiarArea && $selectedAreaId && $selectedAreaId != $usuario['area_id']) {
                 $areaQuery = "SELECT id, area FROM areas WHERE id = :area_id";
                 $areaStmt = $this->conn->prepare($areaQuery);
                 $areaStmt->bindParam(':area_id', $selectedAreaId);
@@ -58,8 +62,8 @@ class LoginHandler {
                 
                 if ($areaStmt->rowCount() > 0) {
                     $selectedArea = $areaStmt->fetch();
-                    $usuario['area_id'] = $selectedArea['id'];
-                    $usuario['area_nombre'] = $selectedArea['area'];
+                    $areaFinalId = $selectedArea['id'];
+                    $areaFinalNombre = $selectedArea['area'];
                 }
             }
             
@@ -68,15 +72,15 @@ class LoginHandler {
             
             $esPrimerInicio = ($usuario['numero_inicio'] == 0);
             
-            // Preparar datos del usuario
+            // Preparar datos del usuario (NO incluye redirección, eso va en JS)
             $userData = [
                 'id' => $usuario['id'],
                 'nombre' => $usuario['nombre'],
                 'apellido_paterno' => $usuario['apellido_paterno'],
                 'apellido_materno' => $usuario['apellido_materno'],
                 'identificador' => $usuario['no_nomina'],
-                'area_id' => $usuario['area_id'],
-                'area_nombre' => $usuario['area_nombre'],
+                'area_id' => $areaFinalId,
+                'area_nombre' => $areaFinalNombre,
                 'rol_id' => $usuario['rol_id'],
                 'rol_nombre' => $usuario['rol_nombre'],
                 'correo' => $usuario['correo_electronico'],
@@ -86,30 +90,15 @@ class LoginHandler {
             $_SESSION['usuario'] = $userData;
             setcookie('usuario_simple', json_encode($userData), time() + 3600, '/');
             
-            // Determinar redirección
-            $redirectTo = $this->getRedirectUrlByRole($usuario['rol_nombre']);
-            
+            // Solo enviamos los datos, la redirección la maneja JS
             $this->sendResponse(true, "Acceso concedido", [
-                'user' => $userData,
-                'redirect' => $redirectTo
+                'user' => $userData
             ]);
             
         } catch (PDOException $e) {
             error_log("Error en login: " . $e->getMessage());
             $this->sendResponse(false, "Error interno del servidor");
         }
-    }
-    
-    private function getRedirectUrlByRole($rol) {
-        if (strpos(strtolower($rol), 'tecnico') !== false) {
-            return "/proyect_opda/html/usuario_tecnico/tecnico.html";
-        }
-        
-        if (strpos(strtolower($rol), 'operativo') !== false) {
-            return "/proyect_opda/html/usuario_operativo/operativo.html";
-        }
-        
-        return "/proyect_opda/dashboard.html";
     }
     
     private function sendResponse($success, $message, $data = null) {
@@ -129,10 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nomina = isset($input['nomina']) ? trim($input['nomina']) : '';
     $password = isset($input['password']) ? $input['password'] : '';
     $selectedAreaId = isset($input['area_id']) ? (int)$input['area_id'] : null;
-    $selectedRol = isset($input['rol']) ? $input['rol'] : null;
     
     $loginHandler = new LoginHandler();
-    $loginHandler->login($nomina, $password, $selectedAreaId, $selectedRol);
+    $loginHandler->login($nomina, $password, $selectedAreaId);
 } else {
     header('HTTP/1.1 405 Method Not Allowed');
     echo json_encode(['success' => false, 'message' => 'Método no permitido']);
