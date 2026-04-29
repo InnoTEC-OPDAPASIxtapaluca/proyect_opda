@@ -1,10 +1,13 @@
-// SISTEMA DE ACCESO INSTITUCIONAL - CON BASE DE DATOS
-// VERSIÓN CORREGIDA - PROBLEMA DE FOCO EN INPUTS RESUELTO
+// SISTEMA DE ACCESO INSTITUCIONAL - CON COMPORTAMIENTO CONDICIONAL Y EFECTO DE REVELADO
+// VERSIÓN COMPLETA - ÁREAS EDITABLES PARA INNOVACIÓN Y DIRECCIÓN GENERAL
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Elementos DOM
+    // ============================================
+    // ELEMENTOS DOM PRINCIPALES
+    // ============================================
     const form = document.getElementById('loginForm');
     const nominaInput = document.getElementById('nomina');
+    const workerCodeInput = document.getElementById('workerCode') || nominaInput; // Compatibilidad
     const passwordInput = document.getElementById('password');
     const loginBtn = document.getElementById('loginBtn');
     const messageContainer = document.getElementById('errorMessage');
@@ -14,26 +17,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const effectTrigger = document.getElementById('effectTriggerContainer');
     const mainContainer = document.getElementById('mainContainer');
     const effectImage = document.getElementById('effectImage');
-
-    // URL del endpoint de login
-    const LOGIN_URL = 'php/login/login.php';
-
-    // Variables de control
+    
+    // Elementos de área y rol
+    const areaSelect = document.getElementById('area');
+    const userRoleHidden = document.getElementById('userRole');
+    const nominaLoading = document.getElementById('nominaLoading');
+    
+    // ============================================
+    // VARIABLES DE CONTROL
+    // ============================================
+    let currentUserData = null;
+    let isAreaEditable = false;
     let isLoginVisible = false;
     let hideTimeout = null;
     let isTouchDevice = false;
     let triggerHideTimeout = null;
-    
-    // NUEVA VARIABLE: Para controlar si estamos haciendo clic dentro del formulario
     let isClickInsideForm = false;
-
-    // Detectar dispositivo táctil
+    let debounceTimeout = null;
+    
+    // URLs de los endpoints
+    const VALIDATE_NOMINA_URL = 'php/login/validate_nomina.php';
+    const LOGIN_URL = 'php/login/login.php';
+    
+    // ============================================
+    // FUNCIONES DEL EFECTO DE REVELADO
+    // ============================================
+    
     function detectTouchDevice() {
         isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
         return isTouchDevice;
     }
-
-    // Función para mostrar el login
+    
     function revealLogin() {
         if (isLoginVisible) return;
         
@@ -65,8 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 600);
     }
-
-    // Función para ocultar el login
+    
     function hideLogin() {
         if (!isLoginVisible) return;
         
@@ -95,20 +108,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (passwordInput) {
             passwordInput.value = '';
         }
+        
+        // Resetear datos del usuario al cerrar
+        currentUserData = null;
+        isAreaEditable = false;
+        if (areaSelect) {
+            areaSelect.disabled = true;
+            areaSelect.value = '';
+            areaSelect.classList.remove('editable-field');
+        }
+        if (userRoleHidden) userRoleHidden.value = '';
+        if (loginBtn) loginBtn.disabled = true;
+        if (passwordInput) passwordInput.disabled = true;
     }
-
+    
     // ============================================
-    // NUEVA ESTRATEGIA: Bloquear cierre cuando se interactúa con inputs
+    // CONTROL DE CIERRE DEL FORMULARIO
     // ============================================
     
-    // 1. Prevenir cualquier cierre cuando el mouse está DENTRO del formulario
     if (mainContainer) {
         mainContainer.addEventListener('mouseenter', () => {
             if (hideTimeout) {
                 clearTimeout(hideTimeout);
                 hideTimeout = null;
             }
-            // Cancelar cualquier cierre pendiente del trigger
             if (triggerHideTimeout) {
                 clearTimeout(triggerHideTimeout);
                 triggerHideTimeout = null;
@@ -116,10 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         mainContainer.addEventListener('mouseleave', () => {
-            // Solo ocultar si NO estamos sobre un input activo
-            // y si el mouse no está sobre algún elemento interactivo del formulario
             if (isLoginVisible && !isTouchDevice) {
-                // Verificar si algún input tiene el foco
                 const activeElement = document.activeElement;
                 const isInputFocused = activeElement === nominaInput || activeElement === passwordInput;
                 
@@ -132,33 +152,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // 2. Prevenir cierre cuando se hace clic en inputs o en el botón
-    const formElements = [nominaInput, passwordInput, loginBtn, togglePasswordBtn];
+    // Prevenir cierre cuando se interactúa con elementos del formulario
+    const formElements = [nominaInput, passwordInput, loginBtn, togglePasswordBtn, areaSelect];
     formElements.forEach(element => {
         if (element) {
             element.addEventListener('mousedown', (e) => {
-                // Evitar que el evento se propague al documento
                 e.stopPropagation();
-                // Marcar que estamos dentro del formulario
                 isClickInsideForm = true;
             });
             
             element.addEventListener('click', (e) => {
                 e.stopPropagation();
                 isClickInsideForm = true;
-                // Pequeño delay para resetear la bandera
                 setTimeout(() => {
                     isClickInsideForm = false;
                 }, 100);
             });
             
-            // Para inputs, también asegurar el focus
-            if (element.tagName === 'INPUT') {
+            if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
                 element.addEventListener('focus', (e) => {
                     e.stopPropagation();
-                    // Asegurar que el login siga visible
                     if (isLoginVisible) {
-                        // Cancelar cualquier cierre pendiente
                         if (hideTimeout) {
                             clearTimeout(hideTimeout);
                             hideTimeout = null;
@@ -169,24 +183,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // 3. Control de cierre por clic fuera (VERSIÓN SUAVE)
     document.addEventListener('mousedown', (e) => {
         if (!isLoginVisible) return;
         
-        // Verificar si el clic fue dentro del mainContainer
         const isClickInsideMain = mainContainer && mainContainer.contains(e.target);
         const isClickOnTrigger = effectTrigger && effectTrigger.contains(e.target);
         
-        // Si estamos dentro del formulario o trigger, NO hacer nada
         if (isClickInsideMain || isClickOnTrigger) {
             return;
         }
         
-        // Si el clic fue fuera, ocultar el login
         hideLogin();
     });
-
-    // Función para manejar el trigger (hover/click)
+    
     function setupTrigger() {
         if (!effectTrigger) return;
         
@@ -208,15 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
             effectTrigger.addEventListener('mouseenter', revealLogin);
         }
     }
-
-    // Función para manejar cierre al salir del trigger
+    
     function setupHideOnTriggerLeave() {
         if (!effectTrigger) return;
         
         effectTrigger.addEventListener('mouseleave', () => {
             if (!isLoginVisible) return;
             
-            // Verificar si el mouse está dentro del mainContainer o si algún input tiene foco
             const isMouseOverMain = mainContainer && mainContainer.matches(':hover');
             const activeElement = document.activeElement;
             const isInputFocused = activeElement === nominaInput || activeElement === passwordInput;
@@ -235,8 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // Función para manejar cierre al salir del documento
+    
     function setupHideOnMouseLeaveDocument() {
         document.addEventListener('mouseleave', () => {
             if (isLoginVisible && !isTouchDevice) {
@@ -244,8 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // Mostrar mensajes
+    
+    // ============================================
+    // FUNCIONES DE MENSAJES
+    // ============================================
+    
     function showMessage(text, type = 'error') {
         if (!messageContainer) return;
         
@@ -295,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 4000);
     }
-
+    
     function showLoadingMessage(text = 'Verificando credenciales...') {
         if (!messageContainer) return;
         messageContainer.innerHTML = '';
@@ -305,24 +314,196 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContainer.appendChild(loadingDiv);
         return loadingDiv;
     }
-
+    
     function clearLoadingMessage() {
         if (!messageContainer) return;
         if (messageContainer.firstChild && messageContainer.firstChild.classList && messageContainer.firstChild.classList.contains('loading-message')) {
             messageContainer.innerHTML = '';
         }
     }
-
+    
     function clearMessage() {
         if (messageContainer && messageContainer.firstChild) {
             messageContainer.innerHTML = '';
         }
     }
     
-    if (nominaInput) nominaInput.addEventListener('input', clearMessage);
-    if (passwordInput) passwordInput.addEventListener('input', clearMessage);
-
-    // Toggle mostrar/ocultar contraseña
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        } else {
+            showMessage(message, 'error');
+        }
+    }
+    
+    function clearError(elementId) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+        }
+    }
+    
+    // ============================================
+    // FUNCIONES DE ÁREAS Y VALIDACIÓN DE NÓMINA
+    // ============================================
+    
+    async function loadAreas() {
+        try {
+            const response = await fetch('php/login/get_areas.php');
+            const data = await response.json();
+            
+            if (data.success && data.areas && areaSelect) {
+                areaSelect.innerHTML = '<option value="">Seleccione un área</option>';
+                
+                data.areas.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area.id;
+                    option.textContent = area.area.replace(/_/g, ' ');
+                    areaSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error cargando áreas:', error);
+        }
+    }
+    
+    async function validateWorkerCode(nomina) {
+        if (!nomina || nomina.length < 4) {
+            return null;
+        }
+        
+        if (nominaLoading) nominaLoading.style.display = 'inline-block';
+        
+        try {
+            const response = await fetch(VALIDATE_NOMINA_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nomina: nomina })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.user) {
+                currentUserData = data.user;
+                
+                const editableAreas = ['INNOVACION_TECNOLOGICA', 'DIRECCION_GENERAL'];
+                isAreaEditable = editableAreas.includes(currentUserData.area_nombre);
+                
+                if (userRoleHidden) {
+                    userRoleHidden.value = currentUserData.rol_nombre;
+                }
+                
+                if (areaSelect) {
+                    if (isAreaEditable) {
+                        areaSelect.disabled = false;
+                        if (currentUserData.area_id) {
+                            areaSelect.value = currentUserData.area_id;
+                        }
+                        areaSelect.classList.add('editable-field');
+                    } else {
+                        areaSelect.disabled = true;
+                        if (currentUserData.area_id) {
+                            areaSelect.value = currentUserData.area_id;
+                        }
+                        areaSelect.classList.remove('editable-field');
+                    }
+                }
+                
+                if (passwordInput) passwordInput.disabled = false;
+                if (loginBtn) loginBtn.disabled = false;
+                
+                clearError('errorWorkerCode');
+                if (messageContainer) clearMessage();
+                
+                return currentUserData;
+            } else {
+                currentUserData = null;
+                isAreaEditable = false;
+                if (areaSelect) {
+                    areaSelect.disabled = true;
+                    areaSelect.value = '';
+                    areaSelect.classList.remove('editable-field');
+                }
+                if (passwordInput) passwordInput.disabled = true;
+                if (loginBtn) loginBtn.disabled = true;
+                if (userRoleHidden) userRoleHidden.value = '';
+                
+                const errorMsg = data.message || 'Nómina no encontrada';
+                showError('errorWorkerCode', errorMsg);
+                showMessage(errorMsg, 'error');
+                return null;
+            }
+        } catch (error) {
+            console.error('Error validando nómina:', error);
+            currentUserData = null;
+            isAreaEditable = false;
+            if (areaSelect) {
+                areaSelect.disabled = true;
+                areaSelect.value = '';
+                areaSelect.classList.remove('editable-field');
+            }
+            if (passwordInput) passwordInput.disabled = true;
+            if (loginBtn) loginBtn.disabled = true;
+            showError('errorWorkerCode', 'Error de conexión al servidor');
+            showMessage('Error de conexión al servidor', 'error');
+            return null;
+        } finally {
+            if (nominaLoading) nominaLoading.style.display = 'none';
+        }
+    }
+    
+    // ============================================
+    // EVENTOS DE NÓMINA
+    // ============================================
+    
+    const inputElement = nominaInput;
+    if (inputElement) {
+        inputElement.addEventListener('input', (e) => {
+            clearError('errorWorkerCode');
+            if (messageContainer) clearMessage();
+            
+            if (debounceTimeout) clearTimeout(debounceTimeout);
+            
+            const nomina = e.target.value.trim();
+            
+            if (nomina.length >= 4) {
+                debounceTimeout = setTimeout(() => {
+                    validateWorkerCode(nomina);
+                }, 500);
+            } else if (nomina.length === 0) {
+                currentUserData = null;
+                isAreaEditable = false;
+                if (areaSelect) {
+                    areaSelect.disabled = true;
+                    areaSelect.value = '';
+                    areaSelect.classList.remove('editable-field');
+                }
+                if (passwordInput) passwordInput.disabled = true;
+                if (loginBtn) loginBtn.disabled = true;
+                if (userRoleHidden) userRoleHidden.value = '';
+            }
+        });
+        
+        inputElement.addEventListener('blur', (e) => {
+            const nomina = e.target.value.trim();
+            if (nomina.length >= 4 && !currentUserData) {
+                validateWorkerCode(nomina);
+            }
+        });
+    }
+    
+    // ============================================
+    // TOGGLE CONTRASEÑA
+    // ============================================
+    
     if (togglePasswordBtn && passwordInput) {
         togglePasswordBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -347,16 +528,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
+    
+    // ============================================
+    // VALIDACIONES
+    // ============================================
+    
     function validateNomina(nomina) {
         const regex = /^\d{4,}$/;
         return regex.test(nomina);
     }
-
+    
     function validatePassword(password) {
-        return password.length >= 4;
+        return password && password.length >= 4;
     }
-
+    
     function setLoading(isLoading) {
         if (loginBtn) {
             if (isLoading) {
@@ -372,17 +557,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
+    
+    // ============================================
+    // HANDLE LOGIN
+    // ============================================
+    
     async function handleLogin(event) {
         event.preventDefault();
         event.stopPropagation();
         
         const nomina = nominaInput ? nominaInput.value.trim() : '';
         const password = passwordInput ? passwordInput.value : '';
+        const areaId = areaSelect ? areaSelect.value : null;
+        const rol = userRoleHidden ? userRoleHidden.value : null;
         
+        // Validaciones
         if (!nomina) {
             showMessage('Ingrese su número de nómina', 'error');
             if (nominaInput) nominaInput.focus();
+            return;
+        }
+        
+        if (!currentUserData) {
+            showMessage('Nómina no válida', 'error');
             return;
         }
         
@@ -404,19 +601,37 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Validar área si es requerida (para usuarios que no son de áreas editables, se usa la del usuario)
+        if (areaSelect && areaSelect.disabled === false && !areaId) {
+            showMessage('Seleccione un área', 'error');
+            return;
+        }
+        
         setLoading(true);
         showLoadingMessage('🔍 Verificando credenciales...');
         
         try {
+            const loginData = {
+                nomina: nomina,
+                password: password
+            };
+            
+            // Si el área es editable, enviar el área seleccionada
+            if (isAreaEditable && areaId) {
+                loginData.area_id = areaId;
+                loginData.rol = rol;
+            } else if (currentUserData && currentUserData.area_id) {
+                // Usar el área del usuario
+                loginData.area_id = currentUserData.area_id;
+                loginData.rol = currentUserData.rol_nombre;
+            }
+            
             const response = await fetch(LOGIN_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    nomina: nomina,
-                    password: password
-                })
+                body: JSON.stringify(loginData)
             });
             
             const data = await response.json();
@@ -443,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 setLoading(false);
-                showMessage('Error en credenciales', 'error');
+                showMessage(data.message || 'Error en credenciales', 'error');
                 if (passwordInput) {
                     passwordInput.value = '';
                     passwordInput.focus();
@@ -453,21 +668,65 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error:', error);
             setLoading(false);
             clearLoadingMessage();
-            showMessage('Error en credenciales', 'error');
+            showMessage('Error de conexión con el servidor', 'error');
         }
     }
+    
+    // ============================================
+    // EVENT LISTENERS DE INPUTS
+    // ============================================
+    
+    if (nominaInput) nominaInput.addEventListener('input', clearMessage);
+    if (passwordInput) passwordInput.addEventListener('input', clearMessage);
     
     if (form) {
         form.addEventListener('submit', handleLogin);
     }
     
-    // Inicializar
+    // ============================================
+    // ESTILOS ADICIONALES PARA CAMPO EDITABLE
+    // ============================================
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        .editable-field {
+            background-color: #fff8e1 !important;
+            border-color: #ffc107 !important;
+        }
+        .editable-field option {
+            background-color: white;
+        }
+        .select-wrapper select:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .input-field select:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+    
+    loadAreas();
     setupTrigger();
     setupHideOnTriggerLeave();
     setupHideOnMouseLeaveDocument();
     
+    // Inicialmente deshabilitar campos de login
+    if (passwordInput) passwordInput.disabled = true;
+    if (loginBtn) loginBtn.disabled = true;
+    if (areaSelect) {
+        areaSelect.disabled = true;
+        areaSelect.classList.remove('editable-field');
+    }
+    
     // Efecto de focus en inputs
-    const inputs = document.querySelectorAll('.input-field input');
+    const inputs = document.querySelectorAll('.input-field input, .input-field select');
     inputs.forEach(input => {
         input.addEventListener('focus', () => {
             const field = input.closest('.input-field');
@@ -480,6 +739,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL - CORREGIDO', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
-    console.log('%c✅ Problema de foco en inputs resuelto', 'color: #4CAF50; font-size: 12px;');
+    console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
+    console.log('%c✅ Versión completa con áreas condicionales y efecto de revelado', 'color: #4CAF50; font-size: 12px;');
 });
