@@ -1,5 +1,5 @@
 // SISTEMA DE ACCESO INSTITUCIONAL - CON COMPORTAMIENTO CONDICIONAL Y EFECTO DE REVELADO
-// VERSIÓN COMPLETA CORREGIDA - ÁREAS EDITABLES PARA INNOVACIÓN Y DIRECCIÓN GENERAL
+// VERSIÓN COMPLETA CORREGIDA - CON MANEJO DE ERRORES ROBUSTO
 
 document.addEventListener('DOMContentLoaded', () => {
     // ============================================
@@ -35,8 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let debounceTimeout = null;
     
     // URLs de los endpoints
-    const VALIDATE_NOMINA_URL = '../../php/login/validate_nomina.php';
-    const LOGIN_URL = '../../php/login/login.php';
+    const VALIDATE_NOMINA_URL = 'php/login/validate_nomina.php';
+    const GET_AREAS_URL = 'php/login/get_areas.php';
+    const LOGIN_URL = 'php/login/login.php';
     
     // ============================================
     // FUNCIONES DEL EFECTO DE REVELADO
@@ -360,8 +361,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function loadAreas() {
         try {
-            const response = await fetch('php/login/get_areas.php');
-            const data = await response.json();
+            console.log('Cargando áreas...');
+            const response = await fetch(GET_AREAS_URL);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const textResponse = await response.text();
+            console.log('Respuesta raw de get_areas:', textResponse);
+            
+            let data;
+            try {
+                data = JSON.parse(textResponse);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                throw new Error('Respuesta inválida del servidor');
+            }
             
             if (data.success && data.areas && areaSelect) {
                 areaSelect.innerHTML = '<option value="">Seleccione un área</option>';
@@ -372,9 +388,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     option.textContent = area.area.replace(/_/g, ' ');
                     areaSelect.appendChild(option);
                 });
+                console.log('Áreas cargadas correctamente');
+            } else {
+                console.error('Error en respuesta de áreas:', data);
             }
         } catch (error) {
             console.error('Error cargando áreas:', error);
+            showMessage('Error al cargar las áreas', 'error');
         }
     }
     
@@ -397,7 +417,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ nomina: nomina })
             });
             
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const textResponse = await response.text();
+            console.log('Respuesta raw de validate_nomina:', textResponse);
+            
+            let data;
+            try {
+                data = JSON.parse(textResponse);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                throw new Error('Respuesta inválida del servidor');
+            }
+            
             console.log('Respuesta del servidor:', data);
             
             if (data.success && data.data && data.data.user) {
@@ -470,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loginBtn) loginBtn.disabled = true;
             
             showError('errorWorkerCode', 'Error de conexión al servidor');
-            showMessage('Error de conexión al servidor', 'error');
+            showMessage('Error de conexión al servidor. Verifica que los archivos PHP existan.', 'error');
             return null;
         } finally {
             if (nominaLoading) nominaLoading.style.display = 'none';
@@ -651,7 +685,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(loginData)
             });
             
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const textResponse = await response.text();
+            console.log('Respuesta raw de login:', textResponse);
+            
+            let data;
+            try {
+                data = JSON.parse(textResponse);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                throw new Error('Respuesta inválida del servidor');
+            }
+            
             console.log('Respuesta login:', data);
             clearLoadingMessage();
             
@@ -686,7 +734,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error en login:', error);
             setLoading(false);
             clearLoadingMessage();
-            showMessage('Error de conexión con el servidor', 'error');
+            showMessage('Error de conexión con el servidor. Verifica la ruta de los archivos PHP.', 'error');
         }
     }
     
@@ -758,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
-    console.log('%c✅ Versión completa corregida - workerCode como input principal', 'color: #4CAF50; font-size: 12px;');
+    console.log('%c✅ Versión completa con manejo de errores robusto', 'color: #4CAF50; font-size: 12px;');
     console.log('%c📝 Elementos encontrados:', 'color: #2196F3; font-size: 12px;');
     console.log('   - workerCode:', workerCodeInput);
     console.log('   - areaSelect:', areaSelect);
