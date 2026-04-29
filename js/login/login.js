@@ -1,818 +1,485 @@
-// js/login/login.js
-document.addEventListener('DOMContentLoaded', function() {
-    // ========== ELEMENTOS DEL DOM ==========
-    const loginForm = document.getElementById('loginForm');
-    const areaSelect = document.getElementById('area');
-    const userTypeSelect = document.getElementById('userType');
-    const workerCodeInput = document.getElementById('workerCode');
+// SISTEMA DE ACCESO INSTITUCIONAL - CON BASE DE DATOS
+// VERSIÓN CORREGIDA - PROBLEMA DE FOCO EN INPUTS RESUELTO
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Elementos DOM
+    const form = document.getElementById('loginForm');
+    const nominaInput = document.getElementById('nomina');
     const passwordInput = document.getElementById('password');
-    const togglePasswordBtns = document.querySelectorAll('.toggle-password');
     const loginBtn = document.getElementById('loginBtn');
-    const nominaLoading = document.getElementById('nominaLoading');
+    const messageContainer = document.getElementById('errorMessage');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    
+    // Elementos del efecto de revelado
+    const effectTrigger = document.getElementById('effectTriggerContainer');
+    const mainContainer = document.getElementById('mainContainer');
+    const effectImage = document.getElementById('effectImage');
 
-    // ========== VARIABLES GLOBALES ==========
-    let usuarioData = null;
-    let buscaTimeout = null;
-    let esUsuarioEspecial = false; // Variable para identificar si es el usuario especial
+    // URL del endpoint de login
+    const LOGIN_URL = 'php/login/login.php';
 
-    // ========== INICIALIZACIÓN ==========
-    setupPasswordToggle();
-    setupNominaSearch();
+    // Variables de control
+    let isLoginVisible = false;
+    let hideTimeout = null;
+    let isTouchDevice = false;
+    let triggerHideTimeout = null;
+    
+    // NUEVA VARIABLE: Para controlar si estamos haciendo clic dentro del formulario
+    let isClickInsideForm = false;
 
-    // ========== FUNCIÓN: Configurar toggle de contraseña ==========
-    function setupPasswordToggle() {
-        togglePasswordBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const passwordInput = this.closest('.input-with-icon').querySelector('input');
-                
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    this.classList.remove('fa-eye');
-                    this.classList.add('fa-eye-slash');
-                } else {
-                    passwordInput.type = 'password';
-                    this.classList.remove('fa-eye-slash');
-                    this.classList.add('fa-eye');
+    // Detectar dispositivo táctil
+    function detectTouchDevice() {
+        isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+        return isTouchDevice;
+    }
+
+    // Función para mostrar el login
+    function revealLogin() {
+        if (isLoginVisible) return;
+        
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+        }
+        
+        if (triggerHideTimeout) {
+            clearTimeout(triggerHideTimeout);
+            triggerHideTimeout = null;
+        }
+        
+        isLoginVisible = true;
+        
+        if (effectTrigger) {
+            effectTrigger.classList.remove('show-trigger');
+            effectTrigger.classList.add('hide-trigger');
+        }
+        
+        if (mainContainer) {
+            mainContainer.classList.remove('hiding');
+            mainContainer.classList.add('visible');
+        }
+        
+        setTimeout(() => {
+            if (nominaInput && isLoginVisible) {
+                nominaInput.focus();
+            }
+        }, 600);
+    }
+
+    // Función para ocultar el login
+    function hideLogin() {
+        if (!isLoginVisible) return;
+        
+        isLoginVisible = false;
+        
+        if (mainContainer) {
+            mainContainer.classList.remove('visible');
+            mainContainer.classList.add('hiding');
+        }
+        
+        if (effectTrigger) {
+            effectTrigger.classList.remove('hide-trigger');
+            effectTrigger.classList.add('show-trigger');
+            
+            setTimeout(() => {
+                if (effectTrigger) {
+                    effectTrigger.classList.remove('show-trigger');
                 }
-            });
+            }, 500);
+        }
+        
+        if (messageContainer) {
+            messageContainer.innerHTML = '';
+        }
+        
+        if (passwordInput) {
+            passwordInput.value = '';
+        }
+    }
+
+    // ============================================
+    // NUEVA ESTRATEGIA: Bloquear cierre cuando se interactúa con inputs
+    // ============================================
+    
+    // 1. Prevenir cualquier cierre cuando el mouse está DENTRO del formulario
+    if (mainContainer) {
+        mainContainer.addEventListener('mouseenter', () => {
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+            }
+            // Cancelar cualquier cierre pendiente del trigger
+            if (triggerHideTimeout) {
+                clearTimeout(triggerHideTimeout);
+                triggerHideTimeout = null;
+            }
         });
-    }
-
-    // ========== FUNCIÓN: Cargar áreas y roles para selects manuales ==========
-    async function cargarAreasYRoles() {
-        try {
-            const response = await fetch('php/login/get_areas_roles.php');
-            const data = await response.json();
-            
-            if (data.success) {
-                return { areas: data.areas, roles: data.roles };
-            } else {
-                console.error('Error al cargar áreas y roles');
-                return null;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            return null;
-        }
-    }
-
-    // ========== FUNCIÓN: Configurar selects manuales (editables) ==========
-    async function configurarSelectsManuales(usuario) {
-        // Cargar áreas y roles desde la base de datos
-        const datos = await cargarAreasYRoles();
         
-        if (datos) {
-            // Limpiar selects
-            areaSelect.innerHTML = '';
-            userTypeSelect.innerHTML = '';
-            
-            // Llenar select de áreas
-            datos.areas.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area.id;
-                option.textContent = area.area;
-                if (area.id == usuario.area_id) {
-                    option.selected = true;
-                }
-                areaSelect.appendChild(option);
-            });
-            
-            // Llenar select de roles
-            datos.roles.forEach(rol => {
-                const option = document.createElement('option');
-                option.value = rol.id;
-                option.textContent = rol.rol;
-                if (rol.id == usuario.rol_id) {
-                    option.selected = true;
-                }
-                userTypeSelect.appendChild(option);
-            });
-            
-            // Habilitar los selects para que sean editables
-            areaSelect.disabled = false;
-            userTypeSelect.disabled = false;
-        } else {
-            // Fallback: mostrar solo la opción del usuario
-            areaSelect.innerHTML = '';
-            userTypeSelect.innerHTML = '';
-            
-            const areaOption = document.createElement('option');
-            areaOption.value = usuario.area_id;
-            areaOption.textContent = usuario.area_nombre;
-            areaOption.selected = true;
-            areaSelect.appendChild(areaOption);
-            
-            const rolOption = document.createElement('option');
-            rolOption.value = usuario.rol_id;
-            rolOption.textContent = usuario.rol_nombre;
-            rolOption.selected = true;
-            userTypeSelect.appendChild(rolOption);
-            
-            // Habilitar los selects
-            areaSelect.disabled = false;
-            userTypeSelect.disabled = false;
-        }
-    }
-
-    // ========== FUNCIÓN: Configurar selects automáticos (no editables) ==========
-    function configurarSelectsAutomaticos(usuario) {
-        // Limpiar selects
-        areaSelect.innerHTML = '';
-        userTypeSelect.innerHTML = '';
-        
-        // Agregar opción con la información del usuario
-        const areaOption = document.createElement('option');
-        areaOption.value = usuario.area_id;
-        areaOption.textContent = usuario.area_nombre;
-        areaOption.selected = true;
-        areaSelect.appendChild(areaOption);
-        
-        const rolOption = document.createElement('option');
-        rolOption.value = usuario.rol_id;
-        rolOption.textContent = usuario.rol_nombre;
-        rolOption.selected = true;
-        userTypeSelect.appendChild(rolOption);
-        
-        // Deshabilitar los selects (no se pueden cambiar)
-        areaSelect.disabled = true;
-        userTypeSelect.disabled = true;
-    }
-
-    // ========== FUNCIÓN: Búsqueda automática de nómina ==========
-    function setupNominaSearch() {
-        workerCodeInput.addEventListener('input', function() {
-            // Limpiar timeout anterior
-            if (buscaTimeout) {
-                clearTimeout(buscaTimeout);
-            }
-            
-            // Obtener valor
-            let valor = this.value.trim();
-            
-            // Validar solo números
-            this.value = valor.replace(/[^0-9]/g, '');
-            valor = this.value;
-            
-            // Limpiar errores
-            clearFieldError('errorWorkerCode');
-            
-            // Si el campo está vacío, resetear todo
-            if (valor === '') {
-                resetFormAfterNomina();
-                return;
-            }
-            
-            // Si tiene al menos 4 dígitos, buscar
-            if (valor.length >= 4) {
-                // Mostrar indicador de carga
-                nominaLoading.style.display = 'inline-block';
+        mainContainer.addEventListener('mouseleave', () => {
+            // Solo ocultar si NO estamos sobre un input activo
+            // y si el mouse no está sobre algún elemento interactivo del formulario
+            if (isLoginVisible && !isTouchDevice) {
+                // Verificar si algún input tiene el foco
+                const activeElement = document.activeElement;
+                const isInputFocused = activeElement === nominaInput || activeElement === passwordInput;
                 
-                // Buscar después de 500ms (para no saturar)
-                buscaTimeout = setTimeout(() => {
-                    buscarUsuarioPorNomina(valor);
-                }, 500);
-            } else {
-                resetFormAfterNomina();
+                if (!isInputFocused) {
+                    hideTimeout = setTimeout(() => {
+                        hideLogin();
+                    }, 300);
+                }
             }
         });
     }
     
-    // ========== FUNCIÓN: Buscar usuario por nómina ==========
-    async function buscarUsuarioPorNomina(no_nomina) {
-        try {
-            const response = await fetch(`php/login/get_usuario.php?nomina=${encodeURIComponent(no_nomina)}`);
-            const data = await response.json();
+    // 2. Prevenir cierre cuando se hace clic en inputs o en el botón
+    const formElements = [nominaInput, passwordInput, loginBtn, togglePasswordBtn];
+    formElements.forEach(element => {
+        if (element) {
+            element.addEventListener('mousedown', (e) => {
+                // Evitar que el evento se propague al documento
+                e.stopPropagation();
+                // Marcar que estamos dentro del formulario
+                isClickInsideForm = true;
+            });
             
-            nominaLoading.style.display = 'none';
-            
-            if (data.success) {
-                // Usuario encontrado
-                usuarioData = data.usuario;
-                
-                // Verificar si es el usuario especial: área "innovacion_tecnologica" y rol "representante"
-                const areaEspecial = usuarioData.area_nombre && usuarioData.area_nombre.toUpperCase() === 'INNOVACION_TECNOLOGICA';
-                const rolEspecial = usuarioData.rol_nombre && usuarioData.rol_nombre.toUpperCase() === 'REPRESENTANTE';
-                esUsuarioEspecial = areaEspecial && rolEspecial;
-                
-                if (esUsuarioEspecial) {
-                    // Usuario especial: habilitar selects manuales
-                    await configurarSelectsManuales(usuarioData);
-                } else {
-                    // Usuario normal: autocompletar área y rol (no editables)
-                    configurarSelectsAutomaticos(usuarioData);
-                }
-                
-                // Habilitar campo de contraseña
-                passwordInput.disabled = false;
-                
-                // Limpiar error de contraseña si existe
-                clearFieldError('errorPassword');
-                
-                // Habilitar botón de login
-                loginBtn.disabled = false;
-                
-                // Enfocar en contraseña
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isClickInsideForm = true;
+                // Pequeño delay para resetear la bandera
                 setTimeout(() => {
-                    passwordInput.focus();
+                    isClickInsideForm = false;
                 }, 100);
-                
-            } else {
-                // Usuario no encontrado
-                showError('errorWorkerCode', data.message || 'Nómina no registrada');
-                resetFormAfterNomina();
-                usuarioData = null;
-                esUsuarioEspecial = false;
-            }
-            
-        } catch (error) {
-            console.error('Error al buscar usuario:', error);
-            nominaLoading.style.display = 'none';
-            showError('errorWorkerCode', 'Error de conexión con el servidor');
-            resetFormAfterNomina();
-            usuarioData = null;
-            esUsuarioEspecial = false;
-        }
-    }
-    
-    // ========== FUNCIÓN: Resetear formulario cuando no hay nómina ==========
-    function resetFormAfterNomina() {
-        // Resetear datos
-        usuarioData = null;
-        esUsuarioEspecial = false;
-        
-        // Limpiar selects
-        areaSelect.innerHTML = '<option value="">Ingrese primero su nómina</option>';
-        userTypeSelect.innerHTML = '<option value="">Ingrese primero su nómina</option>';
-        
-        // Deshabilitar campos
-        areaSelect.disabled = true;
-        userTypeSelect.disabled = true;
-        passwordInput.disabled = true;
-        loginBtn.disabled = true;
-        
-        // Limpiar campos
-        passwordInput.value = '';
-        
-        // Limpiar errores
-        clearFieldError('errorArea');
-        clearFieldError('errorUserType');
-        clearFieldError('errorPassword');
-    }
-    
-    // ========== FUNCIÓN: Reproducir audio de bienvenida con indicador ==========
-    function reproducirBienvenidaConIndicador(usuario, callback) {
-        // Crear overlay con indicador de carga circular
-        const overlay = document.createElement('div');
-        overlay.className = 'audio-loading-overlay';
-        overlay.innerHTML = `
-            <div class="audio-loading-container">
-                <div class="audio-spinner"></div>
-                <div class="audio-text">Bienvenido ${usuario.nombre}</div>
-                <div class="audio-subtext">Cargando Interfaz...</div>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-        
-        // Crear elemento de audio
-        const audio = new Audio('audios/bienvenido.mp3');
-        
-        // Configurar eventos del audio
-        audio.addEventListener('canplaythrough', function() {
-            console.log('✅ Audio cargado correctamente');
-        });
-        
-        audio.addEventListener('play', function() {
-            console.log('🔊 Reproduciendo audio de bienvenida');
-        });
-        
-        audio.addEventListener('ended', function() {
-            console.log('✅ Audio finalizado');
-            // Eliminar el overlay
-            if (overlay && overlay.parentNode) {
-                overlay.remove();
-            }
-            // Ejecutar callback
-            if (callback) callback();
-        });
-        
-        audio.addEventListener('error', function(e) {
-            console.error('❌ Error al reproducir audio:', e);
-            // Eliminar el overlay
-            if (overlay && overlay.parentNode) {
-                overlay.remove();
-            }
-            // Si hay error, igual ejecutar callback
-            if (callback) callback();
-        });
-        
-        // Intentar reproducir
-        audio.play().catch(function(error) {
-            console.error('❌ Error al reproducir audio:', error);
-            // Eliminar el overlay
-            if (overlay && overlay.parentNode) {
-                overlay.remove();
-            }
-            // Ejecutar callback aunque haya error
-            if (callback) callback();
-        });
-    }
-    
-    // ========== EVENTO: Envío del formulario ==========
-    loginForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Validar que tengamos datos del usuario
-        if (!usuarioData) {
-            showError('errorWorkerCode', 'Primero ingrese una nómina válida');
-            workerCodeInput.focus();
-            return;
-        }
-        
-        // Validar contraseña
-        if (!passwordInput.value.trim()) {
-            showError('errorPassword', 'Ingrese su contraseña');
-            passwordInput.focus();
-            return;
-        }
-        
-        // Validar que área y rol estén seleccionados (para usuario especial)
-        if (esUsuarioEspecial) {
-            if (!areaSelect.value || !userTypeSelect.value) {
-                showError('errorArea', 'Seleccione un área');
-                showError('errorUserType', 'Seleccione un rol');
-                return;
-            }
-        }
-        
-        // Deshabilitar botón y mostrar carga
-        setLoginButtonLoading(true);
-        
-        try {
-            // Preparar datos para login
-            const loginData = {
-                no_nomina: workerCodeInput.value.trim(),
-                password: passwordInput.value.trim(),
-                area_id: parseInt(areaSelect.value),
-                rol_id: parseInt(userTypeSelect.value)
-            };
-            
-            console.log('📤 Enviando datos:', loginData);
-            
-            // Enviar petición de login
-            const response = await fetch('php/login/login.php', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(loginData)
             });
             
-            const data = await response.json();
-            console.log('📥 Datos recibidos:', data);
-            
-            if (data.success) {
-                if (data.es_primer_inicio) {
-                    // Primer inicio: mostrar modal de cambio de contraseña
-                    showChangePasswordModal(data.usuario, async function(success) {
-                        if (success) {
-                            // Reproducir audio y redirigir después del cambio exitoso
-                            reproducirBienvenidaConIndicador(data.usuario, function() {
-                                // Guardar datos en localStorage
-                                localStorage.setItem('usuario', JSON.stringify(data.usuario));
-                                localStorage.setItem('token', data.token);
-                                localStorage.setItem('login_timestamp', Date.now().toString());
-                                redirectUser(data.usuario);
-                            });
-                        } else {
-                            setLoginButtonLoading(false);
+            // Para inputs, también asegurar el focus
+            if (element.tagName === 'INPUT') {
+                element.addEventListener('focus', (e) => {
+                    e.stopPropagation();
+                    // Asegurar que el login siga visible
+                    if (isLoginVisible) {
+                        // Cancelar cualquier cierre pendiente
+                        if (hideTimeout) {
+                            clearTimeout(hideTimeout);
+                            hideTimeout = null;
                         }
-                    });
-                } else {
-                    // No es primer inicio: guardar datos, reproducir audio y redirigir
-                    localStorage.setItem('usuario', JSON.stringify(data.usuario));
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('login_timestamp', Date.now().toString());
-                    
-                    reproducirBienvenidaConIndicador(data.usuario, function() {
-                        redirectUser(data.usuario);
-                    });
-                }
-            } else {
-                // Mostrar error
-                showError('errorPassword', data.message || 'Credenciales incorrectas');
-                setLoginButtonLoading(false);
-                passwordInput.focus();
-                
-                // Animación de error
-                loginForm.classList.add('shake');
-                setTimeout(() => loginForm.classList.remove('shake'), 500);
+                    }
+                });
             }
-            
-        } catch (error) {
-            console.error('❌ Error en login:', error);
-            showError('errorPassword', 'Error de conexión con el servidor');
-            setLoginButtonLoading(false);
         }
     });
     
-    // ========== FUNCIÓN: Redirigir según el área ==========
-    function redirectUser(usuario) {
-        // Efecto de transición
-        document.body.style.opacity = '0.5';
-        document.body.style.transform = 'scale(0.95)';
-        document.body.style.transition = 'all 0.5s ease';
+    // 3. Control de cierre por clic fuera (VERSIÓN SUAVE)
+    document.addEventListener('mousedown', (e) => {
+        if (!isLoginVisible) return;
         
-        // Obtener valores del área y rol REALES del usuario
-        const areaReal = (usuario.area_nombre || '').toString().trim().toUpperCase();
-        const rolReal = (usuario.rol_nombre || '').toString().trim().toUpperCase();
+        // Verificar si el clic fue dentro del mainContainer
+        const isClickInsideMain = mainContainer && mainContainer.contains(e.target);
+        const isClickOnTrigger = effectTrigger && effectTrigger.contains(e.target);
         
-        console.log('🔍 Área REAL:', areaReal);
-        console.log('🔍 Rol REAL:', rolReal);
-        
-        let urlDestino = '';
-        
-        // Redirigir según el área y rol REALES
-        if (areaReal === 'DIRECCION_GENERAL') {
-            urlDestino = 'interfaces_areas/direccion_general/direccion_general.html';
-            console.log('✅ Redirigiendo a Dirección General');
-        }
-        else if (areaReal === 'INNOVACION_TECNOLOGICA') {
-            if (rolReal === 'REPRESENTANTE') {
-                urlDestino = 'interfaces_areas/innovacion_tecnologica/representante/representante.html';
-                console.log('✅ Redirigiendo a Innovación - Representante');
-            } else {
-                urlDestino = 'interfaces_areas/innovacion_tecnologica/colaboradores/colaboradores.html';
-                console.log('✅ Redirigiendo a Innovación - Colaborador');
-            }
-        }
-        else if (areaReal === 'ATENCION_A_USUARIOS') {
-            if (rolReal === 'REPRESENTANTE') {
-                urlDestino = 'interfaces_areas/atencion_a_usuarios/representante/representante.html';
-                console.log('✅ Redirigiendo a Atención - Representante');
-            } else {
-                urlDestino = 'interfaces_areas/atencion_a_usuarios/colaboradores/colaboradores.html';
-                console.log('✅ Redirigiendo a Atención - Colaborador');
-            }
-        }
-        else {
-            console.error('❌ Área no reconocida:', areaReal);
-            
-            // Mostrar error y no redirigir
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de redirección',
-                text: `Área no reconocida: ${areaReal}`,
-                confirmButtonColor: '#691a30'
-            });
-            
-            document.body.style.opacity = '1';
-            document.body.style.transform = 'scale(1)';
+        // Si estamos dentro del formulario o trigger, NO hacer nada
+        if (isClickInsideMain || isClickOnTrigger) {
             return;
         }
         
-        console.log('🔄 Redirigiendo a:', urlDestino);
+        // Si el clic fue fuera, ocultar el login
+        hideLogin();
+    });
+
+    // Función para manejar el trigger (hover/click)
+    function setupTrigger() {
+        if (!effectTrigger) return;
+        
+        detectTouchDevice();
+        
+        if (isTouchDevice) {
+            effectTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                revealLogin();
+            });
+            
+            if (effectImage) {
+                effectImage.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    revealLogin();
+                });
+            }
+        } else {
+            effectTrigger.addEventListener('mouseenter', revealLogin);
+        }
+    }
+
+    // Función para manejar cierre al salir del trigger
+    function setupHideOnTriggerLeave() {
+        if (!effectTrigger) return;
+        
+        effectTrigger.addEventListener('mouseleave', () => {
+            if (!isLoginVisible) return;
+            
+            // Verificar si el mouse está dentro del mainContainer o si algún input tiene foco
+            const isMouseOverMain = mainContainer && mainContainer.matches(':hover');
+            const activeElement = document.activeElement;
+            const isInputFocused = activeElement === nominaInput || activeElement === passwordInput;
+            
+            if (!isMouseOverMain && !isInputFocused && !isTouchDevice) {
+                triggerHideTimeout = setTimeout(() => {
+                    hideLogin();
+                }, 300);
+            }
+        });
+        
+        effectTrigger.addEventListener('mouseenter', () => {
+            if (triggerHideTimeout) {
+                clearTimeout(triggerHideTimeout);
+                triggerHideTimeout = null;
+            }
+        });
+    }
+
+    // Función para manejar cierre al salir del documento
+    function setupHideOnMouseLeaveDocument() {
+        document.addEventListener('mouseleave', () => {
+            if (isLoginVisible && !isTouchDevice) {
+                hideLogin();
+            }
+        });
+    }
+
+    // Mostrar mensajes
+    function showMessage(text, type = 'error') {
+        if (!messageContainer) return;
+        
+        messageContainer.innerHTML = '';
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        
+        let displayText = text;
+        
+        if (type === 'success') {
+            if (text.includes('conectado') || text.includes('acceso') || text.includes('bienvenido')) {
+                displayText = '✓ Acceso concedido. Redirigiendo...';
+            }
+        } else if (type === 'error') {
+            if (text.includes('nómina') || text.includes('Identificador')) {
+                displayText = '⚠️ ' + text.replace('❌', '').trim();
+            } else if (text.includes('contraseña')) {
+                displayText = '🔒 ' + text.replace('❌', '').trim();
+            } else if (text.includes('Credenciales')) {
+                displayText = '❌ Error en credenciales';
+            } else {
+                displayText = '❌ ' + text;
+            }
+        }
+        
+        messageDiv.textContent = displayText;
+        messageContainer.appendChild(messageDiv);
+        
+        if (type === 'error') {
+            const card = document.querySelector('.glass-card');
+            if (card) {
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 400);
+            }
+        }
         
         setTimeout(() => {
-            window.location.href = urlDestino;
-        }, 500);
+            if (messageContainer.firstChild) {
+                const msg = messageContainer.firstChild;
+                msg.classList.add('fade-out');
+                setTimeout(() => {
+                    if (messageContainer.firstChild === msg) {
+                        messageContainer.innerHTML = '';
+                    }
+                }, 300);
+            }
+        }, 4000);
+    }
+
+    function showLoadingMessage(text = 'Verificando credenciales...') {
+        if (!messageContainer) return;
+        messageContainer.innerHTML = '';
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'loading-message';
+        loadingDiv.textContent = text;
+        messageContainer.appendChild(loadingDiv);
+        return loadingDiv;
+    }
+
+    function clearLoadingMessage() {
+        if (!messageContainer) return;
+        if (messageContainer.firstChild && messageContainer.firstChild.classList && messageContainer.firstChild.classList.contains('loading-message')) {
+            messageContainer.innerHTML = '';
+        }
+    }
+
+    function clearMessage() {
+        if (messageContainer && messageContainer.firstChild) {
+            messageContainer.innerHTML = '';
+        }
     }
     
-    // ========== FUNCIÓN: Mostrar modal de cambio de contraseña ==========
-    function showChangePasswordModal(userData, callback) {
-        // Crear el modal
-        const modal = document.createElement('div');
-        modal.className = 'change-password-modal';
-        
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h2>
-                    <i class="fas fa-key"></i>
-                    CAMBIAR CONTRASEÑA
-                </h2>
-                
-                <div class="password-grid">
-                    <div class="form-group">
-                        <label>
-                            <i class="fas fa-lock"></i>
-                            NUEVA CONTRASEÑA
-                        </label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-key"></i>
-                            <input type="password" 
-                                   id="newPassword" 
-                                   placeholder="INGRESE NUEVA CONTRASEÑA">
-                            <i class="fas fa-eye toggle-new-password"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <i class="fas fa-check-circle"></i>
-                            CONFIRMAR CONTRASEÑA
-                        </label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" 
-                                   id="confirmPassword" 
-                                   placeholder="CONFIRME LA CONTRASEÑA">
-                            <i class="fas fa-eye toggle-confirm-password"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="validation-rules">
-                    <p>
-                        <i class="fas fa-shield-alt"></i>
-                        LA CONTRASEÑA DEBE CUMPLIR:
-                    </p>
-                    
-                    <div class="rules-grid">
-                        <div id="rule-length" class="rule-item">
-                            <i class="fas fa-circle"></i>
-                            <span>MÍNIMO 8 CARACTERES</span>
-                        </div>
-                        
-                        <div id="rule-uppercase" class="rule-item">
-                            <i class="fas fa-circle"></i>
-                            <span>1 MAYÚSCULA</span>
-                        </div>
-                        
-                        <div id="rule-special" class="rule-item">
-                            <i class="fas fa-circle"></i>
-                            <span>1 CARÁCTER ESPECIAL</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="passwordError" class="password-error"></div>
-                
-                <div class="modal-buttons">
-                    <button id="cancelChange" class="modal-btn modal-btn-cancel">
-                        <i class="fas fa-times"></i> CANCELAR
-                    </button>
-                    <button id="savePassword" class="modal-btn modal-btn-save" disabled>
-                        <i class="fas fa-save"></i> GUARDAR
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // ========== REFERENCIAS ==========
-        const newPasswordInput = document.getElementById('newPassword');
-        const confirmPasswordInput = document.getElementById('confirmPassword');
-        const toggleNewPassword = document.querySelector('.toggle-new-password');
-        const toggleConfirmPassword = document.querySelector('.toggle-confirm-password');
-        const passwordError = document.getElementById('passwordError');
-        const savePasswordBtn = document.getElementById('savePassword');
-        const cancelChangeBtn = document.getElementById('cancelChange');
-        
-        const ruleLength = document.getElementById('rule-length');
-        const ruleUppercase = document.getElementById('rule-uppercase');
-        const ruleSpecial = document.getElementById('rule-special');
-        
-        // ========== FUNCIÓN: Validar contraseña ==========
-        function validatePassword(password) {
-            const rules = {
-                length: password.length >= 8,
-                uppercase: /[A-Z]/.test(password),
-                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-            };
-            return rules;
-        }
-        
-        // ========== FUNCIÓN: Actualizar indicadores ==========
-        function updateValidationIndicators(password) {
-            const rules = validatePassword(password);
+    if (nominaInput) nominaInput.addEventListener('input', clearMessage);
+    if (passwordInput) passwordInput.addEventListener('input', clearMessage);
+
+    // Toggle mostrar/ocultar contraseña
+    if (togglePasswordBtn && passwordInput) {
+        togglePasswordBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
             
-            const lengthIcon = ruleLength.querySelector('i');
-            if (rules.length) {
-                ruleLength.style.borderLeftColor = '#2ecc71';
-                lengthIcon.style.color = '#2ecc71';
-            } else {
-                ruleLength.style.borderLeftColor = '#e74c3c';
-                lengthIcon.style.color = '#e74c3c';
-            }
-            
-            const upperIcon = ruleUppercase.querySelector('i');
-            if (rules.uppercase) {
-                ruleUppercase.style.borderLeftColor = '#2ecc71';
-                upperIcon.style.color = '#2ecc71';
-            } else {
-                ruleUppercase.style.borderLeftColor = '#e74c3c';
-                upperIcon.style.color = '#e74c3c';
-            }
-            
-            const specialIcon = ruleSpecial.querySelector('i');
-            if (rules.special) {
-                ruleSpecial.style.borderLeftColor = '#2ecc71';
-                specialIcon.style.color = '#2ecc71';
-            } else {
-                ruleSpecial.style.borderLeftColor = '#e74c3c';
-                specialIcon.style.color = '#e74c3c';
-            }
-            
-            return rules;
-        }
-        
-        // ========== FUNCIÓN: Verificar estado del botón ==========
-        function checkFormValidity() {
-            const newPass = newPasswordInput.value;
-            const confirmPass = confirmPasswordInput.value;
-            const rules = validatePassword(newPass);
-            
-            const allRulesMet = rules.length && rules.uppercase && rules.special;
-            const passwordsMatch = newPass === confirmPass && newPass !== '' && confirmPass !== '';
-            
-            if (allRulesMet && passwordsMatch) {
-                savePasswordBtn.disabled = false;
-                savePasswordBtn.style.opacity = '1';
-                savePasswordBtn.style.pointerEvents = 'auto';
-                savePasswordBtn.style.cursor = 'pointer';
-                passwordError.style.display = 'none';
-                return true;
-            } else {
-                savePasswordBtn.disabled = true;
-                savePasswordBtn.style.opacity = '0.5';
-                savePasswordBtn.style.pointerEvents = 'none';
-                
-                if (!allRulesMet && newPass !== '') {
-                    passwordError.style.display = 'block';
-                    passwordError.textContent = 'LA CONTRASEÑA NO CUMPLE CON TODAS LAS REGLAS DE SEGURIDAD';
-                } else if (newPass !== '' && confirmPass !== '' && newPass !== confirmPass) {
-                    passwordError.style.display = 'block';
-                    passwordError.textContent = 'LAS CONTRASEÑAS NO COINCIDEN';
+            const svg = togglePasswordBtn.querySelector('svg');
+            if (svg) {
+                if (type === 'text') {
+                    svg.innerHTML = `
+                        <path d="M12 5C5 5 2 12 2 12C2 12 5 19 12 19C19 19 22 12 22 12C22 12 19 5 12 5Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="1.5"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    `;
                 } else {
-                    passwordError.style.display = 'none';
+                    svg.innerHTML = `
+                        <path d="M12 5C5 5 2 12 2 12C2 12 5 19 12 19C19 19 22 12 22 12C22 12 19 5 12 5Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    `;
                 }
-                return false;
+            }
+        });
+    }
+
+    function validateNomina(nomina) {
+        const regex = /^\d{4,}$/;
+        return regex.test(nomina);
+    }
+
+    function validatePassword(password) {
+        return password.length >= 4;
+    }
+
+    function setLoading(isLoading) {
+        if (loginBtn) {
+            if (isLoading) {
+                loginBtn.classList.add('loading');
+                const btnText = loginBtn.querySelector('.btn-text');
+                if (btnText) btnText.innerHTML = 'Verificando acceso';
+                loginBtn.disabled = true;
+            } else {
+                loginBtn.classList.remove('loading');
+                const btnText = loginBtn.querySelector('.btn-text');
+                if (btnText) btnText.innerHTML = 'Iniciar Sesión';
+                loginBtn.disabled = false;
             }
         }
+    }
+
+    async function handleLogin(event) {
+        event.preventDefault();
+        event.stopPropagation();
         
-        // ========== TOGGLES ==========
-        if (toggleNewPassword) {
-            toggleNewPassword.addEventListener('click', function() {
-                const type = newPasswordInput.type === 'password' ? 'text' : 'password';
-                newPasswordInput.type = type;
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
-            });
+        const nomina = nominaInput ? nominaInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value : '';
+        
+        if (!nomina) {
+            showMessage('Ingrese su número de nómina', 'error');
+            if (nominaInput) nominaInput.focus();
+            return;
         }
         
-        if (toggleConfirmPassword) {
-            toggleConfirmPassword.addEventListener('click', function() {
-                const type = confirmPasswordInput.type === 'password' ? 'text' : 'password';
-                confirmPasswordInput.type = type;
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
-            });
+        if (!password) {
+            showMessage('Ingrese su contraseña', 'error');
+            if (passwordInput) passwordInput.focus();
+            return;
         }
         
-        // ========== EVENTOS ==========
-        newPasswordInput.addEventListener('input', function() {
-            updateValidationIndicators(this.value);
-            checkFormValidity();
-        });
+        if (!validateNomina(nomina)) {
+            showMessage('La nómina debe contener solo números (mínimo 4 dígitos)', 'error');
+            if (nominaInput) nominaInput.focus();
+            return;
+        }
         
-        confirmPasswordInput.addEventListener('input', function() {
-            checkFormValidity();
-        });
+        if (!validatePassword(password)) {
+            showMessage('La contraseña debe tener al menos 4 caracteres', 'error');
+            if (passwordInput) passwordInput.focus();
+            return;
+        }
         
-        // ========== BOTÓN GUARDAR ==========
-        savePasswordBtn.addEventListener('click', async function() {
-            const newPassword = newPasswordInput.value;
+        setLoading(true);
+        showLoadingMessage('🔍 Verificando credenciales...');
+        
+        try {
+            const response = await fetch(LOGIN_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nomina: nomina,
+                    password: password
+                })
+            });
             
-            savePasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';
-            savePasswordBtn.disabled = true;
+            const data = await response.json();
+            clearLoadingMessage();
             
-            try {
-                const response = await fetch('php/cambio_contraseña/change_password.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        no_nomina: userData.no_nomina,
-                        new_password: newPassword
-                    })
-                });
+            if (data.success) {
+                showMessage(`✅ Acceso concedido`, 'success');
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Limpiar localStorage para asegurar que no hay sesiones previas
-                    localStorage.clear();
+                if (data.data && data.data.user) {
+                    sessionStorage.setItem('usuario', JSON.stringify(data.data.user));
+                    const esPrimerInicio = data.data.user.primer_inicio === true;
                     
-                    await Swal.fire({
-                        icon: 'success',
-                        title: '¡CONTRASEÑA ACTUALIZADA!',
-                        text: 'SU CONTRASEÑA HA SIDO CAMBIADA EXITOSAMENTE. POR FAVOR, INICIE SESIÓN NUEVAMENTE.',
-                        timer: 3000,
-                        showConfirmButton: true,
-                        confirmButtonText: 'ACEPTAR',
-                        background: '#ffffff',
-                        color: '#691a30'
-                    });
-                    
-                    // Cerrar modal
-                    modal.remove();
-                    
-                    // Ejecutar callback con éxito
-                    callback(true);
-                    
+                    setTimeout(() => {
+                        if (esPrimerInicio) {
+                            window.location.href = 'html/cambio_contraseña/cambio_contraseña.html';
+                        } else {
+                            window.location.href = data.data.redirect || 'dashboard.html';
+                        }
+                    }, 1500);
                 } else {
-                    throw new Error(data.message || 'ERROR AL CAMBIAR CONTRASEÑA');
+                    setTimeout(() => {
+                        window.location.href = data.data.redirect || 'dashboard.html';
+                    }, 1500);
                 }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'ERROR',
-                    text: 'NO SE PUDO CAMBIAR LA CONTRASEÑA. INTENTE NUEVAMENTE.',
-                    confirmButtonColor: '#691a30'
-                });
-                
-                savePasswordBtn.innerHTML = '<i class="fas fa-save"></i> GUARDAR';
-                savePasswordBtn.disabled = false;
-                checkFormValidity();
+            } else {
+                setLoading(false);
+                showMessage('Error en credenciales', 'error');
+                if (passwordInput) {
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
             }
+        } catch (error) {
+            console.error('Error:', error);
+            setLoading(false);
+            clearLoadingMessage();
+            showMessage('Error en credenciales', 'error');
+        }
+    }
+    
+    if (form) {
+        form.addEventListener('submit', handleLogin);
+    }
+    
+    // Inicializar
+    setupTrigger();
+    setupHideOnTriggerLeave();
+    setupHideOnMouseLeaveDocument();
+    
+    // Efecto de focus en inputs
+    const inputs = document.querySelectorAll('.input-field input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            const field = input.closest('.input-field');
+            if (field) field.style.transform = 'scale(1.01)';
         });
         
-        // ========== BOTÓN CANCELAR ==========
-        cancelChangeBtn.addEventListener('click', async function() {
-            modal.remove();
-            await Swal.fire({
-                icon: 'warning',
-                title: 'CAMBIO DE CONTRASEÑA REQUERIDO',
-                text: 'ES OBLIGATORIO CAMBIAR LA CONTRASEÑA PARA CONTINUAR',
-                confirmButtonColor: '#691a30',
-                confirmButtonText: 'ACEPTAR'
-            });
-            callback(false);
+        input.addEventListener('blur', () => {
+            const field = input.closest('.input-field');
+            if (field) field.style.transform = 'scale(1)';
         });
-        
-        // ========== CERRAR AL HACER CLIC FUERA ==========
-        modal.addEventListener('click', async function(e) {
-            if (e.target === modal) {
-                modal.remove();
-                await Swal.fire({
-                    icon: 'warning',
-                    title: 'CAMBIO DE CONTRASEÑA REQUERIDO',
-                    text: 'ES OBLIGATORIO CAMBIAR LA CONTRASEÑA PARA CONTINUAR',
-                    confirmButtonColor: '#691a30',
-                    confirmButtonText: 'ACEPTAR'
-                });
-                callback(false);
-            }
-        });
-    }
+    });
     
-    // ========== FUNCIONES AUXILIARES ==========
-    function setLoginButtonLoading(isLoading) {
-        if (isLoading) {
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> VERIFICANDO CREDENCIALES...';
-        } else {
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>INGRESAR AL SISTEMA</span>';
-        }
-    }
-    
-    function showError(elementId, message) {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.classList.add('show');
-            
-            const field = getFieldFromErrorId(elementId);
-            if (field) {
-                field.style.borderColor = '#e74c3c';
-                field.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.1)';
-            }
-        }
-    }
-    
-    function clearFieldError(errorId) {
-        const errorElement = document.getElementById(errorId);
-        if (errorElement) {
-            errorElement.classList.remove('show');
-            errorElement.textContent = '';
-            
-            const field = getFieldFromErrorId(errorId);
-            if (field) {
-                field.style.borderColor = '';
-                field.style.boxShadow = '';
-            }
-        }
-    }
-    
-    function getFieldFromErrorId(errorId) {
-        switch(errorId) {
-            case 'errorArea': return areaSelect;
-            case 'errorUserType': return userTypeSelect;
-            case 'errorWorkerCode': return workerCodeInput;
-            case 'errorPassword': return passwordInput;
-            default: return null;
-        }
-    }
+    console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL - CORREGIDO', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
+    console.log('%c✅ Problema de foco en inputs resuelto', 'color: #4CAF50; font-size: 12px;');
 });
