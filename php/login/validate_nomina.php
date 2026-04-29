@@ -46,6 +46,11 @@ class ValidateNominaHandler {
             
             if ($stmt->rowCount() > 0) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Determinar si el usuario puede cambiar de área 
+                $areasPermitidasCambio = ['INNOVACION_TECNOLOGICA', 'DIRECCION_GENERAL'];
+                $puedeCambiarArea = in_array($user['area_nombre'], $areasPermitidasCambio);
+                
                 $this->sendResponse(true, "Usuario encontrado", [
                     'user' => [
                         'id' => $user['id'],
@@ -57,7 +62,8 @@ class ValidateNominaHandler {
                         'area_nombre' => $user['area_nombre'],
                         'rol_id' => $user['rol_id'],
                         'rol_nombre' => $user['rol_nombre'],
-                        'numero_inicio' => $user['numero_inicio']
+                        'numero_inicio' => $user['numero_inicio'],
+                        'puede_cambiar_area' => $puedeCambiarArea
                     ]
                 ]);
             } else {
@@ -79,7 +85,6 @@ class ValidateNominaHandler {
     }
 }
 
-// Procesar la solicitud POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     $nomina = isset($input['nomina']) ? trim($input['nomina']) : '';

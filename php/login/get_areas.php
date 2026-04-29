@@ -1,13 +1,13 @@
 <?php
-// php/login/validate_nomina.php
+// php/login/get_areas.php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../conexion/conexion.php';
 
-class ValidateNominaHandler {
+class GetAreasHandler {
     private $conn;
     
     public function __construct() {
@@ -18,60 +18,35 @@ class ValidateNominaHandler {
         }
     }
     
-    public function validate($nomina) {
-        if (empty($nomina)) {
-            $this->sendResponse(false, "Nómina requerida");
-        }
-        
+    /**
+     * Obtener áreas (puede ser todas o filtradas por usuario)
+     */
+    public function getAreas($usuarioId = null) {
         try {
-            $query = "SELECT 
-                        u.id, 
-                        u.nombre, 
-                        u.apellido_paterno, 
-                        u.apellido_materno,
-                        u.no_nomina,
-                        u.area_id,
-                        a.area as area_nombre,
-                        u.rol_id,
-                        r.rol as rol_nombre,
-                        u.numero_inicio
-                      FROM usuarios_internos u
-                      JOIN areas a ON u.area_id = a.id
-                      JOIN roles r ON u.rol_id = r.id
-                      WHERE u.no_nomina = :nomina";
-            
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':nomina', $nomina);
-            $stmt->execute();
-            
-            if ($stmt->rowCount() > 0) {
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Si se proporciona un usuario, obtener SOLO el área a la que pertenece
+            if ($usuarioId) {
+                $query = "SELECT a.id, a.area 
+                          FROM areas a
+                          JOIN usuarios_internos u ON u.area_id = a.id
+                          WHERE u.id = :usuario_id";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':usuario_id', $usuarioId);
+                $stmt->execute();
                 
-                // Determinar si el usuario puede cambiar de área 
-                // (solo para INNOVACION_TECNOLOGICA y DIRECCION_GENERAL)
-                $areasPermitidasCambio = ['INNOVACION_TECNOLOGICA', 'DIRECCION_GENERAL'];
-                $puedeCambiarArea = in_array($user['area_nombre'], $areasPermitidasCambio);
+                $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $this->sendResponse(true, "Área del usuario obtenida", ['areas' => $areas]);
+            } 
+            // Si no hay usuario, obtener TODAS las áreas (para el selector)
+            else {
+                $query = "SELECT id, area FROM areas ORDER BY area";
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute();
                 
-                $this->sendResponse(true, "Usuario encontrado", [
-                    'user' => [
-                        'id' => $user['id'],
-                        'nombre' => $user['nombre'],
-                        'apellido_paterno' => $user['apellido_paterno'],
-                        'apellido_materno' => $user['apellido_materno'],
-                        'no_nomina' => $user['no_nomina'],
-                        'area_id' => $user['area_id'],
-                        'area_nombre' => $user['area_nombre'],
-                        'rol_id' => $user['rol_id'],
-                        'rol_nombre' => $user['rol_nombre'],
-                        'numero_inicio' => $user['numero_inicio'],
-                        'puede_cambiar_area' => $puedeCambiarArea
-                    ]
-                ]);
-            } else {
-                $this->sendResponse(false, "Nómina no encontrada");
+                $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $this->sendResponse(true, "Todas las áreas obtenidas", ['areas' => $areas]);
             }
         } catch (PDOException $e) {
-            error_log("Error en validate_nomina: " . $e->getMessage());
+            error_log("Error en get_areas: " . $e->getMessage());
             $this->sendResponse(false, "Error interno del servidor");
         }
     }
@@ -86,12 +61,23 @@ class ValidateNominaHandler {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $nomina = isset($input['nomina']) ? trim($input['nomina']) : '';
+// Procesar la solicitud
+if ($_SERVER['REQUEST_METHOD'] === 'GET' || $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = [];
     
-    $handler = new ValidateNominaHandler();
-    $handler->validate($nomina);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (!$input) {
+            $input = $_POST;
+        }
+    } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $input = $_GET;
+    }
+    
+    $usuarioId = isset($input['usuario_id']) ? (int)$input['usuario_id'] : null;
+    
+    $handler = new GetAreasHandler();
+    $handler->getAreas($usuarioId);
 } else {
     header('HTTP/1.1 405 Method Not Allowed');
     echo json_encode(['success' => false, 'message' => 'Método no permitido']);

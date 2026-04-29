@@ -1,4 +1,4 @@
-// SISTEMA DE ACCESO INSTITUCIONAL - CON EFECTO DE REVELADO Y REDIRECCIÓN POR ÁREA
+// SISTEMA DE ACCESO INSTITUCIONAL
 
 document.addEventListener('DOMContentLoaded', () => {
     // ============================================
@@ -8,15 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const workerCodeInput = document.getElementById('workerCode');
     const passwordInput = document.getElementById('password');
     const loginBtn = document.getElementById('loginBtn');
-    const messageContainer = document.getElementById('errorMessage');
     const togglePasswordBtn = document.querySelector('.toggle-password');
     const areaSelectorGroup = document.getElementById('areaSelectorGroup');
     const areaSelect = document.getElementById('areaSelect');
-    
-    // Elementos del efecto de revelado
-    const effectTrigger = document.getElementById('effectTriggerContainer');
-    const mainContainer = document.getElementById('mainContainer');
-    const effectImage = document.getElementById('effectImage');
     
     // Elementos de carga
     const nominaLoading = document.getElementById('nominaLoading');
@@ -25,18 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // VARIABLES DE CONTROL
     // ============================================
     let currentUserData = null;
-    let isLoginVisible = false;
-    let hideTimeout = null;
-    let isTouchDevice = false;
-    let triggerHideTimeout = null;
-    let isClickInsideForm = false;
     let debounceTimeout = null;
-    let allAreas = []; // Almacenar todas las áreas disponibles
+    let allAreas = [];
     
     // URLs de los endpoints
     const VALIDATE_NOMINA_URL = 'php/login/validate_nomina.php';
     const LOGIN_URL = 'php/login/login.php';
     const GET_AREAS_URL = 'php/login/get_areas.php';
+    const GET_ALL_AREAS_URL = 'php/login/get_all_areas.php';
     
     // ============================================
     // MAPEO DE ÁREAS A URLs DE REDIRECCIÓN
@@ -49,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'USER_TESTING': '/proyect_opda/html/user_testing/user_testing.html'
     };
     
-    // URL por defecto si el área no está mapeada
     const DEFAULT_REDIRECT = '/proyect_opda/dashboard.html';
     
     function getRedirectUrlByArea(areaNombre) {
@@ -65,17 +54,52 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(GET_AREAS_URL);
             const data = await response.json();
             
-            if (data.success && data.areas) {
+            console.log('Respuesta de get_areas:', data);
+            
+            if (data.success && data.data && data.data.areas) {
+                allAreas = data.data.areas;
+                populateAreaSelect(allAreas);
+                return true;
+            } 
+            else if (data.success && data.areas) {
                 allAreas = data.areas;
                 populateAreaSelect(allAreas);
                 return true;
-            } else {
+            }
+            else {
                 console.error('Error cargando áreas:', data.message);
+                if (areaSelect) {
+                    areaSelect.innerHTML = '<option value="">Error al cargar áreas</option>';
+                }
                 return false;
             }
         } catch (error) {
             console.error('Error fetching areas:', error);
+            if (areaSelect) {
+                areaSelect.innerHTML = '<option value="">Error de conexión</option>';
+            }
             return false;
+        }
+    }
+    
+    async function loadAllAreas() {
+        try {
+            const response = await fetch(GET_ALL_AREAS_URL);
+            const data = await response.json();
+            
+            console.log('Respuesta de get_all_areas:', data);
+            
+            if (data.success && data.data && data.data.areas) {
+                return data.data.areas;
+            } else if (data.success && data.areas) {
+                return data.areas;
+            } else {
+                console.error('Error cargando todas las áreas:', data.message);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error fetching all areas:', error);
+            return [];
         }
     }
     
@@ -87,20 +111,219 @@ document.addEventListener('DOMContentLoaded', () => {
         areas.forEach(area => {
             const option = document.createElement('option');
             option.value = area.id;
-            option.textContent = formatAreaName(area.area);
+            // Mostrar el nombre EXACTAMENTE como viene de la base de datos (en mayúsculas)
+            option.textContent = area.area;
             areaSelect.appendChild(option);
         });
     }
     
-    function formatAreaName(areaCode) {
-        const nameMap = {
-            'DIRECCION_GENERAL': 'Dirección General',
-            'ATENCION_A_USUARIOS': 'Atención a Usuarios',
-            'RECURSOS_HUMANOS': 'Recursos Humanos',
-            'INNOVACION_TECNOLOGICA': 'Innovación Tecnológica',
-            'USER_TESTING': 'Usuario de Pruebas'
-        };
-        return nameMap[areaCode] || areaCode.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    // ============================================
+    // MODAL PARA SELECCIONAR ÁREA POST-LOGIN
+    // ============================================
+    
+    async function showAreaSelectionModal(userData) {
+        return new Promise(async (resolve) => {
+            const allAreasList = await loadAllAreas();
+            
+            if (allAreasList.length === 0) {
+                resolve(userData.area_id);
+                return;
+            }
+            
+            // Crear el modal
+            const modalHtml = `
+                <div class="area-selection-modal" id="areaSelectionModal">
+                    <div class="area-modal-content">
+                        <div class="area-modal-header">
+                            <i class="fas fa-building"></i>
+                            <h2>Seleccionar Área de Trabajo</h2>
+                        </div>
+                        <div class="area-modal-body">
+                            <p>Hola <strong>${userData.nombre} ${userData.apellido_paterno}</strong>,</p>
+                            <p>Por favor selecciona el área a la que deseas acceder:</p>
+                            <div class="area-select-wrapper">
+                                <select id="postLoginAreaSelect" class="area-select-premium">
+                                    <option value="">-- Seleccione un área --</option>
+                                    ${allAreasList.map(area => `
+                                        <option value="${area.id}" ${area.id == userData.area_id ? 'selected' : ''}>
+                                            ${area.area}
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="area-modal-footer">
+                            <button id="confirmAreaBtn" class="area-modal-btn area-modal-btn-confirm">
+                                <i class="fas fa-check"></i> Acceder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Agregar modal al body
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHtml;
+            document.body.appendChild(modalContainer);
+            
+            const modal = document.getElementById('areaSelectionModal');
+            const select = document.getElementById('postLoginAreaSelect');
+            const confirmBtn = document.getElementById('confirmAreaBtn');
+            
+            // Estilos del modal
+            const style = document.createElement('style');
+            style.textContent = `
+                .area-selection-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.85);
+                    backdrop-filter: blur(10px);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 20000;
+                    animation: fadeInModal 0.3s ease;
+                }
+                
+                @keyframes fadeInModal {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                .area-modal-content {
+                    background: linear-gradient(145deg, #1a1a24 0%, #14141e 100%);
+                    border-radius: 24px;
+                    padding: 30px;
+                    width: 90%;
+                    max-width: 450px;
+                    border: 1px solid rgba(187, 147, 88, 0.3);
+                    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+                    animation: scaleInModal 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                
+                @keyframes scaleInModal {
+                    from {
+                        transform: scale(0.9);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
+                
+                .area-modal-header {
+                    text-align: center;
+                    margin-bottom: 25px;
+                }
+                
+                .area-modal-header i {
+                    font-size: 3rem;
+                    color: #bb9358;
+                    margin-bottom: 10px;
+                }
+                
+                .area-modal-header h2 {
+                    color: #ffffff;
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                }
+                
+                .area-modal-body {
+                    margin-bottom: 25px;
+                }
+                
+                .area-modal-body p {
+                    color: rgba(255, 255, 255, 0.8);
+                    margin-bottom: 15px;
+                    line-height: 1.5;
+                }
+                
+                .area-select-wrapper {
+                    margin-top: 20px;
+                }
+                
+                .area-select-premium {
+                    width: 100%;
+                    padding: 14px 18px;
+                    background: linear-gradient(145deg, #1e1e2a, #181824);
+                    border: 2px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 12px;
+                    color: #ffffff;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                
+                .area-select-premium:focus {
+                    outline: none;
+                    border-color: #bb9358;
+                }
+                
+                .area-modal-footer {
+                    display: flex;
+                    justify-content: center;
+                }
+                
+                .area-modal-btn {
+                    padding: 14px 30px;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-size: 1rem;
+                    border: none;
+                }
+                
+                .area-modal-btn-confirm {
+                    background: linear-gradient(145deg, #691a30 0%, #8a1c3a 100%);
+                    color: white;
+                    width: 100%;
+                    justify-content: center;
+                }
+                
+                .area-modal-btn-confirm:hover {
+                    background: linear-gradient(145deg, #7a1e38 0%, #9b2142 100%);
+                    transform: translateY(-2px);
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Manejar confirmación
+            const handleConfirm = () => {
+                const selectedId = parseInt(select.value);
+                if (selectedId && !isNaN(selectedId)) {
+                    modal.remove();
+                    resolve(selectedId);
+                } else {
+                    let errorDiv = modal.querySelector('.area-modal-error');
+                    if (!errorDiv) {
+                        errorDiv = document.createElement('div');
+                        errorDiv.className = 'area-modal-error';
+                        errorDiv.style.cssText = 'color: #ff6b6b; margin-top: 15px; text-align: center; font-size: 0.9rem;';
+                        modal.querySelector('.area-modal-body').appendChild(errorDiv);
+                    }
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor seleccione un área';
+                    setTimeout(() => errorDiv.remove(), 3000);
+                }
+            };
+            
+            confirmBtn.addEventListener('click', handleConfirm);
+            
+            select.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleConfirm();
+                }
+            });
+        });
     }
     
     // ============================================
@@ -122,218 +345,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ============================================
-    // FUNCIONES DEL EFECTO DE REVELADO
-    // ============================================
-    
-    function detectTouchDevice() {
-        isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-        return isTouchDevice;
-    }
-    
-    function revealLogin() {
-        if (isLoginVisible) return;
-        
-        if (hideTimeout) {
-            clearTimeout(hideTimeout);
-            hideTimeout = null;
-        }
-        
-        if (triggerHideTimeout) {
-            clearTimeout(triggerHideTimeout);
-            triggerHideTimeout = null;
-        }
-        
-        isLoginVisible = true;
-        
-        if (effectTrigger) {
-            effectTrigger.classList.remove('show-trigger');
-            effectTrigger.classList.add('hide-trigger');
-        }
-        
-        if (mainContainer) {
-            mainContainer.classList.remove('hiding');
-            mainContainer.classList.add('visible');
-        }
-        
-        setTimeout(() => {
-            if (workerCodeInput && isLoginVisible) {
-                workerCodeInput.focus();
-            }
-        }, 600);
-    }
-    
-    function hideLogin() {
-        if (!isLoginVisible) return;
-        
-        isLoginVisible = false;
-        
-        if (mainContainer) {
-            mainContainer.classList.remove('visible');
-            mainContainer.classList.add('hiding');
-        }
-        
-        if (effectTrigger) {
-            effectTrigger.classList.remove('hide-trigger');
-            effectTrigger.classList.add('show-trigger');
-            
-            setTimeout(() => {
-                if (effectTrigger) {
-                    effectTrigger.classList.remove('show-trigger');
-                }
-            }, 500);
-        }
-        
-        if (messageContainer) {
-            messageContainer.innerHTML = '';
-        }
-        
-        if (passwordInput) {
-            passwordInput.value = '';
-        }
-        
-        if (workerCodeInput) {
-            workerCodeInput.value = '';
-        }
-        
-        // Resetear datos del usuario al cerrar
-        currentUserData = null;
-        if (loginBtn) loginBtn.disabled = true;
-        if (passwordInput) passwordInput.disabled = true;
-        showAreaSelector(false);
-    }
-    
-    // ============================================
-    // CONTROL DE CIERRE DEL FORMULARIO
-    // ============================================
-    
-    if (mainContainer) {
-        mainContainer.addEventListener('mouseenter', () => {
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-                hideTimeout = null;
-            }
-            if (triggerHideTimeout) {
-                clearTimeout(triggerHideTimeout);
-                triggerHideTimeout = null;
-            }
-        });
-        
-        mainContainer.addEventListener('mouseleave', () => {
-            if (isLoginVisible && !isTouchDevice) {
-                const activeElement = document.activeElement;
-                const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput || activeElement === areaSelect;
-                
-                if (!isInputFocused) {
-                    hideTimeout = setTimeout(() => {
-                        hideLogin();
-                    }, 300);
-                }
-            }
-        });
-    }
-    
-    // Prevenir cierre cuando se interactúa con elementos del formulario
-    const formElements = [workerCodeInput, passwordInput, loginBtn, togglePasswordBtn, areaSelect];
-    formElements.forEach(element => {
-        if (element) {
-            element.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-                isClickInsideForm = true;
-            });
-            
-            element.addEventListener('click', (e) => {
-                e.stopPropagation();
-                isClickInsideForm = true;
-                setTimeout(() => {
-                    isClickInsideForm = false;
-                }, 100);
-            });
-            
-            if (element && element.tagName === 'INPUT') {
-                element.addEventListener('focus', (e) => {
-                    e.stopPropagation();
-                    if (isLoginVisible) {
-                        if (hideTimeout) {
-                            clearTimeout(hideTimeout);
-                            hideTimeout = null;
-                        }
-                    }
-                });
-            }
-        }
-    });
-    
-    document.addEventListener('mousedown', (e) => {
-        if (!isLoginVisible) return;
-        
-        const isClickInsideMain = mainContainer && mainContainer.contains(e.target);
-        const isClickOnTrigger = effectTrigger && effectTrigger.contains(e.target);
-        
-        if (isClickInsideMain || isClickOnTrigger) {
-            return;
-        }
-        
-        hideLogin();
-    });
-    
-    function setupTrigger() {
-        if (!effectTrigger) return;
-        
-        detectTouchDevice();
-        
-        if (isTouchDevice) {
-            effectTrigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                revealLogin();
-            });
-            
-            if (effectImage) {
-                effectImage.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    revealLogin();
-                });
-            }
-        } else {
-            effectTrigger.addEventListener('mouseenter', revealLogin);
-        }
-    }
-    
-    function setupHideOnTriggerLeave() {
-        if (!effectTrigger) return;
-        
-        effectTrigger.addEventListener('mouseleave', () => {
-            if (!isLoginVisible) return;
-            
-            const isMouseOverMain = mainContainer && mainContainer.matches(':hover');
-            const activeElement = document.activeElement;
-            const isInputFocused = activeElement === workerCodeInput || activeElement === passwordInput || activeElement === areaSelect;
-            
-            if (!isMouseOverMain && !isInputFocused && !isTouchDevice) {
-                triggerHideTimeout = setTimeout(() => {
-                    hideLogin();
-                }, 300);
-            }
-        });
-        
-        effectTrigger.addEventListener('mouseenter', () => {
-            if (triggerHideTimeout) {
-                clearTimeout(triggerHideTimeout);
-                triggerHideTimeout = null;
-            }
-        });
-    }
-    
-    function setupHideOnMouseLeaveDocument() {
-        document.addEventListener('mouseleave', () => {
-            if (isLoginVisible && !isTouchDevice) {
-                hideLogin();
-            }
-        });
-    }
-    
-    // ============================================
     // FUNCIONES DE MENSAJES
     // ============================================
+    
+    const messageContainer = document.getElementById('errorMessage');
     
     function showMessage(text, type = 'error') {
         if (!messageContainer) return;
@@ -359,14 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         messageDiv.textContent = displayText;
         messageContainer.appendChild(messageDiv);
-        
-        if (type === 'error') {
-            const card = document.querySelector('.glass-card');
-            if (card) {
-                card.classList.add('shake');
-                setTimeout(() => card.classList.remove('shake'), 400);
-            }
-        }
         
         setTimeout(() => {
             if (messageContainer.firstChild) {
@@ -461,10 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success && data.data && data.data.user) {
                 currentUserData = data.data.user;
                 
-                // Mostrar u ocultar selector de área según permisos
                 showAreaSelector(currentUserData.puede_cambiar_area, currentUserData.area_id);
                 
-                if (passwordInput) passwordInput.disabled = false;
+                if (passwordInput) {
+                    passwordInput.disabled = false;
+                    passwordInput.focus();
+                }
                 if (loginBtn) loginBtn.disabled = false;
                 
                 clearError('errorWorkerCode');
@@ -603,7 +612,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Validar que haya seleccionado un área si tiene permiso para cambiar
         if (currentUserData.puede_cambiar_area && (!selectedAreaId || selectedAreaId === '')) {
             showMessage('Por favor, seleccione el área de trabajo', 'error');
             if (areaSelect) areaSelect.focus();
@@ -663,23 +671,37 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.success) {
                 const user = data.data.user;
-                // Determinar redirección según el ÁREA (no por rol)
-                const redirectUrl = getRedirectUrlByArea(user.area_nombre);
                 
-                showMessage(`✅ Acceso concedido - ${formatAreaName(user.area_nombre)}`, 'success');
+                let finalAreaId = user.area_id;
+                let finalAreaNombre = user.area_nombre;
                 
-                if (sessionStorage) {
-                    sessionStorage.setItem('usuario', JSON.stringify(user));
+                if (!user.primer_inicio && user.puede_cambiar_area) {
+                    const selectedAreaIdFromModal = await showAreaSelectionModal(user);
+                    if (selectedAreaIdFromModal) {
+                        finalAreaId = selectedAreaIdFromModal;
+                        const allAreasList = await loadAllAreas();
+                        const selectedArea = allAreasList.find(a => a.id === selectedAreaIdFromModal);
+                        if (selectedArea) {
+                            finalAreaNombre = selectedArea.area;
+                        }
+                    }
                 }
                 
-                const esPrimerInicio = user.primer_inicio === true;
+                const redirectUrl = getRedirectUrlByArea(finalAreaNombre);
+                showMessage(`✅ Acceso concedido - ${finalAreaNombre}`, 'success');
+                
+                const userToStore = {
+                    ...user,
+                    area_id: finalAreaId,
+                    area_nombre: finalAreaNombre
+                };
+                
+                if (sessionStorage) {
+                    sessionStorage.setItem('usuario', JSON.stringify(userToStore));
+                }
                 
                 setTimeout(() => {
-                    if (esPrimerInicio) {
-                        window.location.href = 'html/cambio_contraseña/cambio_contraseña.html';
-                    } else {
-                        window.location.href = redirectUrl;
-                    }
+                    window.location.href = redirectUrl;
                 }, 1500);
             } else {
                 setLoading(false);
@@ -715,31 +737,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function init() {
         await loadAreas();
         
-        setupTrigger();
-        setupHideOnTriggerLeave();
-        setupHideOnMouseLeaveDocument();
-        
-        // Inicialmente deshabilitar campos de login
         if (passwordInput) passwordInput.disabled = true;
         if (loginBtn) loginBtn.disabled = true;
         showAreaSelector(false);
         
-        // Efecto de focus en inputs
-        const inputs = document.querySelectorAll('.input-field input, .input-field select');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                const field = input.closest('.input-field');
-                if (field) field.style.transform = 'scale(1.01)';
-            });
-            
-            input.addEventListener('blur', () => {
-                const field = input.closest('.input-field');
-                if (field) field.style.transform = 'scale(1)';
-            });
-        });
-        
         console.log('%c🏛️ SISTEMA DE ACCESO INSTITUCIONAL', 'color: #e8d5a3; font-size: 14px; font-weight: bold;');
-        console.log('%c✅ Versión con efecto de revelado y redirección por ÁREA', 'color: #4CAF50; font-size: 12px;');
+        console.log('%c✅ Versión con auto-focus a contraseña y selector post-login', 'color: #4CAF50; font-size: 12px;');
     }
     
     init();
