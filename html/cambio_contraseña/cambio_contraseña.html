@@ -2,49 +2,269 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cambiar Contraseña - Sistema de Nómina</title>
-    <link rel="stylesheet" href="../../css/login/login.css">
-    <style>
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .btn-group button {
-            flex: 1;
-        }
-        .btn-cancel {
-            background-color: #6c757d;
-        }
-        .btn-cancel:hover {
-            background-color: #5a6268;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>OPDAPAS Ixtapaluca - Cambiar Contraseña</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/cambio_contraseña/cambio_contraseña.css">
 </head>
 <body>
-    <div class="login-container">
-        <h2>Cambiar Contraseña</h2>
-        <p style="text-align: center; margin-bottom: 20px; color: #666;">
-            Es tu primer inicio de sesión. Debes cambiar tu contraseña.
-        </p>
-        <form id="cambioPasswordForm">
-            <div class="form-group">
-                <label for="new_password">Nueva Contraseña:</label>
-                <input type="password" id="new_password" name="new_password" required>
+    <!-- Canvas para efecto líquido avanzado -->
+    <canvas id="liquidCanvas"></canvas>
+    
+    <!-- Partículas flotantes -->
+    <div class="particles-container" id="particles"></div>
+    
+    <!-- Efecto de brillo en esquinas -->
+    <div class="corner-glow corner-tl"></div>
+    <div class="corner-glow corner-br"></div>
+
+    <div class="container">
+        <div class="change-wrapper">
+            <!-- Tarjeta izquierda - Branding -->
+            <div class="brand-card">
+                <div class="brand-content">
+                    <div class="dept-badge">
+                        <img src="../../imagenes/ixtec-logo.png" alt="IXTEC DIGITAL" class="ixtec-logo">
+                        <span>IXTEC DIGITAL</span>
+                    </div>
+                    
+                    <h1 class="main-title">
+                        OPDAPAS<br>
+                        <span>IXTAPALUCA</span>
+                    </h1>
+                    
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                        <i class="fas fa-tint"></i>
+                        <div class="divider-line"></div>
+                    </div>
+                    
+                    <p class="description">
+                        Organismo Público Descentralizado para la prestación de Servicios de Agua Potable, Alcantarillado y Saneamiento del Municipio de Ixtapaluca.
+                    </p>
+                    
+                    <!-- GOTA AZULITA CON FORMA REAL -->
+                    <div class="water-drop">
+                        <div class="real-drop">
+                            <svg class="drop-svg" viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="dropGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#a8d8ff;stop-opacity:0.95"/>
+                                        <stop offset="25%" style="stop-color:#6bb5e8;stop-opacity:0.9"/>
+                                        <stop offset="55%" style="stop-color:#3a8fc9;stop-opacity:0.85"/>
+                                        <stop offset="80%" style="stop-color:#1a6fa8;stop-opacity:0.8"/>
+                                        <stop offset="100%" style="stop-color:#0a4a6b;stop-opacity:0.9"/>
+                                    </linearGradient>
+                                    <radialGradient id="dropShine" cx="35%" cy="30%" r="50%">
+                                        <stop offset="0%" style="stop-color:rgba(255,255,255,0.8)"/>
+                                        <stop offset="100%" style="stop-color:rgba(255,255,255,0)"/>
+                                    </radialGradient>
+                                </defs>
+                                <path d="M50 2 C50 2 12 42 12 78 C12 108 30 130 50 138 C70 130 88 108 88 78 C88 42 50 2 50 2Z" 
+                                      fill="url(#dropGradient)" 
+                                      stroke="rgba(100,180,240,0.5)" 
+                                      stroke-width="2"/>
+                                <ellipse cx="35" cy="55" rx="12" ry="18" fill="url(#dropShine)" transform="rotate(-25 35 55)"/>
+                                <ellipse cx="32" cy="48" rx="4" ry="7" fill="rgba(255,255,255,0.6)" transform="rotate(-20 32 48)"/>
+                                <path d="M38 115 C42 122 58 122 62 115" stroke="rgba(255,255,255,0.25)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="drop-ripple"></div>
+                        <div class="drop-ripple delay-1"></div>
+                        <div class="drop-ripple delay-2"></div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="confirm_password">Confirmar Contraseña:</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
+            
+            <!-- Tarjeta derecha - Formulario Cambio Contraseña -->
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="warning-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h2>Cambiar Contraseña</h2>
+                    <p>Es tu primer inicio de sesión. Debes cambiar tu contraseña.</p>
+                </div>
+                
+                <form id="cambioPasswordForm" class="change-form">
+                    <!-- Nueva Contraseña -->
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="input-field">
+                            <input type="password" id="new_password" name="new_password" placeholder=" " required>
+                            <label>Nueva Contraseña</label>
+                            <span class="input-border"></span>
+                        </div>
+                        <div class="password-toggle toggle-new">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirmar Contraseña -->
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="input-field">
+                            <input type="password" id="confirm_password" name="confirm_password" placeholder=" " required>
+                            <label>Confirmar Contraseña</label>
+                            <span class="input-border"></span>
+                        </div>
+                        <div class="password-toggle toggle-confirm">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Reglas de validación -->
+                    <div class="validation-rules">
+                        <p><i class="fas fa-shield-alt"></i> La contraseña debe cumplir:</p>
+                        <div class="rules-grid">
+                            <div id="rule-length" class="rule-item">
+                                <i class="fas fa-circle"></i>
+                                <span>✓ Mínimo 12 caracteres</span>
+                            </div>
+                            <div id="rule-number" class="rule-item">
+                                <i class="fas fa-circle"></i>
+                                <span>✓ Al menos 1 número (0-9)</span>
+                            </div>
+                            <div id="rule-uppercase" class="rule-item">
+                                <i class="fas fa-circle"></i>
+                                <span>✓ Al menos 1 mayúscula (A-Z)</span>
+                            </div>
+                            <div id="rule-lowercase" class="rule-item">
+                                <i class="fas fa-circle"></i>
+                                <span>✓ Al menos 1 minúscula (a-z)</span>
+                            </div>
+                            <div id="rule-special" class="rule-item">
+                                <i class="fas fa-circle"></i>
+                                <span>✓ Al menos 1 carácter especial (!@#$%^&*)</span>
+                            </div>
+                            <div id="rule-match" class="rule-item">
+                                <i class="fas fa-circle"></i>
+                                <span>✓ Las contraseñas coinciden</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones -->
+                    <div class="btn-group">
+                        <button type="submit" class="login-btn" id="saveBtn" disabled>
+                            <span class="btn-text">Guardar Contraseña</span>
+                            <span class="btn-icon"><i class="fas fa-save"></i></span>
+                            <span class="btn-ripple"></span>
+                        </button>
+                        <button type="button" class="cancel-btn" id="cancelBtn">
+                            <span class="btn-text">Cancelar</span>
+                            <span class="btn-icon"><i class="fas fa-times"></i></span>
+                            <span class="btn-ripple"></span>
+                        </button>
+                    </div>
+                    
+                    <!-- Mensaje de respuesta -->
+                    <div id="message" class="response-message"></div>
+                </form>
+                
+                <div class="form-footer">
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Conexión Segura SSL</span>
+                    </div>
+                </div>
             </div>
-            <div class="btn-group">
-                <button type="submit" class="btn-save">Guardar</button>
-                <button type="button" class="btn-cancel" onclick="window.location.href='../../login.html'">Cancelar</button>
-            </div>
-        </form>
-        <div id="message"></div>
+        </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../js/cambio_contraseña/cambio_contraseña.js"></script>
+    <script>
+        // ==================== EFECTO LÍQUIDO CON CANVAS ====================
+        const canvas = document.getElementById('liquidCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        let time = 0;
+        
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#1a040b');
+            gradient.addColorStop(0.5, '#2a0812');
+            gradient.addColorStop(1, '#1a040b');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                const amplitude = 30 + Math.sin(time * 0.5 + i) * 10;
+                const frequency = 0.008 + (i * 0.002);
+                const yOffset = height * (0.3 + i * 0.2) + Math.sin(time * 0.3 + i) * 20;
+                
+                for (let x = 0; x < width; x += 5) {
+                    const y = yOffset + Math.sin(x * frequency + time * (1 + i * 0.3)) * amplitude;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.lineTo(width, height);
+                ctx.lineTo(0, height);
+                ctx.closePath();
+                
+                const alpha = 0.08 - (i * 0.015);
+                ctx.fillStyle = `rgba(187, 147, 88, ${alpha})`;
+                ctx.fill();
+            }
+            
+            for (let i = 0; i < 12; i++) {
+                const x = (Math.sin(time * 0.2 + i) * 0.5 + 0.5) * width;
+                const y = (Math.cos(time * 0.3 + i * 2) * 0.3 + 0.5) * height;
+                const radius = 40 + Math.sin(time * 1.5 + i) * 20;
+                const gradientCircle = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                gradientCircle.addColorStop(0, `rgba(187, 147, 88, 0.15)`);
+                gradientCircle.addColorStop(1, `rgba(105, 26, 48, 0)`);
+                ctx.fillStyle = gradientCircle;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            time += 0.016;
+            requestAnimationFrame(draw);
+        }
+        
+        draw();
+        
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+        
+        // ==================== PARTÍCULAS FLOTANTES ====================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 60; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = 15 + Math.random() * 20 + 's';
+                particle.style.width = 2 + Math.random() * 6 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.opacity = 0.1 + Math.random() * 0.3;
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+    </script>
 </body>
 </html>

@@ -1,0 +1,647 @@
+/* ==================== RESET ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background: #1a040b;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ==================== CANVAS LÍQUIDO ==================== */
+#liquidCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+/* ==================== PARTÍCULAS ==================== */
+.particles-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    background: radial-gradient(circle, #bb9358, transparent);
+    border-radius: 50%;
+    animation: floatParticle linear infinite;
+    pointer-events: none;
+}
+
+@keyframes floatParticle {
+    0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh) translateX(50px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* ==================== CORNERS GLOW ==================== */
+.corner-glow {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.corner-tl {
+    top: -100px;
+    left: -100px;
+    background: radial-gradient(circle, #691a30, transparent);
+}
+
+.corner-br {
+    bottom: -100px;
+    right: -100px;
+    background: radial-gradient(circle, #bb9358, transparent);
+}
+
+/* ==================== CONTAINER ==================== */
+.container {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.change-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    max-width: 1300px;
+    width: 100%;
+    background: rgba(26, 4, 11, 0.3);
+    backdrop-filter: blur(20px);
+    border-radius: 48px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(187, 147, 88, 0.2);
+}
+
+/* ==================== BRAND CARD (IZQUIERDA) ==================== */
+.brand-card {
+    background: linear-gradient(135deg, rgba(105, 26, 48, 0.95), rgba(26, 4, 11, 0.98));
+    padding: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.brand-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(187, 147, 88, 0.1), transparent);
+    animation: rotateSlow 20s linear infinite;
+}
+
+@keyframes rotateSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.brand-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.dept-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(187, 147, 88, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 0.6rem 1.5rem;
+    border-radius: 60px;
+    border: 1px solid rgba(187, 147, 88, 0.4);
+    margin-bottom: 2rem;
+}
+
+.ixtec-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.dept-badge span {
+    color: white;
+    font-weight: 600;
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+}
+
+.main-title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.main-title span {
+    color: #bb9358;
+    display: inline-block;
+    text-shadow: 0 0 20px rgba(187, 147, 88, 0.5);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 1.8rem 0;
+}
+
+.divider-line {
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #bb9358, transparent);
+}
+
+.divider i {
+    color: #bb9358;
+    font-size: 1.2rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+.description {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+/* ==================== GOTA ==================== */
+.water-drop {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 170px;
+}
+
+.real-drop {
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    filter: drop-shadow(0 0 25px rgba(100, 180, 240, 0.6));
+    animation: dropFloat 3s ease-in-out infinite;
+}
+
+.drop-svg {
+    width: 100px;
+    height: 140px;
+    transition: all 0.3s ease;
+}
+
+.real-drop:hover .drop-svg {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 35px rgba(100, 180, 240, 0.9));
+}
+
+@keyframes dropFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+.drop-ripple {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(100, 180, 240, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: ripple 2.5s ease-out infinite;
+    pointer-events: none;
+}
+
+.drop-ripple.delay-1 { animation-delay: 0.8s; }
+.drop-ripple.delay-2 { animation-delay: 1.6s; }
+
+@keyframes ripple {
+    0% {
+        width: 70px;
+        height: 70px;
+        opacity: 0.5;
+        border-width: 2px;
+    }
+    100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+        border-width: 1px;
+    }
+}
+
+/* ==================== FORM CARD (DERECHA) ==================== */
+.form-card {
+    background: rgba(255, 255, 255, 0.98);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.warning-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #691a30, #2a0812);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.2rem;
+    box-shadow: 0 10px 30px rgba(105, 26, 48, 0.3);
+}
+
+.warning-icon i {
+    font-size: 2.5rem;
+    color: #bb9358;
+}
+
+.form-header h2 {
+    color: #2a0812;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.form-header p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* ==================== INPUTS MODERNOS ==================== */
+.input-group {
+    position: relative;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.input-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.input-icon i {
+    font-size: 1.2rem;
+    color: #691a30;
+    transition: all 0.3s ease;
+}
+
+.input-group:focus-within .input-icon {
+    background: linear-gradient(135deg, #691a30, #2a0812);
+    transform: scale(1.05);
+}
+
+.input-group:focus-within .input-icon i {
+    color: #bb9358;
+}
+
+.input-field {
+    flex: 1;
+    position: relative;
+}
+
+.input-field input {
+    width: 100%;
+    padding: 1rem 0 0.5rem 0;
+    font-size: 1rem;
+    border: none;
+    border-bottom: 2px solid #e0e0e0;
+    background: transparent;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    color: #1a040b;
+    font-weight: 500;
+}
+
+.input-field label {
+    position: absolute;
+    left: 0;
+    bottom: 0.5rem;
+    font-size: 1rem;
+    color: #999;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+.input-field input:focus ~ label,
+.input-field input:not(:placeholder-shown) ~ label {
+    transform: translateY(-1.4rem);
+    font-size: 0.75rem;
+    color: #691a30;
+    font-weight: 600;
+}
+
+.input-border {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #691a30, #bb9358);
+    transition: width 0.3s ease;
+}
+
+.input-field input:focus ~ .input-border {
+    width: 100%;
+}
+
+.password-toggle {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 5;
+}
+
+.password-toggle i {
+    color: #999;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover i {
+    color: #691a30;
+}
+
+/* ==================== VALIDATION RULES ==================== */
+.validation-rules {
+    background: linear-gradient(135deg, #f8f8f8, #f0f0f0);
+    border-radius: 16px;
+    padding: 1rem;
+    margin: 0.5rem 0 1.5rem 0;
+    border-left: 4px solid #bb9358;
+}
+
+.validation-rules p {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2a0812;
+    margin-bottom: 0.8rem;
+}
+
+.validation-rules p i {
+    color: #bb9358;
+    margin-right: 8px;
+}
+
+.rules-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.rule-item i {
+    font-size: 0.6rem;
+    color: #ccc;
+    transition: all 0.3s ease;
+}
+
+.rule-item.valid {
+    color: #27ae60;
+}
+
+.rule-item.valid i {
+    color: #27ae60;
+}
+
+/* ==================== BOTONES ==================== */
+.btn-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 0.5rem;
+}
+
+.login-btn, .cancel-btn {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.login-btn {
+    background: linear-gradient(135deg, #691a30, #2a0812);
+    box-shadow: 0 5px 20px rgba(105, 26, 48, 0.4);
+}
+
+.login-btn .btn-text, .login-btn .btn-icon {
+    color: white;
+}
+
+.login-btn .btn-icon i {
+    color: #bb9358;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(105, 26, 48, 0.6);
+}
+
+.login-btn:hover .btn-icon {
+    transform: translateX(5px);
+}
+
+.cancel-btn {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    box-shadow: 0 5px 20px rgba(108, 117, 125, 0.4);
+}
+
+.cancel-btn .btn-text, .cancel-btn .btn-icon {
+    color: white;
+}
+
+.cancel-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(108, 117, 125, 0.6);
+}
+
+.cancel-btn:active, .login-btn:active {
+    transform: translateY(0);
+}
+
+.btn-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.login-btn:active .btn-ripple, .cancel-btn:active .btn-ripple {
+    width: 300px;
+    height: 300px;
+}
+
+.login-btn:disabled, .cancel-btn:disabled {
+    opacity: 0.6;
+    transform: none;
+    cursor: not-allowed;
+}
+
+/* ==================== MENSAJE DE RESPUESTA ==================== */
+.response-message {
+    margin-top: 1.5rem;
+    padding: 0.8rem;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* ==================== FOOTER ==================== */
+.form-footer {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.security-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 1rem;
+    background: #f5f5f5;
+    border-radius: 50px;
+}
+
+.security-badge i {
+    color: #27ae60;
+    font-size: 0.8rem;
+}
+
+.security-badge span {
+    color: #666;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
+    .change-wrapper {
+        grid-template-columns: 1fr;
+        max-width: 550px;
+    }
+    
+    .brand-card { padding: 2rem; }
+    .form-card { padding: 2rem; }
+    .water-drop { margin-top: 1rem; height: 140px; }
+    .drop-svg { width: 80px; height: 112px; }
+}
+
+@media (max-width: 768px) {
+    .container { padding: 1rem; }
+    .form-card { padding: 1.5rem; }
+    .input-group { gap: 8px; }
+    .input-icon { width: 40px; height: 40px; }
+    .input-icon i { font-size: 1rem; }
+    .password-toggle { right: -20px; }
+    .btn-group { flex-direction: column; gap: 10px; }
+}
+
+@media (max-width: 480px) {
+    .brand-card { padding: 1.5rem; }
+    .form-card { padding: 1.2rem; }
+    .form-header h2 { font-size: 1.4rem; }
+    .dept-badge { padding: 0.4rem 1rem; margin-bottom: 1rem; }
+    .ixtec-logo { width: 22px; height: 22px; }
+    .main-title { font-size: 1.8rem; }
+    .description { font-size: 0.8rem; }
+    .password-toggle { right: -15px; }
+    .warning-icon { width: 55px; height: 55px; }
+    .warning-icon i { font-size: 1.8rem; }
+    .water-drop { height: 120px; }
+    .drop-svg { width: 65px; height: 90px; }
+}
+
+@media (max-height: 700px) and (orientation: landscape) {
+    .container { padding: 0.5rem; }
+    .brand-card { padding: 1rem; }
+    .form-card { padding: 1rem; }
+    .water-drop { display: none; }
+    .warning-icon { width: 50px; height: 50px; margin-bottom: 0.5rem; }
+    .form-header { margin-bottom: 1rem; }
+}
