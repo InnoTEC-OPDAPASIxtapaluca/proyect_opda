@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambiar Contraseña - Sistema de Nómina</title>
+    <link rel="stylesheet" href="../../css/login/login.css">
+    <style>
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-group button {
+            flex: 1;
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+        }
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Cambiar Contraseña</h2>
+        <p style="text-align: center; margin-bottom: 20px; color: #666;">
+            Es tu primer inicio de sesión. Debes cambiar tu contraseña.
+        </p>
+        <form id="cambioPasswordForm">
+            <div class="form-group">
+                <label for="new_password">Nueva Contraseña:</label>
+                <input type="password" id="new_password" name="new_password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirmar Contraseña:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn-save">Guardar</button>
+                <button type="button" class="btn-cancel" onclick="window.location.href='../../login.html'">Cancelar</button>
+            </div>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script src="../../js/cambio_contraseña/cambio_contraseña.js"></script>
+</body>
+</html>

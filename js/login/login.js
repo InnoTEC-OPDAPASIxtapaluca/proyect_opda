@@ -24,7 +24,17 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         
         const data = await response.json();
         
-        if (data.success) {
+        console.log('Respuesta:', data);
+        
+        if (data.require_password_change === true) {
+            sessionStorage.setItem('temp_nomina', nomina);
+            messageDiv.style.background = '#fff3cd';
+            messageDiv.style.color = '#856404';
+            messageDiv.innerHTML = '⚠️ ' + data.message + '. Redirigiendo...';
+            setTimeout(() => {
+                window.location.href = 'html/cambio_contraseña/cambio_contraseña.html';
+            }, 1000);
+        } else if (data.success === true) {
             messageDiv.style.background = '#d4edda';
             messageDiv.style.color = '#155724';
             messageDiv.innerHTML = '✅ Login exitoso! Redirigiendo...';
@@ -40,6 +50,6 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         console.error('Error:', error);
         messageDiv.style.background = '#f8d7da';
         messageDiv.style.color = '#721c24';
-        messageDiv.innerHTML = '❌ Error de conexión con el servidor';
+        messageDiv.innerHTML = '❌ Error de conexión';
     }
 });

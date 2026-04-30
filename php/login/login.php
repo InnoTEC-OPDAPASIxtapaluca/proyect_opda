@@ -6,7 +6,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Incluir conexión con ruta correcta
 require_once dirname(__DIR__) . '/conexion/conexion.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
@@ -20,7 +19,6 @@ $nomina = $data['nomina'];
 $password = $data['password'];
 
 try {
-    // Buscar usuario
     $sql = "SELECT u.*, a.area, r.rol 
             FROM usuarios_internos u
             LEFT JOIN areas a ON u.area_id = a.id_area
@@ -32,7 +30,17 @@ try {
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($usuario && password_verify($password, $usuario['password'])) {
-        // Login exitoso
+        
+        // Verificar num_inicio
+        if ($usuario['num_inicio'] == 0) {
+            echo json_encode([
+                'success' => false, 
+                'require_password_change' => true,
+                'message' => 'Debes cambiar tu contraseña'
+            ]);
+            exit;
+        }
+        
         $_SESSION['usuario'] = [
             'nomina' => $usuario['no_nomina'],
             'nombre' => $usuario['nombre_s'],
@@ -48,6 +56,6 @@ try {
         echo json_encode(['success' => false, 'message' => 'Nómina o contraseña incorrectos']);
     }
 } catch(PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Error en el servidor: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
 ?>
