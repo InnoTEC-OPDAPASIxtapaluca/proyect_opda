@@ -1,0 +1,527 @@
+/* ==========================================================================
+   DIAGNÓSTICOS - ESTILOS ESPECÍFICOS DEL MÓDULO
+   Depende de estilos_generales.css - Debe cargarse DESPUÉS
+   ========================================================================== */
+
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
+.diagnosticos-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==================== AJUSTES HEADER PREMIUM PARA ESTE MÓDULO ==================== */
+.page-header-premium .header-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 18px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 60px;
+    border: 1px solid rgba(187, 147, 88, 0.2);
+}
+
+.page-header-premium .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-header-premium .stat-label {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-white-60);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.page-header-premium .stat-divider {
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(to bottom, transparent, var(--color-primary), transparent);
+}
+
+/* ==================== FILTRO RÁPIDO ==================== */
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.filter-btn {
+    background: rgba(26, 4, 11, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(187, 147, 88, 0.3);
+    padding: 10px 24px;
+    border-radius: 50px;
+    color: var(--text-white-80);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-btn i {
+    font-size: 14px;
+}
+
+.filter-btn:hover {
+    background: rgba(187, 147, 88, 0.15);
+    border-color: rgba(187, 147, 88, 0.6);
+    transform: translateY(-2px);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    box-shadow: 0 5px 15px rgba(187, 147, 88, 0.3);
+}
+
+/* ==================== GRID DE TARJETAS ==================== */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 28px;
+    padding: 10px 0;
+}
+
+/* ==================== TARJETA PREMIUM ==================== */
+.card {
+    position: relative;
+    background: linear-gradient(135deg, rgba(26, 4, 11, 0.85), rgba(26, 4, 11, 0.7));
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(187, 147, 88, 0.25);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(30px);
+    animation: cardReveal 0.5s ease forwards;
+}
+
+@keyframes cardReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(187, 147, 88, 0.6);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(187, 147, 88, 0.2);
+}
+
+/* Card Glow Effect (sigue al mouse) */
+.card-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(187, 147, 88, 0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.card:hover .card-glow {
+    opacity: 1;
+}
+
+/* Card Header */
+.card-header {
+    position: relative;
+    height: 140px;
+    overflow: hidden;
+}
+
+.card-header-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* Imagen de fondo dentro del header rojo */
+.card-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.35;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.card:hover .card-bg-image {
+    transform: scale(1.05);
+    opacity: 0.5;
+}
+
+/* Icono inferior izquierdo */
+.card-icon {
+    position: absolute;
+    bottom: 5px;
+    left: 20px;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #1a040b, #0a0205);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.card:hover .card-icon {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
+.card-icon i {
+    font-size: 38px;
+    color: var(--color-primary);
+}
+
+/* Card Body */
+.card-body {
+    padding: 30px 20px 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.card-badge {
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(187, 147, 88, 0.2);
+    padding: 4px 10px;
+    border-radius: 50px;
+    color: var(--color-primary);
+}
+
+.card-description {
+    color: var(--text-white-70);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+/* Card Footer */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid rgba(187, 147, 88, 0.15);
+    margin-top: 5px;
+}
+
+.card-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.card-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-white-60);
+}
+
+.card-stat i {
+    font-size: 11px;
+    color: var(--color-primary);
+}
+
+.card-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+    transition: all 0.3s ease;
+}
+
+.card:hover .card-action {
+    gap: 12px;
+}
+
+.card-action i {
+    font-size: 11px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-action i {
+    transform: translateX(5px);
+}
+
+/* Tooltip para hover en tarjetas */
+.card[data-tooltip] {
+    position: relative;
+}
+
+.card[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: rgba(0, 0, 0, 0.9);
+    color: var(--color-primary);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+.card[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* ==================== LOADING ANIMADO ==================== */
+.iframe-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 4, 11, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.loading-ring {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.loading-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: loadingRing 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: var(--color-primary) transparent transparent transparent;
+}
+
+.loading-ring div:nth-child(1) { animation-delay: -0.45s; }
+.loading-ring div:nth-child(2) { animation-delay: -0.3s; }
+.loading-ring div:nth-child(3) { animation-delay: -0.15s; }
+
+@keyframes loadingRing {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.iframe-loading p {
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ==================== RESPONSIVE ESPECÍFICO ==================== */
+@media (max-width: 1024px) {
+    .page-header-premium {
+        flex-wrap: wrap;
+    }
+    
+    .page-header-premium .header-stats {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .cards-grid {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header-premium {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .page-header-premium .header-text h1 {
+        font-size: 22px;
+        justify-content: center;
+    }
+    
+    .page-header-premium .header-text p {
+        font-size: 12px;
+    }
+    
+    .filter-bar {
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .filter-btn {
+        padding: 7px 16px;
+        font-size: 11px;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    
+    .card-header {
+        height: 120px;
+    }
+    
+    .card-icon {
+        width: 55px;
+        height: 55px;
+        bottom: 5px;
+        left: 15px;
+    }
+    
+    .card-icon i {
+        font-size: 28px;
+    }
+    
+    .card-body {
+        padding: 25px 15px 15px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .card-description {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-bar {
+        gap: 6px;
+    }
+    
+    .filter-btn {
+        padding: 6px 12px;
+        font-size: 10px;
+    }
+    
+    .filter-btn i {
+        display: none;
+    }
+    
+    .page-header-premium .header-stats .stat-item i {
+        font-size: 16px;
+    }
+    
+    .page-header-premium .stat-label {
+        font-size: 8px;
+    }
+    
+    .card-stats {
+        display: none;
+    }
+    
+    .page-header-premium .header-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .page-header-premium .header-icon i {
+        font-size: 24px;
+    }
+    
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        bottom: 5px;
+        left: 12px;
+    }
+    
+    .card-icon i {
+        font-size: 24px;
+    }
+}
+
+/* Landscape */
+@media (max-height: 500px) and (orientation: landscape) {
+    .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+    }
+    
+    .card-header {
+        height: 100px;
+    }
+    
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        bottom: 5px;
+        left: 12px;
+    }
+    
+    .card-icon i {
+        font-size: 24px;
+    }
+    
+    .card-body {
+        padding: 20px 12px 12px;
+    }
+}

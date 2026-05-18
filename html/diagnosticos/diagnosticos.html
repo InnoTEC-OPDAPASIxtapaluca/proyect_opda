@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Diagnósticos | OPDAPAS Ixtapaluca</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="../../css/estilos_generales.css">
+    <link rel="stylesheet" href="../../css/diagnosticos/diagnosticos.css">
+</head>
+<body>
+    <div class="diagnosticos-container">
+        <!-- HEADER PREMIUM UNIFICADO (igual a agregar_usuario y ver_usuarios) -->
+        <div class="page-header-premium">
+            <div class="header-glow"></div>
+            <div class="header-icon-wrapper">
+                <div class="header-icon-pulse"></div>
+                <div class="header-icon">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+            </div>
+            <div class="header-text">
+                <h1>DIAGNÓSTICOS <span class="header-badge">SISTEMA HIDRÁULICO</span></h1>
+                <p>Seleccione una categoría para visualizar información detallada y gestión operativa</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <i class="fas fa-cubes" style="font-size: 20px; color: var(--color-primary);"></i>
+                    <span class="stat-label" id="totalCardsStat">0</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <i class="fas fa-map-marker-alt" style="font-size: 20px; color: var(--color-primary);"></i>
+                    <span class="stat-label">Ixtapaluca</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTRO RÁPIDO -->
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all">
+                <i class="fas fa-th-large"></i> Todos
+            </button>
+            <button class="filter-btn" data-filter="infraestructura">
+                <i class="fas fa-building"></i> Infraestructura
+            </button>
+            <button class="filter-btn" data-filter="agua">
+                <i class="fas fa-water"></i> Agua
+            </button>
+            <button class="filter-btn" data-filter="monitoreo">
+                <i class="fas fa-chart-line"></i> Monitoreo
+            </button>
+            <button class="filter-btn" data-filter="control">
+                <i class="fas fa-sliders-h"></i> Control
+            </button>
+        </div>
+
+        <!-- CONTENEDOR DE TARJETAS -->
+        <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+
+    <!-- LOADING ANIMADO -->
+    <div class="iframe-loading" id="iframeLoading" style="display: none;">
+        <div class="loading-ring">
+            <div></div><div></div><div></div><div></div>
+        </div>
+        <p>Cargando módulo...</p>
+    </div>
+
+    <script src="../../js/diagnosticos/diagnosticos.js"></script>
+</body>
+</html>

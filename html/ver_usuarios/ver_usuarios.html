@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Ver Usuarios | OPDAPAS Ixtapaluca</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="../../css/estilos_generales.css">
+    <link rel="stylesheet" href="../../css/ver_usuarios/ver_usuarios.css">
+</head>
+<body>
+    <div class="ver-usuarios-container">
+        <!-- HEADER PREMIUM (Igual al de diagnósticos) -->
+        <div class="page-header-premium">
+            <div class="header-glow"></div>
+            <div class="header-icon-wrapper">
+                <div class="header-icon-pulse"></div>
+                <div class="header-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="header-text">
+                <h1>GESTIÓN DE USUARIOS <span class="header-badge">ADMINISTRACIÓN</span></h1>
+                <p>Administre, edite y gestione los usuarios del sistema OPDAPAS</p>
+            </div>
+            <div class="header-actions">
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-user-check" style="font-size: 18px; color: var(--color-primary);"></i>
+                        <span class="stat-label" id="totalUsuariosStat">0</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <i class="fas fa-shield-alt" style="font-size: 18px; color: var(--color-primary);"></i>
+                        <span class="stat-label">Activos</span>
+                    </div>
+                </div>
+                <button class="btn-refresh-premium" id="btnRefreshTable" title="Recargar tabla">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTRO DE BÚSQUEDA (MINIMIZABLE) -->
+        <div class="filtro-container" id="filtroContainer">
+            <div class="filtro-header" id="filtroHeader">
+                <div class="filtro-title">
+                    <i class="fas fa-search"></i>
+                    <span>BÚSQUEDA AVANZADA</span>
+                </div>
+                <button class="filtro-toggle" id="filtroToggle">
+                    <i class="fas fa-chevron-up" id="toggleIcon"></i>
+                </button>
+            </div>
+            <div class="filtro-body" id="filtroBody">
+                <div class="filtro-grid">
+                    <div class="filtro-group">
+                        <label><i class="fas fa-user"></i> NOMBRE</label>
+                        <input type="text" id="filtroNombre" class="filtro-input" placeholder="Buscar por nombre...">
+                    </div>
+                    <div class="filtro-group">
+                        <label><i class="fas fa-user-tag"></i> APELLIDO PATERNO</label>
+                        <input type="text" id="filtroApellidoPaterno" class="filtro-input" placeholder="Buscar por apellido paterno...">
+                    </div>
+                    <div class="filtro-group">
+                        <label><i class="fas fa-user-tag"></i> APELLIDO MATERNO</label>
+                        <input type="text" id="filtroApellidoMaterno" class="filtro-input" placeholder="Buscar por apellido materno...">
+                    </div>
+                    <div class="filtro-group">
+                        <label><i class="fas fa-id-card"></i> NÚMERO DE NÓMINA</label>
+                        <input type="text" id="filtroNoNomina" class="filtro-input" placeholder="Buscar por nómina...">
+                    </div>
+                </div>
+                <div class="filtro-actions">
+                    <button class="btn-limpiar" id="btnLimpiarFiltros">
+                        <i class="fas fa-eraser"></i> LIMPIAR FILTROS
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE USUARIOS -->
+        <div class="tabla-container">
+            <div class="tabla-wrapper">
+                <table class="tabla-usuarios" id="tablaUsuarios">
+                    <thead>
+                        <tr>
+                            <th>MATRÍCULA</th>
+                            <th>NOMBRE COMPLETO</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                        <tr class="loading-row">
+                            <td colspan="3">
+                                <div class="loading-spinner">
+                                    <i class="fas fa-spinner fa-pulse"></i>
+                                    Cargando usuarios...
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR USUARIO -->
+    <div id="modalEditar" class="modal-usuario">
+        <div class="modal-usuario-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> EDITAR USUARIO</h3>
+                <button class="modal-close" data-modal="modalEditar">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarUsuario">
+                    <input type="hidden" id="editNoNomina" name="no_nomina">
+                    <div class="form-grid grid-2">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nombre <span class="required">*</span></label>
+                            <input type="text" id="editNombre" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tag"></i> Apellido Paterno <span class="required">*</span></label>
+                            <input type="text" id="editApellidoPaterno" name="apellido_paterno" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tag"></i> Apellido Materno <span class="required">*</span></label>
+                            <input type="text" id="editApellidoMaterno" name="apellido_materno" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-building"></i> Área <span class="required">*</span></label>
+                            <select id="editArea" name="area_id" class="form-control" required>
+                                <option value="">Seleccione un área</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-shield"></i> Rol <span class="required">*</span></label>
+                            <select id="editRol" name="rol_id" class="form-control" required>
+                                <option value="">Seleccione un rol</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-envelope"></i> Correo Electrónico <span class="required">*</span></label>
+                            <input type="email" id="editCorreo" name="correo" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-phone"></i> Número Telefónico <span class="required">*</span></label>
+                            <input type="tel" id="editTelefono" name="telefono" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> Fecha Registro</label>
+                            <input type="text" id="editFechaRegistro" name="fecha_registro" class="form-control" readonly disabled>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel-modal" data-modal="modalEditar">CANCELAR</button>
+                        <button type="submit" class="btn-save-modal">GUARDAR CAMBIOS</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VER USUARIO (SOLO LECTURA) -->
+    <div id="modalVer" class="modal-usuario">
+        <div class="modal-usuario-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-eye"></i> VER USUARIO</h3>
+                <button class="modal-close" data-modal="modalVer">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid grid-2">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> Matrícula</label>
+                        <input type="text" id="verNoNomina" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nombre</label>
+                        <input type="text" id="verNombre" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-tag"></i> Apellido Paterno</label>
+                        <input type="text" id="verApellidoPaterno" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-tag"></i> Apellido Materno</label>
+                        <input type="text" id="verApellidoMaterno" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-building"></i> Área</label>
+                        <input type="text" id="verArea" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-shield"></i> Rol</label>
+                        <input type="text" id="verRol" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                        <input type="text" id="verCorreo" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Número Telefónico</label>
+                        <input type="text" id="verTelefono" class="form-control" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Fecha Registro</label>
+                        <input type="text" id="verFechaRegistro" class="form-control" readonly disabled>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel-modal" data-modal="modalVer">CERRAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CAMBIAR CONTRASEÑA -->
+    <div id="modalCambiarPass" class="modal-usuario">
+        <div class="modal-usuario-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> CAMBIAR CONTRASEÑA</h3>
+                <button class="modal-close" data-modal="modalCambiarPass">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="cambiar-pass-info">
+                    <i class="fas fa-envelope"></i>
+                    <p>Se enviará una nueva contraseña temporal al correo del usuario.</p>
+                    <p class="correo-destino" id="passCorreoDestino">---</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel-modal" data-modal="modalCambiarPass">CANCELAR</button>
+                    <button type="button" class="btn-confirm-pass" id="btnConfirmarCambioPass">ENVIAR NUEVA CONTRASEÑA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR PERMISOS -->
+    <div id="modalEditarPermisos" class="modal-usuario">
+        <div class="modal-usuario-content modal-permisos-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-lock-open"></i> EDITAR PERMISOS</h3>
+                <button class="modal-close" data-modal="modalEditarPermisos">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="permisos-user-info" id="permisosUserInfo">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="permisosUserName">Cargando...</span>
+                    <span id="permisosUserNoNomina" class="permisos-user-nomina"></span>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-title">
+            
+                        <button type="button" id="btnAgregarInterfazPermisos" class="btn-add-permission">
+                            <i class="fas fa-plus-circle"></i> AGREGAR INTERFAZ
+                        </button>
+                    </div>
+                    
+                    <div id="permisosContainerEdit" class="permisos-container">
+                        <div class="empty-permisos" id="emptyPermisosMsgEdit">
+                            <i class="fas fa-shield-alt"></i>
+                            <p>No hay permisos configurados</p>
+                            <span>Haga clic en "Agregar Interfaz" para asignar permisos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel-modal" data-modal="modalEditarPermisos">CANCELAR</button>
+                    <button type="button" class="btn-save-modal" id="btnGuardarPermisos">GUARDAR PERMISOS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA SELECCIONAR CAMPOS POR BOTÓN (EDITAR PERMISOS) -->
+    <div id="modalCamposEdit" class="modal-campos">
+        <div class="modal-campos-content">
+            <div class="modal-campos-header">
+                <h3><i class="fas fa-check-square"></i> Seleccionar Campos</h3>
+                <button type="button" class="modal-close" id="closeModalCamposEdit">&times;</button>
+            </div>
+            <div class="modal-campos-body" id="modalCamposBodyEdit">
+                <!-- Aquí se cargan los checkboxes -->
+            </div>
+            <div class="modal-campos-footer">
+                <button type="button" id="btnConfirmarCamposEdit" class="btn-confirm">Confirmar</button>
+                <button type="button" id="btnCancelarCamposEdit" class="btn-cancel-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates para permisos -->
+    <template id="templatePermisoCardEdit">
+        <div class="permiso-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-window-maximize"></i>
+                    <select class="interfaz-select" required style="min-width: 200px;">
+                        <option value="">Seleccione Interfaz</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-remove-card" title="Eliminar permisos">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="botones-container"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="templateBotonPermisoEdit">
+        <div class="boton-permiso-item">
+            <div class="boton-header">
+                <label class="checkbox-boton">
+                    <input type="checkbox" class="boton-checkbox">
+                    <span class="boton-nombre"></span>
+                </label>
+                <button type="button" class="btn-config-campos" title="Configurar campos">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            <div class="campos-seleccionados" style="display: none;">
+                <div class="campos-list"></div>
+                <input type="hidden" class="campos-values" value="">
+            </div>
+        </div>
+    </template>
+
+    <script src="../../js/ver_usuarios/ver_usuarios.js"></script>
+</body>
+</html>

@@ -1,14 +1,11 @@
 <?php
-// php/conexion/conexion.php - Configuración para múltiples bases de datos
+// php/conexion/conexion.php
 class Database {
     private $host = "localhost";
     private $username = "root";
     private $password = "";
-    
-    // Array de conexiones activas
     private $connections = [];
     
-    // Método para conectar a una base de datos específica
     public function getConnection($dbname) {
         if (!isset($this->connections[$dbname])) {
             try {
@@ -22,13 +19,21 @@ class Database {
         return $this->connections[$dbname];
     }
     
-    // Conexión por defecto a login_op
     public function getDefaultConnection() {
         return $this->getConnection("login_op");
     }
+    
+    public function getAccesosConnection() {
+        return $this->getConnection("accesos_op");
+    }
+    
+    public function getPermisosConnection() {
+        return $this->getConnection("permisos_op");
+    }
 }
 
-// Crear instancia única
 $db = new Database();
 $conn = $db->getDefaultConnection();
+$conn_accesos = $db->getAccesosConnection();
+$conn_permisos = $db->getPermisosConnection();
 ?>

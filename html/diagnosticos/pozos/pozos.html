@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Pozos | OPDAPAS Ixtapaluca</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="../../../css/estilos_generales.css">
+    <link rel="stylesheet" href="../../../css/diagnosticos/pozos/pozos.css">
+</head>
+<body>
+    <div class="pozos-container">
+        <!-- HEADER PREMIUM UNIFICADO -->
+        <div class="page-header-premium">
+            <div class="header-glow"></div>
+            <div class="header-icon-wrapper">
+                <div class="header-icon-pulse"></div>
+                <div class="header-icon">
+                    <i class="fas fa-oil-can"></i>
+                </div>
+            </div>
+            <div class="header-text">
+                <h1>POZOS <span class="header-badge">SISTEMA HIDRÁULICO</span></h1>
+                <p>Gestión y monitoreo de pozos de extracción, niveles y calidad del agua</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <i class="fas fa-droplet" style="font-size: 20px; color: var(--color-primary);"></i>
+                    <span class="stat-label">Pozos activos</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <i class="fas fa-map-marker-alt" style="font-size: 20px; color: var(--color-primary);"></i>
+                    <span class="stat-label">Ixtapaluca</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTONES DE ACCIÓN (5 botones) -->
+        <div class="pozos-buttons-grid">
+            <button class="pozo-action-btn" data-action="mapa_interno">
+                <i class="fas fa-map"></i>
+                <span>Mapa Interno</span>
+            </button>
+            <button class="pozo-action-btn" data-action="abrir_base_datos">
+                <i class="fas fa-database"></i>
+                <span>Abrir Base de Datos</span>
+            </button>
+            <button class="pozo-action-btn" data-action="listado">
+                <i class="fas fa-list"></i>
+                <span>Listado</span>
+            </button>
+            <button class="pozo-action-btn" data-action="my_maps">
+                <i class="fab fa-google"></i>
+                <span>My Maps</span>
+            </button>
+            <button class="pozo-action-btn" data-action="mapa_iconos">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Mapa con Iconos</span>
+            </button>
+        </div>
+
+        <!-- CONTENEDOR INFERIOR - VACÍO POR AHORA (PARA FUTURO HISTORIAL / BASE DE DATOS PHP) -->
+        <div class="pozos-iframe-container" id="pozosIframeContainer">
+            <!-- AQUÍ DESPUÉS CARGARÁS TUS PHP (historial, bases de datos, etc.) -->
+            <!-- POR AHORA QUEDA VACÍO -->
+        </div>
+    </div>
+
+    <!-- LOADING ANIMADO -->
+    <div class="iframe-loading" id="iframeLoading" style="display: none;">
+        <div class="loading-ring">
+            <div></div><div></div><div></div><div></div>
+        </div>
+        <p>Cargando módulo...</p>
+    </div>
+
+    <script src="../../../js/diagnosticos/pozos/pozos.js"></script>
+</body>
+</html>

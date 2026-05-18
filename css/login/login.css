@@ -1,14 +1,14 @@
-/* ==================== RESET ==================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ==========================================================================
+   LOGIN - ESTILOS ESPECÍFICOS PARA PANTALLA DE INICIO DE SESIÓN
+   Depende de estilos_generales.css - Debe cargarse DESPUÉS
+   ========================================================================== */
 
+/* ==================== RESET ESPECÍFICO PARA BODY ==================== */
+/* Estos estilos son EXCLUSIVOS de login porque maneja el layout de la página */
 body {
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
-    background: #1a040b;
+    background: var(--color-bg-dark);
     overflow-x: hidden;
     position: relative;
 }
@@ -37,12 +37,13 @@ body {
 
 .particle {
     position: absolute;
-    background: radial-gradient(circle, #bb9358, transparent);
+    background: radial-gradient(circle, var(--color-primary), transparent);
     border-radius: 50%;
     animation: floatParticle linear infinite;
     pointer-events: none;
 }
 
+/* Animación de partículas flotantes */
 @keyframes floatParticle {
     0% {
         transform: translateY(0) translateX(0) rotate(0deg);
@@ -74,16 +75,16 @@ body {
 .corner-tl {
     top: -100px;
     left: -100px;
-    background: radial-gradient(circle, #691a30, transparent);
+    background: radial-gradient(circle, var(--color-secondary), transparent);
 }
 
 .corner-br {
     bottom: -100px;
     right: -100px;
-    background: radial-gradient(circle, #bb9358, transparent);
+    background: radial-gradient(circle, var(--color-primary), transparent);
 }
 
-/* ==================== CONTAINER ==================== */
+/* ==================== CONTAINER PRINCIPAL ==================== */
 .container {
     position: relative;
     z-index: 2;
@@ -94,6 +95,7 @@ body {
     padding: 2rem;
 }
 
+/* ==================== WRAPPER PRINCIPAL (GRID 2 COLUMNAS) ==================== */
 .login-wrapper {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
@@ -118,6 +120,7 @@ body {
     overflow: hidden;
 }
 
+/* Animación de fondo rotatorio */
 .brand-card::before {
     content: '';
     position: absolute;
@@ -175,7 +178,7 @@ body {
 }
 
 .main-title span {
-    color: #bb9358;
+    color: var(--color-primary);
     display: inline-block;
     text-shadow: 0 0 20px rgba(187, 147, 88, 0.5);
 }
@@ -191,22 +194,17 @@ body {
 .divider-line {
     width: 50px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #bb9358, transparent);
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
 }
 
 .divider i {
-    color: #bb9358;
+    color: var(--color-primary);
     font-size: 1.2rem;
     animation: pulse 2s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
-}
-
 .description {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-white-85);
     font-size: 0.9rem;
     line-height: 1.6;
     font-weight: 400;
@@ -233,7 +231,7 @@ body {
 .drop-svg {
     width: 100px;
     height: 140px;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
 }
 
 .real-drop:hover .drop-svg {
@@ -304,7 +302,7 @@ body {
 .welcome-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #691a30, #2a0812);
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -321,7 +319,7 @@ body {
 }
 
 .form-header h2 {
-    color: #2a0812;
+    color: var(--color-secondary-dark);
     font-size: 1.8rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
@@ -349,22 +347,22 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
 }
 
 .input-icon i {
     font-size: 1.2rem;
-    color: #691a30;
-    transition: all 0.3s ease;
+    color: var(--color-secondary);
+    transition: var(--transition-normal);
 }
 
 .input-group:focus-within .input-icon {
-    background: linear-gradient(135deg, #691a30, #2a0812);
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
     transform: scale(1.05);
 }
 
 .input-group:focus-within .input-icon i {
-    color: #bb9358;
+    color: var(--color-primary);
 }
 
 .input-field {
@@ -381,8 +379,8 @@ body {
     background: transparent;
     outline: none;
     font-family: 'Inter', sans-serif;
-    transition: all 0.3s ease;
-    color: #1a040b;
+    transition: var(--transition-normal);
+    color: var(--color-bg-dark);
     font-weight: 500;
 }
 
@@ -392,7 +390,7 @@ body {
     bottom: 0.5rem;
     font-size: 1rem;
     color: #999;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
     pointer-events: none;
     font-weight: 500;
 }
@@ -401,7 +399,7 @@ body {
 .input-field input:not(:placeholder-shown) ~ label {
     transform: translateY(-1.4rem);
     font-size: 0.75rem;
-    color: #691a30;
+    color: var(--color-secondary);
     font-weight: 600;
 }
 
@@ -411,7 +409,7 @@ body {
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, #691a30, #bb9358);
+    background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
     transition: width 0.3s ease;
 }
 
@@ -435,15 +433,15 @@ body {
 }
 
 .password-toggle:hover i {
-    color: #691a30;
+    color: var(--color-secondary);
 }
 
-/* ==================== BOTÓN PREMIUM ==================== */
+/* ==================== BOTÓN DE LOGIN ==================== */
 .login-btn {
     width: 100%;
     padding: 1rem 1.5rem;
     margin-top: 0.5rem;
-    background: linear-gradient(135deg, #691a30, #2a0812);
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
     border: none;
     border-radius: 50px;
     display: flex;
@@ -453,7 +451,7 @@ body {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
     box-shadow: 0 5px 20px rgba(105, 26, 48, 0.4);
 }
 
@@ -465,7 +463,7 @@ body {
 }
 
 .login-btn .btn-icon {
-    color: #bb9358;
+    color: var(--color-primary);
     transition: transform 0.3s ease;
 }
 
@@ -507,7 +505,7 @@ body {
     font-size: 0.85rem;
     font-weight: 500;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
 }
 
 /* ==================== FOOTER ==================== */
@@ -526,7 +524,7 @@ body {
 }
 
 .security-badge i {
-    color: #27ae60;
+    color: var(--color-success);
     font-size: 0.8rem;
 }
 

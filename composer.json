@@ -1,0 +1,12 @@
+{
+    "name": "admin/proyect_opda",
+    "authors": [
+        {
+            "name": "ChuyLoxx",
+            "email": "jesusguzz24@gmail.com"
+        }
+    ],
+    "require": {
+        "phpmailer/phpmailer": "^7.0"
+    }
+}

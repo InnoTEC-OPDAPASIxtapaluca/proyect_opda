@@ -1,0 +1,377 @@
+/* ==========================================================================
+   INICIO - DISEÑO PREMIUM CON VIDEO DE FONDO
+   Depende de estilos_generales.css - Debe cargarse DESPUÉS
+   ========================================================================== */
+
+/* ==================== RESET ESPECÍFICO ==================== */
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ==================== VIDEO FULLSCREEN ==================== */
+.fullscreen-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    z-index: 0;
+}
+
+/* ==================== OVERLAY DEGRADADO ==================== */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(26, 4, 11, 0.75), rgba(26, 4, 11, 0.85));
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ==================== CONTENIDO PRINCIPAL ==================== */
+.inicio-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 40px 20px;
+}
+
+/* Scroll personalizado para el contenido (oculto pero accesible) */
+.inicio-content::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+.content-wrapper {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* ==================== ANIMACIONES ==================== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.8s ease forwards;
+    opacity: 0;
+}
+
+.animate-fadeInDown {
+    animation: fadeInDown 0.8s ease forwards;
+    opacity: 0;
+}
+
+/* ==================== TÍTULO ==================== */
+.title-container {
+    margin-bottom: 40px;
+}
+
+.main-title {
+    margin: 0;
+    padding: 0;
+}
+
+.title-line {
+    display: block;
+    font-weight: 500;
+    letter-spacing: 2px;
+}
+
+.title-line:first-child {
+    font-size: 14px;
+    color: var(--text-white-70);
+    margin-bottom: 10px;
+}
+
+.title-main {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff, var(--color-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 5px;
+    margin-bottom: 8px;
+}
+
+.title-sub {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-primary);
+    letter-spacing: 8px;
+}
+
+.title-decoration {
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+    margin: 25px auto 0;
+    border-radius: 3px;
+}
+
+/* ==================== TEXTO DE VISIÓN ==================== */
+.vision-container {
+    margin-bottom: 50px;
+    padding: 0 20px;
+}
+
+.vision-text {
+    position: relative;
+    background: rgba(26, 4, 11, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(187, 147, 88, 0.3);
+    border-radius: 28px;
+    padding: 40px 50px;
+    transition: all 0.3s ease;
+}
+
+.vision-text:hover {
+    border-color: rgba(187, 147, 88, 0.6);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.vision-text i {
+    position: absolute;
+    color: var(--color-primary);
+    opacity: 0.5;
+    font-size: 24px;
+}
+
+.vision-text i:first-child {
+    top: 20px;
+    left: 25px;
+}
+
+.vision-text i:last-child {
+    bottom: 20px;
+    right: 25px;
+    transform: rotate(180deg);
+}
+
+.vision-text p {
+    color: var(--text-white-85);
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 0;
+    text-align: center;
+    font-weight: 400;
+}
+
+/* ==================== DECORACIÓN DE AGUA ==================== */
+.water-decoration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.water-drop {
+    width: 40px;
+    height: 40px;
+    background: rgba(187, 147, 88, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: waterPulse 2s ease-in-out infinite;
+}
+
+.water-drop:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.water-drop:nth-child(3) {
+    animation-delay: 1s;
+}
+
+.water-drop i {
+    font-size: 18px;
+    color: var(--color-primary);
+}
+
+@keyframes waterPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+.water-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+    .title-main {
+        font-size: 32px;
+        letter-spacing: 3px;
+    }
+    
+    .title-sub {
+        font-size: 14px;
+        letter-spacing: 5px;
+    }
+    
+    .title-line:first-child {
+        font-size: 11px;
+    }
+    
+    .vision-text {
+        padding: 30px 25px;
+    }
+    
+    .vision-text i {
+        font-size: 18px;
+    }
+    
+    .vision-text i:first-child {
+        top: 12px;
+        left: 15px;
+    }
+    
+    .vision-text i:last-child {
+        bottom: 12px;
+        right: 15px;
+    }
+    
+    .vision-text p {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+    
+    .water-drop {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .water-drop i {
+        font-size: 14px;
+    }
+    
+    .water-line {
+        width: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-main {
+        font-size: 28px;
+        letter-spacing: 2px;
+    }
+    
+    .title-sub {
+        font-size: 12px;
+        letter-spacing: 4px;
+    }
+    
+    .title-line:first-child {
+        font-size: 10px;
+    }
+    
+    .title-decoration {
+        width: 50px;
+    }
+    
+    .vision-text {
+        padding: 25px 20px;
+    }
+    
+    .vision-text p {
+        font-size: 13px;
+    }
+    
+    .water-drop {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .water-drop i {
+        font-size: 12px;
+    }
+    
+    .water-line {
+        width: 30px;
+    }
+}
+
+@media (max-width: 380px) {
+    .title-main {
+        font-size: 24px;
+    }
+    
+    .title-sub {
+        font-size: 10px;
+        letter-spacing: 3px;
+    }
+    
+    .vision-text p {
+        font-size: 12px;
+    }
+}
+
+/* Fallback para navegadores que no soportan object-fit */
+@supports not (object-fit: cover) {
+    .fullscreen-video {
+        width: auto;
+        height: auto;
+        min-width: 100%;
+        min-height: 100%;
+    }
+}

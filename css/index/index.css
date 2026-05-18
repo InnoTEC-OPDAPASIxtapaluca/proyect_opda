@@ -1,9 +1,10 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ==========================================================================
+   INDEX - ESTILOS PARA PANTALLA DE BIENVENIDA CON VIDEO
+   Depende de estilos_generales.css - Debe cargarse DESPUÉS
+   ========================================================================== */
 
+/* ==================== RESET ESPECÍFICO PARA BODY ==================== */
+/* Estos estilos son EXCLUSIVOS de index porque maneja la pantalla de bienvenida */
 body {
     font-family: 'Inter', sans-serif;
     background: #000;
@@ -13,7 +14,7 @@ body {
     width: 100vw;
 }
 
-/* Pantalla de bienvenida */
+/* ==================== PANTALLA DE BIENVENIDA ==================== */
 .welcome-screen {
     position: fixed;
     top: 0;
@@ -33,7 +34,7 @@ body {
     pointer-events: none;
 }
 
-/* Estilos del video */
+/* ==================== VIDEO DE FONDO ==================== */
 .welcome-video {
     position: absolute;
     top: 0;
@@ -44,7 +45,10 @@ body {
     z-index: 0;
 }
 
-/* Animaciones */
+/* ==================== ANIMACIONES ESPECÍFICAS ==================== */
+/* Nota: fadeIn y spin ya están en estilos_generales.css,
+   pero se mantienen por compatibilidad si no se carga el general primero */
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -67,5 +71,27 @@ body {
     }
     to {
         opacity: 1;
+    }
+}
+
+/* ==================== RESPONSIVE ==================== */
+/* Nota: Este iframe NO necesita responsive adicional porque el video
+   ya se adapta automáticamente con object-fit: cover.
+   La pantalla de bienvenida ocupa siempre el 100% viewport. */
+
+@media (max-width: 768px) {
+    /* En móvil, aseguramos que el video cubra bien */
+    .welcome-video {
+        object-position: center center;
+    }
+}
+
+/* Para navegadores que no soportan object-fit */
+@supports not (object-fit: cover) {
+    .welcome-video {
+        width: auto;
+        height: auto;
+        min-width: 100%;
+        min-height: 100%;
     }
 }

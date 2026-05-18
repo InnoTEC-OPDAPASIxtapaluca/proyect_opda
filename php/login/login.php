@@ -41,15 +41,17 @@ try {
             exit;
         }
         
-        $_SESSION['usuario'] = [
-            'nomina' => $usuario['no_nomina'],
-            'nombre' => $usuario['nombre_s'],
-            'apellido_paterno' => $usuario['apellido_paterno'],
-            'apellido_materno' => $usuario['apellido_materno'],
-            'area' => $usuario['area'],
-            'rol' => $usuario['rol'],
-            'correo' => $usuario['correo_electronico']
-        ];
+        // ============================================
+        // CORRECCIÓN: Guardar variables de sesión INDIVIDUALES
+        // ============================================
+        $_SESSION['no_nomina'] = $usuario['no_nomina'];
+        $_SESSION['usuario_id'] = $usuario['no_nomina'];
+        $_SESSION['nombre'] = $usuario['nombre_s'];
+        $_SESSION['apellido_paterno'] = $usuario['apellido_paterno'];
+        $_SESSION['apellido_materno'] = $usuario['apellido_materno'];
+        $_SESSION['area'] = $usuario['area'];
+        $_SESSION['rol'] = $usuario['rol'];
+        $_SESSION['correo'] = $usuario['correo_electronico'];
         
         echo json_encode(['success' => true, 'message' => 'Login exitoso']);
     } else {
