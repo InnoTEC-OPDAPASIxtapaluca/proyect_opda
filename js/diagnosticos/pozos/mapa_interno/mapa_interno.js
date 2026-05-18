@@ -1,6 +1,6 @@
 /**
  * mapa_interno.js - Mapa interactivo de pozos e infraestructura hidráulica
- * Versión independiente - NO depende de otros JS del sistema
+ * Versión independiente - SIN PANEL DE CAPAS
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -21,11 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // VARIABLES GLOBALES
     // ============================================
-    const listaCapas = document.getElementById("listaCapas");
-    const capas = {};           // Apartado -> Bloque -> LayerGroup
-    const capasGlobales = [];   // Todos los layers individuales
-    const controlesApartados = {}; // Botones de cada apartado
     const iconosCache = {};
+    const capasGlobales = [];   // Todos los layers individuales
 
     // ============================================
     // FUNCIÓN PARA OBTENER ICONOS
@@ -156,133 +153,50 @@ document.addEventListener('DOMContentLoaded', function() {
             popupFijado = false;
             this.setPopupContent(contenidoSimple);
         });
-
-        // Método auxiliar para zoom temporal
-        layer.abrirTemporal = function() {
-            popupFijado = false;
-            this.setPopupContent(contenidoCompleto);
-            this.openPopup();
-        };
     }
 
     // ============================================
-    // CONSTRUIR LISTA DE CAPAS EN EL PANEL
+    // CARGAR POLÍGONO DEL MUNICIPIO DESDE GEOJSON
     // ============================================
-    function construirLista() {
-        listaCapas.innerHTML = "";
-
-        Object.keys(capas).forEach(apartado => {
-            const divBloque = document.createElement("div");
-            divBloque.className = "map-bloque";
-
-            // Título del apartado
-            const h4 = document.createElement("h4");
-            h4.innerHTML = `<i class="fas fa-folder-open"></i> ${apartado}`;
-            divBloque.appendChild(h4);
-
-            // Botones del apartado
-            const btnContainer = document.createElement("div");
-            btnContainer.className = "map-bloque-btns";
-            
-            const btnApagar = document.createElement("button");
-            btnApagar.className = "map-bloque-btn";
-            btnApagar.innerHTML = '<i class="fas fa-eye-slash"></i> Apagar todo';
-            btnApagar.onclick = () => toggleApartado(apartado, false);
-            
-            const btnEncender = document.createElement("button");
-            btnEncender.className = "map-bloque-btn";
-            btnEncender.innerHTML = '<i class="fas fa-eye"></i> Encender todo';
-            btnEncender.onclick = () => toggleApartado(apartado, true);
-            
-            btnContainer.appendChild(btnApagar);
-            btnContainer.appendChild(btnEncender);
-            divBloque.appendChild(btnContainer);
-
-            // Items individuales por bloque
-            Object.keys(capas[apartado]).forEach(bloque => {
-                const grupo = capas[apartado][bloque];
-                
-                const divItem = document.createElement("div");
-                divItem.className = "map-item";
-
-                const chk = document.createElement("input");
-                chk.type = "checkbox";
-                chk.checked = true;
-                chk.addEventListener("change", () => {
-                    if (chk.checked) {
-                        grupo.addTo(map);
-                    } else {
-                        map.removeLayer(grupo);
-                    }
-                });
-
-                const label = document.createElement("span");
-                label.textContent = bloque;
-                label.addEventListener("click", () => {
-                    // Recopilar features del grupo
-                    const features = [];
-                    grupo.eachLayer(layer => features.push(layer));
-                    if (!features.length) return;
-
-                    // Asegurar que el grupo esté visible
-                    if (!map.hasLayer(grupo)) {
-                        grupo.addTo(map);
-                        chk.checked = true;
-                    }
-
-                    // Hacer zoom al grupo
-                    const featureGroup = L.featureGroup(features);
-                    const bounds = featureGroup.getBounds();
-                    if (bounds.isValid()) {
-                        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
-                    }
-
-                    // Abrir popup temporal del primer elemento
-                    if (features[0] && features[0].abrirTemporal) {
-                        features[0].abrirTemporal();
-                    }
-
-                    // En móvil, cerrar el panel
-                    if (window.innerWidth <= 768) {
-                        cerrarPanel();
-                    }
-                });
-
-                divItem.appendChild(chk);
-                divItem.appendChild(label);
-                divBloque.appendChild(divItem);
-            });
-
-            listaCapas.appendChild(divBloque);
-        });
-    }
-
-    function toggleApartado(apartado, encender) {
-        if (!capas[apartado]) return;
-        Object.keys(capas[apartado]).forEach(bloque => {
-            const grupo = capas[apartado][bloque];
-            if (encender) {
-                grupo.addTo(map);
-            } else {
-                map.removeLayer(grupo);
-            }
-            // Actualizar checkbox correspondiente
-            const items = document.querySelectorAll(".map-item");
-            items.forEach(item => {
-                const span = item.querySelector("span");
-                if (span && span.textContent === bloque) {
-                    const chk = item.querySelector("input");
-                    if (chk) chk.checked = encender;
+    function cargarPoligonoMunicipio() {
+        // 🔧 Ruta CORREGIDA - misma que usaste y funcionó
+        const rutaGeoJSON = "../../../../data/diagnosticos/pozos/poligono_ixtapaluca.json";
+        
+        console.log("🔍 Cargando polígono desde:", rutaGeoJSON);
+        
+        fetch(rutaGeoJSON)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}: No se encontró el archivo`);
+                return res.json();
+            })
+            .then(geojson => {
+                if (geojson && geojson.features && geojson.features.length > 0) {
+                    const poligono = L.geoJSON(geojson, {
+                        style: {
+                            color: '#9D2449',
+                            weight: 3,
+                            fillColor: '#9D2449',
+                            fillOpacity: 0.15
+                        }
+                    }).addTo(map);
+                    
+                    poligono.bringToBack();
+                    console.log("✅ Polígono del municipio cargado desde GeoJSON");
+                } else {
+                    console.warn("⚠️ El GeoJSON no contiene features válidas");
                 }
-            });
-        });
+            })
+            .catch(err => console.error("❌ Error cargando el polígono GeoJSON:", err));
     }
 
     // ============================================
     // CARGA DEL ARCHIVO CSV
     // ============================================
     function cargarDatos() {
-        const rutaCSV = "../../../data/diagnosticos/pozos/datos.csv";
+        // 🔧 Misma ruta corregida
+        const rutaCSV = "../../../../data/diagnosticos/pozos/datos.csv";
+        
+        console.log("🔍 Buscando CSV en:", rutaCSV);
 
         Papa.parse(rutaCSV, {
             download: true,
@@ -293,19 +207,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 results.data.forEach(row => {
                     const wkt = row.WKT?.trim();
-                    const apartado = row.Apartado?.trim() || "Otros";
-                    const bloque = row.Bloque?.trim() || "Sin bloque";
                     const nombreIcono = row.Icono?.trim();
 
                     if (!wkt) return;
                     const geom = parseWKT(wkt);
                     if (!geom) return;
-
-                    // Crear estructura de capas si no existe
-                    if (!capas[apartado]) capas[apartado] = {};
-                    if (!capas[apartado][bloque]) {
-                        capas[apartado][bloque] = L.layerGroup().addTo(map);
-                    }
 
                     let layer = null;
                     let lat = 0, lng = 0;
@@ -318,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (geom.type === "LINESTRING") {
                         const color = row.Icono || "#bb9358";
                         layer = L.polyline(geom.coords, { color: color, weight: 5 });
-                        // Estimar centro para popup
                         const bounds = L.latLngBounds(geom.coords);
                         const center = bounds.getCenter();
                         lat = center.lat;
@@ -338,24 +243,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     if (layer) {
-                        // Bind popup
-                        const popupContent = `<b>${row.Nombre || "Sin nombre"}</b><br>${row.Descripción || ""}`;
-                        layer.bindPopup(popupContent);
-                        
-                        // Aplicar interacciones
                         aplicarInteracciones(layer, row, lat, lng);
-                        
-                        layer.addTo(capas[apartado][bloque]);
+                        layer.addTo(map);
                         capasGlobales.push(layer);
                     }
                 });
 
-                construirLista();
-                zoomAutomatico();
-                cargarPoligonoMunicipio();
+                if (capasGlobales.length > 0) {
+                    zoomAutomatico();
+                }
             },
             error: function(error) {
                 console.error("❌ Error cargando CSV:", error);
+                console.log("⚠️ El CSV no se encontró, pero el polígono igual se cargará");
             }
         });
     }
@@ -373,109 +273,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
-    // CARGAR POLÍGONO DEL MUNICIPIO
-    // ============================================
-    function cargarPoligonoMunicipio() {
-        const rutaGeoJSON = "../../../data/diagnosticos/pozos/poligono_ixtapaluca.json";
-        
-        fetch(rutaGeoJSON)
-            .then(res => {
-                if (!res.ok) throw new Error("No se encontró el archivo GeoJSON");
-                return res.json();
-            })
-            .then(geojson => {
-                const poligono = L.geoJSON(geojson, {
-                    style: {
-                        color: '#9D2449',
-                        weight: 3,
-                        fillColor: '#9D2449',
-                        fillOpacity: 0.15
-                    }
-                }).addTo(map);
-                poligono.bringToBack();
-                console.log("✅ Polígono del municipio cargado");
-            })
-            .catch(err => console.warn("⚠️ No se pudo cargar el polígono:", err));
-    }
-
-    // ============================================
-    // FUNCIONES DEL PANEL (CONTROLES)
-    // ============================================
-    function cerrarPanel() {
-        const panel = document.getElementById("mapPanel");
-        panel.classList.add("oculto");
-    }
-
-    function abrirPanel() {
-        const panel = document.getElementById("mapPanel");
-        panel.classList.remove("oculto");
-    }
-
-    window.togglePanel = function() {
-        const panel = document.getElementById("mapPanel");
-        panel.classList.toggle("oculto");
-    };
-
-    // ============================================
     // EVENTOS DE BOTONES
     // ============================================
     function initEventos() {
-        // Botón General (Apagar/Encender todo)
-        const btnGeneral = document.getElementById("btnGeneral");
-        let todoEncendido = true;
-        
-        btnGeneral.addEventListener("click", () => {
-            todoEncendido = !todoEncendido;
-            
-            Object.keys(capas).forEach(apartado => {
-                Object.keys(capas[apartado]).forEach(bloque => {
-                    const grupo = capas[apartado][bloque];
-                    if (todoEncendido) {
-                        grupo.addTo(map);
-                    } else {
-                        map.removeLayer(grupo);
-                    }
-                });
-            });
-            
-            // Actualizar checkboxes
-            const checkboxes = document.querySelectorAll(".map-item input[type='checkbox']");
-            checkboxes.forEach(chk => {
-                chk.checked = todoEncendido;
-            });
-            
-            btnGeneral.innerHTML = todoEncendido ? '<i class="fas fa-power-off"></i> Apagar todo' : '<i class="fas fa-play"></i> Encender todo';
-        });
-        
-        // Botón centrar mapa
         const btnCentro = document.getElementById("btnCentroMapa");
-        btnCentro.addEventListener("click", () => {
-            map.setView([19.35369, -98.79454], 12);
-        });
-        
-        // Botón flotante para móvil
-        const btnFlotante = document.getElementById("btnFlotantePanel");
-        btnFlotante.addEventListener("click", () => {
-            abrirPanel();
-        });
-        
-        // Botón toggle del panel
-        const btnToggle = document.getElementById("btnTogglePanel");
-        btnToggle.addEventListener("click", () => {
-            togglePanel();
-        });
-        
-        // Cerrar panel automático en móvil al cargar
-        if (window.innerWidth <= 768) {
-            cerrarPanel();
+        if (btnCentro) {
+            btnCentro.addEventListener("click", () => {
+                map.setView([19.35369, -98.79454], 12);
+            });
         }
-        
-        // Reaccionar a cambios de tamaño
-        window.addEventListener("resize", () => {
-            if (window.innerWidth > 768) {
-                abrirPanel();
-            }
-        });
     }
 
     // ============================================
@@ -483,7 +289,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     function init() {
         initEventos();
-        cargarDatos();
+        cargarPoligonoMunicipio();  // 🔧 Cargar polígono primero (independiente)
+        cargarDatos();               // 🔧 Luego intentar cargar CSV (no bloquea)
     }
 
     init();
