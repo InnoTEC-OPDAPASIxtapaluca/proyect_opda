@@ -332,72 +332,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // FUNCIONES AUXILIARES
     // ============================================
-    // ============================================
-// FUNCIÓN: LIMPIAR TEXTO (MAYÚSCULAS, CONSERVANDO Ñ)
-// ============================================
-function limpiarTextoMayusculas(valor) {
-    if (!valor) return '';
-    
-    // 1. Convertir a mayúsculas
-    let texto = valor.toUpperCase();
-    
-    // 2. Reemplazar caracteres acentuados (pero conservar Ñ)
-    const acentos = {
-        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
-        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
-        'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
-        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
-        'Ã': 'A', 'Õ': 'O'
-    };
-    
-    for (let [acento, letra] of Object.entries(acentos)) {
-        texto = texto.replace(new RegExp(acento, 'g'), letra);
+    function limpiarTextoMayusculas(valor) {
+        if (!valor) return '';
+        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const soloLetrasEspacios = sinAcentos.replace(/[^A-Za-z\s]/g, '');
+        return soloLetrasEspacios.toUpperCase();
     }
-    
-    // 3. Eliminar caracteres que NO sean letras (A-Z), Ñ, o espacios
-    //    NOTA: El espacio se conserva (no lo eliminamos)
-    texto = texto.replace(/[^A-ZÑ\s]/g, '');
-    
-    // 4. Reemplazar múltiples espacios por uno solo (opcional, para limpieza)
-    texto = texto.replace(/\s+/g, ' ').trim();
-    
-    return texto;
-}
 
-function limpiarNumeroNomina(valor) {
-    if (!valor) return '';
-    
-    // Convertir a mayúsculas, permitir letras (incluyendo Ñ), números y guiones
-    let texto = valor.toUpperCase();
-    
-    // Reemplazar acentos
-    const acentos = {
-        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
-        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
-        'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
-        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
-        'Ã': 'A', 'Õ': 'O'
-    };
-    
-    for (let [acento, letra] of Object.entries(acentos)) {
-        texto = texto.replace(new RegExp(acento, 'g'), letra);
+    function limpiarNumeroNomina(valor) {
+        if (!valor) return '';
+        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return sinAcentos.replace(/[^A-Za-z0-9-]/g, '').toUpperCase();
     }
-    
-    // Permitir A-Z, Ñ, 0-9, y guiones
-    texto = texto.replace(/[^A-ZÑ0-9-]/g, '');
-    
-    return texto;
-}
 
-function limpiarSoloNumeros(valor) {
-    if (!valor) return '';
-    return valor.replace(/[^0-9]/g, '');
-}
+    function limpiarSoloNumeros(valor) {
+        return valor ? valor.replace(/[^0-9]/g, '') : '';
+    }
 
-function forzarMinusculas(valor) {
-    if (!valor) return '';
-    return valor.toLowerCase();
-}
+    function forzarMinusculas(valor) {
+        return valor ? valor.toLowerCase() : '';
+    }
     
     function configurarValidacionesFiltros() {
         if (filtroNombre) {
@@ -703,94 +657,50 @@ function forzarMinusculas(valor) {
         });
     }
     
-
-    // ============================================
-// FUNCIÓN PARA HACER COLABSABLE UNA TARJETA DE PERMISOS (EDITAR PERMISOS)
-// ============================================
-function hacerColapsableTarjetaEdit(card) {
-    const header = card.querySelector('.card-header');
-    if (!header) return;
-    
-    // Agregar ícono de colapsar si no existe
-    let collapseIcon = card.querySelector('.card-collapse-icon');
-    if (!collapseIcon) {
-        collapseIcon = document.createElement('i');
-        collapseIcon.className = 'fas fa-chevron-down card-collapse-icon';
-        header.appendChild(collapseIcon);
-    }
-    
-    // Asegurar que la tarjeta empiece expandida
-    card.classList.remove('collapsed');
-    
-    // Evento click en el header (excepto si se da click en el select, btn remove o config)
-    header.addEventListener('click', (e) => {
-        // Evitar colapsar si el click fue en elementos interactivos
-        if (e.target.classList.contains('interfaz-select') || 
-            e.target.closest('.interfaz-select') ||
-            e.target.classList.contains('btn-remove-card') ||
-            e.target.closest('.btn-remove-card') ||
-            e.target.classList.contains('btn-config-campos') ||
-            e.target.closest('.btn-config-campos') ||
-            e.target.classList.contains('checkbox-boton') ||
-            e.target.closest('.checkbox-boton') ||
-            e.target.type === 'checkbox') {
-            return;
-        }
-        
-        card.classList.toggle('collapsed');
-    });
-}
-
-
     // ============================================
     // CREAR TARJETA DE PERMISO (EDITAR)
     // ============================================
     function crearTarjetaPermisoEdit(permisosData = {}) {
-    if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'none';
-    
-    const card = templatePermisoCardEdit.content.cloneNode(true).querySelector('.permiso-card');
-    const interfazSelect = card.querySelector('.interfaz-select');
-    
-    if (interfacesList.length > 0) {
-        interfazSelect.innerHTML = '<option value="">Seleccione Interfaz</option>';
-        interfacesList.forEach(interfaz => {
-            const option = document.createElement('option');
-            option.value = interfaz.id;
-            option.textContent = interfaz.nombre_interfaz;
-            interfazSelect.appendChild(option);
-        });
-    } else {
-        cargarInterfaces(interfazSelect);
-    }
-    
-    interfazSelect.addEventListener('change', async (e) => {
-        const idInterfaz = e.target.value;
-        if (idInterfaz) {
-            await cargarBotonesPorInterfaz(card, idInterfaz, {});
+        if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'none';
+        
+        const card = templatePermisoCardEdit.content.cloneNode(true).querySelector('.permiso-card');
+        const interfazSelect = card.querySelector('.interfaz-select');
+        
+        if (interfacesList.length > 0) {
+            interfazSelect.innerHTML = '<option value="">Seleccione Interfaz</option>';
+            interfacesList.forEach(interfaz => {
+                const option = document.createElement('option');
+                option.value = interfaz.id;
+                option.textContent = interfaz.nombre_interfaz;
+                interfazSelect.appendChild(option);
+            });
         } else {
-            const botonesContainer = card.querySelector('.botones-container');
-            if (botonesContainer) botonesContainer.innerHTML = '';
+            cargarInterfaces(interfazSelect);
         }
-    });
-    
-    const btnRemove = card.querySelector('.btn-remove-card');
-    if (btnRemove) {
-        btnRemove.addEventListener('click', (e) => {
-            e.stopPropagation(); // Evitar que el click propague al header
-            card.remove();
-            if (permisosContainerEdit && permisosContainerEdit.querySelectorAll('.permiso-card').length === 0) {
-                if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'flex';
+        
+        interfazSelect.addEventListener('change', async (e) => {
+            const idInterfaz = e.target.value;
+            if (idInterfaz) {
+                await cargarBotonesPorInterfaz(card, idInterfaz, {});
+            } else {
+                const botonesContainer = card.querySelector('.botones-container');
+                if (botonesContainer) botonesContainer.innerHTML = '';
             }
         });
+        
+        const btnRemove = card.querySelector('.btn-remove-card');
+        if (btnRemove) {
+            btnRemove.addEventListener('click', () => {
+                card.remove();
+                if (permisosContainerEdit && permisosContainerEdit.querySelectorAll('.permiso-card').length === 0) {
+                    if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'flex';
+                }
+            });
+        }
+        
+        if (permisosContainerEdit) permisosContainerEdit.appendChild(card);
+        return card;
     }
-    
-    if (permisosContainerEdit) permisosContainerEdit.appendChild(card);
-    
-    // ✅ Hacer la tarjeta colapsable
-    hacerColapsableTarjetaEdit(card);
-    
-    return card;
-}
     
     // ============================================
     // CARGAR PERMISOS DEL USUARIO PARA EDITAR

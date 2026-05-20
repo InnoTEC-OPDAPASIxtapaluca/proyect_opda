@@ -1,7 +1,6 @@
 /**
  * agregar_usuario.js - Gestión de usuarios y permisos
  * MODIFICADO: Usuario maestro detectado desde BD con campo es_maestro
- * MODIFICADO: Tarjetas de permisos colapsables
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -118,72 +117,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // FUNCIÓN: LIMPIAR TEXTO (MAYÚSCULAS, SIN ACENTOS, SIN SÍMBOLOS)
     // ============================================
-    // ============================================
-// FUNCIÓN: LIMPIAR TEXTO (MAYÚSCULAS, CONSERVANDO Ñ)
-// ============================================
-function limpiarTextoMayusculas(valor) {
-    if (!valor) return '';
-    
-    // 1. Convertir a mayúsculas
-    let texto = valor.toUpperCase();
-    
-    // 2. Reemplazar caracteres acentuados (pero conservar Ñ)
-    const acentos = {
-        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
-        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
-        'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
-        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
-        'Ã': 'A', 'Õ': 'O'
-    };
-    
-    for (let [acento, letra] of Object.entries(acentos)) {
-        texto = texto.replace(new RegExp(acento, 'g'), letra);
+    function limpiarTextoMayusculas(valor) {
+        if (!valor) return '';
+        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const soloLetrasEspacios = sinAcentos.replace(/[^A-Za-z\s]/g, '');
+        return soloLetrasEspacios.toUpperCase();
     }
-    
-    // 3. Eliminar caracteres que NO sean letras (A-Z), Ñ, o espacios
-    //    NOTA: El espacio se conserva (no lo eliminamos)
-    texto = texto.replace(/[^A-ZÑ\s]/g, '');
-    
-    // 4. Reemplazar múltiples espacios por uno solo (opcional, para limpieza)
-    texto = texto.replace(/\s+/g, ' ').trim();
-    
-    return texto;
-}
 
-function limpiarNumeroNomina(valor) {
-    if (!valor) return '';
-    
-    // Convertir a mayúsculas, permitir letras (incluyendo Ñ), números y guiones
-    let texto = valor.toUpperCase();
-    
-    // Reemplazar acentos
-    const acentos = {
-        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
-        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
-        'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
-        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
-        'Ã': 'A', 'Õ': 'O'
-    };
-    
-    for (let [acento, letra] of Object.entries(acentos)) {
-        texto = texto.replace(new RegExp(acento, 'g'), letra);
+    function limpiarNumeroNomina(valor) {
+        if (!valor) return '';
+        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const soloPermitidos = sinAcentos.replace(/[^A-Za-z0-9-]/g, '');
+        return soloPermitidos.toUpperCase();
     }
-    
-    // Permitir A-Z, Ñ, 0-9, y guiones
-    texto = texto.replace(/[^A-ZÑ0-9-]/g, '');
-    
-    return texto;
-}
 
-function limpiarSoloNumeros(valor) {
-    if (!valor) return '';
-    return valor.replace(/[^0-9]/g, '');
-}
+    function limpiarSoloNumeros(valor) {
+        if (!valor) return '';
+        return valor.replace(/[^0-9]/g, '');
+    }
 
-function forzarMinusculas(valor) {
-    if (!valor) return '';
-    return valor.toLowerCase();
-}
+    function forzarMinusculas(valor) {
+        if (!valor) return '';
+        return valor.toLowerCase();
+    }
     
     // ============================================
     // CONFIGURAR VALIDACIONES EN CAMPOS DE DATOS PERSONALES
@@ -474,38 +430,6 @@ function forzarMinusculas(valor) {
     }
     
     // ============================================
-    // FUNCIÓN PARA HACER COLABSABLE UNA TARJETA DE PERMISOS
-    // ============================================
-    function hacerColapsableTarjeta(card) {
-        const header = card.querySelector('.card-header');
-        if (!header) return;
-        
-        // Agregar ícono de colapsar si no existe
-        let collapseIcon = card.querySelector('.card-collapse-icon');
-        if (!collapseIcon) {
-            collapseIcon = document.createElement('i');
-            collapseIcon.className = 'fas fa-chevron-down card-collapse-icon';
-            header.appendChild(collapseIcon);
-        }
-        
-        // Agregar estado collapsed por defecto (expandido)
-        card.classList.remove('collapsed');
-        
-        // Evento click en el header (excepto si se da click en el select o btn remove)
-        header.addEventListener('click', (e) => {
-            // Evitar colapsar si el click fue en el select o en el botón eliminar
-            if (e.target.classList.contains('interfaz-select') || 
-                e.target.closest('.interfaz-select') ||
-                e.target.classList.contains('btn-remove-card') ||
-                e.target.closest('.btn-remove-card')) {
-                return;
-            }
-            
-            card.classList.toggle('collapsed');
-        });
-    }
-    
-    // ============================================
     // CREAR NUEVA TARJETA DE PERMISOS
     // ============================================
     function crearTarjetaPermiso() {
@@ -534,9 +458,6 @@ function forzarMinusculas(valor) {
         }
         
         permisosContainer.appendChild(card);
-        
-        // Hacer la tarjeta colapsable después de agregarla al DOM
-        hacerColapsableTarjeta(card);
     }
     
     // ============================================
