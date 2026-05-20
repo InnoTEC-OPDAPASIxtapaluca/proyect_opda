@@ -41,6 +41,10 @@ class Database {
                 'accesos_op' => [
                     'username' => 'u167111103_opda1',
                     'password' => '24092004.Jgl'
+                ],
+                'infra_op' => [
+                    'username' => 'u167111103_infra_op',
+                    'password' => '24092004.Jgl'
                 ]
             ];
         }
@@ -83,7 +87,7 @@ class Database {
             $realDbNames = [
                 'login_op' => 'u167111103_login_op',
                 'accesos_op' => 'u167111103_accesos_op',
-                'infraestructura_op' => 'u167111103_infraestructura_op' // Si existe en Hostinger
+                'infraestructura_op' => 'u167111103_infra_op' // Si existe en Hostinger
             ];
             
             return isset($realDbNames[$dbname]) ? $realDbNames[$dbname] : $dbname;
