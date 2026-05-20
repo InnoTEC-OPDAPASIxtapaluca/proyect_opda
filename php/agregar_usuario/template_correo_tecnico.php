@@ -316,7 +316,6 @@ function generarTemplateCorreoTecnico($datosUsuario, $passwordTemporal) {
                 <p>• Guarde esta información en un lugar seguro.</p>
                 <p>• Si no solicitó esta cuenta, haga omiso a este mensaje.</p>
                 <p>• Para mayor seguridad, no comparta su contraseña con nadie.</p>
-                <p>• Recomendamos cambiar su contraseña en el primer inicio de sesión.</p>
             </div>
         </div>
         
