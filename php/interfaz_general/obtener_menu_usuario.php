@@ -34,7 +34,7 @@ try {
     // ============================================
     if ($es_maestro) {
         // Obtener TODAS las interfaces
-        $sql_interfaces = "SELECT id, nombre_interfaz, ruta FROM accesos_op.interfaces";
+        $sql_interfaces = "SELECT id, nombre_interfaz, ruta FROM interfaces";
         $stmt_interfaces = $conn_accesos->prepare($sql_interfaces);
         $stmt_interfaces->execute();
         $todas_interfaces = $stmt_interfaces->fetchAll(PDO::FETCH_ASSOC);
@@ -42,14 +42,14 @@ try {
         $menu = [];
         foreach ($todas_interfaces as $interfaz) {
             // Obtener todos los botones de esta interfaz
-            $sql_botones = "SELECT nombre_boton FROM accesos_op.botones WHERE id_interfaz = :id_interfaz";
+            $sql_botones = "SELECT nombre_boton FROM botones WHERE id_interfaz = :id_interfaz";
             $stmt_botones = $conn_accesos->prepare($sql_botones);
             $stmt_botones->execute([':id_interfaz' => $interfaz['id']]);
             $botones = $stmt_botones->fetchAll(PDO::FETCH_COLUMN);
             $botones_str = implode(',', $botones);
             
             // Obtener campos organizados por botón
-            $sql_campos = "SELECT nombre_campo, nombre_boton FROM accesos_op.campos WHERE id_interfaz = :id_interfaz";
+            $sql_campos = "SELECT nombre_campo, nombre_boton FROM campos WHERE id_interfaz = :id_interfaz";
             $stmt_campos = $conn_accesos->prepare($sql_campos);
             $stmt_campos->execute([':id_interfaz' => $interfaz['id']]);
             $campos_data = $stmt_campos->fetchAll(PDO::FETCH_ASSOC);
