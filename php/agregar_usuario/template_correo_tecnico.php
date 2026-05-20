@@ -268,7 +268,7 @@ function generarTemplateCorreoTecnico($datosUsuario, $passwordTemporal) {
     <div class="container">
         <div class="header">
             <div class="logo-area">
-                <img src="https://ixtecdigital.com/imagenes/logo-opdapas.png" alt="Ixtec-Digital" style="max-width: 80px; height: auto; margin-bottom: 10px;">
+                <i class="fas fa-tint logo-icon" style="font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 48px; color: #bb9358;">&#xf043;</i>
             </div>
             <h1>OPDAPAS IXTAPALUCA</h1>
             <div class="subtitulo">
