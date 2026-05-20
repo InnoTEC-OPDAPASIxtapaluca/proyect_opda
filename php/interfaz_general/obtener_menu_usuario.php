@@ -161,7 +161,7 @@ try {
     
     $placeholders = implode(',', array_fill(0, count($ids_permitidos), '?'));
     $sql_interfaces = "SELECT id, nombre_interfaz, ruta, icono 
-                       FROM accesos_op.interfaces 
+                       FROM interfaces 
                        WHERE id IN ($placeholders)";
     $stmt_interfaces = $conn_accesos->prepare($sql_interfaces);
     $stmt_interfaces->execute($ids_permitidos);
