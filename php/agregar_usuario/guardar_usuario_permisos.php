@@ -78,7 +78,7 @@ try {
     
     // Guardar permisos - NUEVA LÓGICA
     if (!empty($data['permisos']) && is_array($data['permisos'])) {
-        $dbPermisos = $conn_permisos; // ✅ CORRECTO: Usas permisos_op
+        $dbPermisos = $conn; // 
         
         foreach ($data['permisos'] as $permiso) {
             $idInterfaz = $permiso['id_interfaz'];

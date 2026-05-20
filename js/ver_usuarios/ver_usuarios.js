@@ -657,50 +657,94 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+
+    // ============================================
+// FUNCIÓN PARA HACER COLABSABLE UNA TARJETA DE PERMISOS (EDITAR PERMISOS)
+// ============================================
+function hacerColapsableTarjetaEdit(card) {
+    const header = card.querySelector('.card-header');
+    if (!header) return;
+    
+    // Agregar ícono de colapsar si no existe
+    let collapseIcon = card.querySelector('.card-collapse-icon');
+    if (!collapseIcon) {
+        collapseIcon = document.createElement('i');
+        collapseIcon.className = 'fas fa-chevron-down card-collapse-icon';
+        header.appendChild(collapseIcon);
+    }
+    
+    // Asegurar que la tarjeta empiece expandida
+    card.classList.remove('collapsed');
+    
+    // Evento click en el header (excepto si se da click en el select, btn remove o config)
+    header.addEventListener('click', (e) => {
+        // Evitar colapsar si el click fue en elementos interactivos
+        if (e.target.classList.contains('interfaz-select') || 
+            e.target.closest('.interfaz-select') ||
+            e.target.classList.contains('btn-remove-card') ||
+            e.target.closest('.btn-remove-card') ||
+            e.target.classList.contains('btn-config-campos') ||
+            e.target.closest('.btn-config-campos') ||
+            e.target.classList.contains('checkbox-boton') ||
+            e.target.closest('.checkbox-boton') ||
+            e.target.type === 'checkbox') {
+            return;
+        }
+        
+        card.classList.toggle('collapsed');
+    });
+}
+
+
     // ============================================
     // CREAR TARJETA DE PERMISO (EDITAR)
     // ============================================
     function crearTarjetaPermisoEdit(permisosData = {}) {
-        if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'none';
-        
-        const card = templatePermisoCardEdit.content.cloneNode(true).querySelector('.permiso-card');
-        const interfazSelect = card.querySelector('.interfaz-select');
-        
-        if (interfacesList.length > 0) {
-            interfazSelect.innerHTML = '<option value="">Seleccione Interfaz</option>';
-            interfacesList.forEach(interfaz => {
-                const option = document.createElement('option');
-                option.value = interfaz.id;
-                option.textContent = interfaz.nombre_interfaz;
-                interfazSelect.appendChild(option);
-            });
+    if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'none';
+    
+    const card = templatePermisoCardEdit.content.cloneNode(true).querySelector('.permiso-card');
+    const interfazSelect = card.querySelector('.interfaz-select');
+    
+    if (interfacesList.length > 0) {
+        interfazSelect.innerHTML = '<option value="">Seleccione Interfaz</option>';
+        interfacesList.forEach(interfaz => {
+            const option = document.createElement('option');
+            option.value = interfaz.id;
+            option.textContent = interfaz.nombre_interfaz;
+            interfazSelect.appendChild(option);
+        });
+    } else {
+        cargarInterfaces(interfazSelect);
+    }
+    
+    interfazSelect.addEventListener('change', async (e) => {
+        const idInterfaz = e.target.value;
+        if (idInterfaz) {
+            await cargarBotonesPorInterfaz(card, idInterfaz, {});
         } else {
-            cargarInterfaces(interfazSelect);
+            const botonesContainer = card.querySelector('.botones-container');
+            if (botonesContainer) botonesContainer.innerHTML = '';
         }
-        
-        interfazSelect.addEventListener('change', async (e) => {
-            const idInterfaz = e.target.value;
-            if (idInterfaz) {
-                await cargarBotonesPorInterfaz(card, idInterfaz, {});
-            } else {
-                const botonesContainer = card.querySelector('.botones-container');
-                if (botonesContainer) botonesContainer.innerHTML = '';
+    });
+    
+    const btnRemove = card.querySelector('.btn-remove-card');
+    if (btnRemove) {
+        btnRemove.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evitar que el click propague al header
+            card.remove();
+            if (permisosContainerEdit && permisosContainerEdit.querySelectorAll('.permiso-card').length === 0) {
+                if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'flex';
             }
         });
-        
-        const btnRemove = card.querySelector('.btn-remove-card');
-        if (btnRemove) {
-            btnRemove.addEventListener('click', () => {
-                card.remove();
-                if (permisosContainerEdit && permisosContainerEdit.querySelectorAll('.permiso-card').length === 0) {
-                    if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'flex';
-                }
-            });
-        }
-        
-        if (permisosContainerEdit) permisosContainerEdit.appendChild(card);
-        return card;
     }
+    
+    if (permisosContainerEdit) permisosContainerEdit.appendChild(card);
+    
+    // ✅ Hacer la tarjeta colapsable
+    hacerColapsableTarjetaEdit(card);
+    
+    return card;
+}
     
     // ============================================
     // CARGAR PERMISOS DEL USUARIO PARA EDITAR

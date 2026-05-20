@@ -94,13 +94,14 @@ try {
     
     // ============================================
     // RESTO DE USUARIOS (NO MAESTROS)
+    // LOS PERMISOS AHORA ESTÁN EN login_op (misma BD que $conn)
     // ============================================
     
-    // Obtener permisos específicos
+    // Obtener permisos específicos DESDE login_op (tabla permisos_user)
     $sql_permisos = "SELECT id_interfaz, nombre_boton, nombre_campo 
-                     FROM permisos_op.permisos_user 
+                     FROM permisos_user 
                      WHERE no_nomina = :no_nomina";
-    $stmt_permisos = $conn_permisos->prepare($sql_permisos);
+    $stmt_permisos = $conn->prepare($sql_permisos);
     $stmt_permisos->execute([':no_nomina' => $no_nomina]);
     $permisos_especificos = $stmt_permisos->fetchAll(PDO::FETCH_ASSOC);
     

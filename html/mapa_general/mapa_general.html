@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Mapa General - Infraestructura | OPDAPAS Ixtapaluca</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS General del Sistema -->
+    <link rel="stylesheet" href="../../css/estilos_generales.css">
+
+    <!-- CSS del Mapa General -->
+    <link rel="stylesheet" href="../../css/mapa_general/mapa_general.css">
+</head>
+<body>
+
+    <!-- BOTÓN CENTRAR MAPA -->
+    <button class="map-btn-centro" id="btnCentroMapa" title="Centrar mapa en Ixtapaluca">
+        <img src="../../imagenes/logo-opdapas.png" alt="Centrar mapa">
+    </button>
+
+    <!-- CONTENEDOR DEL MAPA -->
+    <div id="map"></div>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../../js/mapa_general/mapa_general.js" type="module"></script>
+</body>
+</html>

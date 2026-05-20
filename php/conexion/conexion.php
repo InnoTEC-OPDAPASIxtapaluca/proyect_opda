@@ -27,13 +27,16 @@ class Database {
         return $this->getConnection("accesos_op");
     }
     
-    public function getPermisosConnection() {
-        return $this->getConnection("permisos_op");
+    // ELIMINADO: getPermisosConnection()
+    
+    public function getInfraestructuraConnection() {
+        return $this->getConnection("infraestructura_op");
     }
 }
 
 $db = new Database();
-$conn = $db->getDefaultConnection();
+$conn = $db->getDefaultConnection(); // Esta es la conexión a login_op (usuarios + permisos)
 $conn_accesos = $db->getAccesosConnection();
-$conn_permisos = $db->getPermisosConnection();
+$conn_infraestructura = $db->getInfraestructuraConnection();
+// ELIMINADO: $conn_permisos
 ?>

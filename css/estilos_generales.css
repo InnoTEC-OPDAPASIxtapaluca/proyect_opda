@@ -1024,7 +1024,9 @@ select.form-control option {
 
 /* ==================== RESPONSIVE PARA LAS TARJETAS DE PERMISOS ==================== */
 
-/* Tablets */
+/* ==================== RESPONSIVE PARA LAS TARJETAS DE PERMISOS ==================== */
+
+/* Tablets y pantallas medianas */
 @media (max-width: 1024px) {
     .permisos-container {
         grid-template-columns: repeat(2, 1fr);
@@ -1039,8 +1041,53 @@ select.form-control option {
         gap: 16px;
     }
     
+    /* Reorganización del header de la tarjeta para móviles */
     .permiso-card .card-header {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
         padding: 12px 15px;
+        position: relative;
+    }
+    
+    /* El título ocupa todo el ancho, el botón eliminar se va a la derecha */
+    .permiso-card .card-title {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* El select ocupa el espacio disponible */
+    .permiso-card .interfaz-select {
+        flex: 1;
+        min-width: 120px;
+        max-width: 100%;
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+    
+    /* El ícono de colapsar va después del select */
+    .card-collapse-icon {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    
+    /* Botón eliminar - posicionado a la derecha */
+    .permiso-card .btn-remove-card {
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+    
+    /* Ajuste para el ícono del título */
+    .permiso-card .card-title i {
+        flex-shrink: 0;
     }
     
     .interfaz-select {
@@ -1057,25 +1104,71 @@ select.form-control option {
     }
 }
 
-/* Móviles pequeños */
-@media (max-width: 480px) {
+/* Móviles pequeños (menos de 550px) */
+@media (max-width: 550px) {
     .permiso-card .card-header {
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: stretch;
         gap: 10px;
     }
     
-    .card-title {
+    .permiso-card .card-title {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .permiso-card .card-title i {
+        font-size: 18px;
+    }
+    
+    .permiso-card .interfaz-select {
+        flex: 1;
+        min-width: 180px;
+    }
+    
+    /* Fila inferior para el botón eliminar y colapsar */
+    .permiso-card .card-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    /* Contenedor para acciones (eliminar + colapsar) */
+    .permiso-card .card-header-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
         width: 100%;
     }
     
-    .btn-remove-card {
-        position: absolute;
-        top: 10px;
-        right: 10px;
+    .permiso-card .btn-remove-card {
+        margin-left: auto;
+    }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 400px) {
+    .permiso-card .card-header {
+        padding: 10px 12px;
     }
     
-    .permiso-card {
-        position: relative;
+    .permiso-card .card-title {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .permiso-card .card-title i {
+        display: none; /* Ocultar ícono en pantallas muy pequeñas para ahorrar espacio */
+    }
+    
+    .permiso-card .interfaz-select {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .card-collapse-icon {
+        margin-left: auto;
     }
 }
 

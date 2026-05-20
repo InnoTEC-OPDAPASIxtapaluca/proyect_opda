@@ -1,0 +1,410 @@
+/* ==========================================================================
+   MAPA GENERAL - ESTILOS BASE
+   ========================================================================== */
+
+/* Contenedor principal */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    background: #0a0205;
+    z-index: 1;
+}
+
+/* ==================== MENÚ LATERAL ==================== */
+.menu-lateral {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+/* Botón principal */
+.menu-btn-principal {
+    background: linear-gradient(135deg, #691a30, #2a0812);
+    border: 1px solid rgba(187, 147, 88, 0.5);
+    border-radius: 16px;
+    padding: 12px 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.menu-btn-principal i {
+    font-size: 18px;
+    color: #bb9358;
+}
+
+.menu-btn-principal:hover {
+    transform: translateY(-2px);
+}
+
+/* Menú desplegable */
+.menu-desplegable {
+    background: linear-gradient(135deg, rgba(26, 4, 11, 0.98), rgba(15, 2, 24, 0.98));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(187, 147, 88, 0.4);
+    border-radius: 20px;
+    width: 320px;
+    max-width: 90vw;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.menu-desplegable.oculto {
+    display: none;
+}
+
+/* Header del menú */
+.menu-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(187, 147, 88, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.menu-header h3 {
+    color: #bb9358;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-cerrar-menu {
+    background: rgba(187, 147, 88, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    color: #bb9358;
+    cursor: pointer;
+}
+
+.btn-cerrar-menu:hover {
+    background: rgba(187, 147, 88, 0.4);
+    transform: rotate(90deg);
+}
+
+/* Contenido del menú */
+.menu-contenido {
+    max-height: calc(85vh - 70px);
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+/* Scroll personalizado */
+.menu-contenido::-webkit-scrollbar {
+    width: 6px;
+}
+.menu-contenido::-webkit-scrollbar-track {
+    background: rgba(187, 147, 88, 0.1);
+    border-radius: 10px;
+}
+.menu-contenido::-webkit-scrollbar-thumb {
+    background: #bb9358;
+    border-radius: 10px;
+}
+
+/* Categoría */
+.menu-categoria {
+    border-bottom: 1px solid rgba(187, 147, 88, 0.15);
+    margin-bottom: 5px;
+}
+
+.categoria-header {
+    padding: 12px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.categoria-header:hover {
+    background: rgba(187, 147, 88, 0.08);
+}
+
+.categoria-header span {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.categoria-header span i {
+    color: #bb9358;
+    width: 20px;
+}
+
+.categoria-toggle {
+    color: #bb9358;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.categoria-header.collapsed .categoria-toggle {
+    transform: rotate(-90deg);
+}
+
+/* Items de la categoría (ocultos por defecto) */
+.categoria-items {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.categoria-items.expanded {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Item individual */
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px 10px 45px;
+    border-bottom: 1px solid rgba(187, 147, 88, 0.08);
+}
+
+.menu-item:hover {
+    background: rgba(187, 147, 88, 0.08);
+}
+
+.item-nombre {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.item-nombre:hover {
+    color: #bb9358;
+}
+
+/* Toggle switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: 0.3s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background: linear-gradient(135deg, #691a30, #8b2c3e);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* Loading */
+.loading-items {
+    padding: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.loading-items i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+/* Botón centrar mapa */
+.map-btn-centro {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #691a30, #2a0812);
+    border: 1px solid rgba(187, 147, 88, 0.5);
+    border-radius: 16px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.map-btn-centro img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.map-btn-centro:hover {
+    transform: scale(1.05);
+}
+
+/* Popups */
+.popup-contenido {
+    min-width: 180px;
+}
+
+.popup-contenido b {
+    color: #bb9358;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.btn-direcciones {
+    background: linear-gradient(135deg, #691a30, #2a0812);
+    border: none;
+    border-radius: 30px;
+    padding: 6px 14px;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .menu-desplegable { width: 280px; }
+    .map-btn-centro { top: 15px; right: 15px; width: 45px; height: 45px; }
+    .map-btn-centro img { width: 24px; height: 24px; }
+    .menu-btn-principal { padding: 10px 16px; font-size: 13px; }
+    .menu-lateral { top: 15px; left: 15px; }
+    .menu-item { padding: 8px 16px 8px 35px; }
+}
+
+@media (max-width: 480px) {
+    .menu-desplegable { width: 260px; }
+    .item-nombre { font-size: 12px; }
+    .map-btn-centro { top: 10px; right: 10px; width: 40px; height: 40px; }
+    .menu-lateral { top: 10px; left: 10px; }
+}
+
+/* Agregar al final del archivo mapa_general.css */
+
+/* Estilos para los controles de categoría */
+.categoria-header {
+    padding: 12px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.categoria-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.categoria-titulo i {
+    color: #bb9358;
+    width: 20px;
+}
+
+.categoria-titulo span {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.categoria-controles {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-activar-capa {
+    background: rgba(187, 147, 88, 0.2);
+    border: 1px solid rgba(187, 147, 88, 0.3);
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-activar-capa i {
+    color: #bb9358;
+    font-size: 14px;
+}
+
+.btn-activar-capa:hover {
+    background: rgba(187, 147, 88, 0.4);
+    transform: scale(1.05);
+}
+
+.btn-activar-capa.active {
+    background: linear-gradient(135deg, #691a30, #8b2c3e);
+    border-color: #bb9358;
+}
+
+.btn-activar-capa.active i {
+    color: white;
+}
+
+.categoria-toggle {
+    color: #bb9358;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.categoria-header.collapsed .categoria-toggle {
+    transform: rotate(-90deg);
+}

@@ -1,6 +1,6 @@
 /**
  * interfaz_general.js - Interfaz General con menú dinámico
- * MODIFICADO: Usuario maestro detectado desde BD, no por número de nómina hardcodeado
+ * MODIFICADO: Sidebar ultra compacto al colapsar
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const modalCancelBtn = document.getElementById('modalCancelBtn');
     const modalConfirmBtn = document.getElementById('modalConfirmBtn');
     
+    // Botón toggle para colapsar sidebar
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    
     // Tooltip elementos
     const userAvatarBtn = document.getElementById('userAvatarBtn');
     const userTooltip = document.getElementById('userTooltip');
@@ -34,6 +37,81 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Variable para almacenar datos del usuario
     let currentUserData = null;
+    
+    // ============================================
+    // FUNCIONES PARA COLAPSAR SIDEBAR (ULTRA COMPACTO)
+    // ============================================
+    function toggleSidebar() {
+        if (!sidebar) return;
+        
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expandir sidebar
+            sidebar.classList.remove('collapsed');
+            localStorage.setItem('sidebar_collapsed', 'false');
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.querySelector('i').className = 'fas fa-chevron-left';
+            }
+        } else {
+            // Colapsar sidebar
+            sidebar.classList.add('collapsed');
+            localStorage.setItem('sidebar_collapsed', 'true');
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.querySelector('i').className = 'fas fa-chevron-right';
+            }
+        }
+        
+        // Cerrar tooltip si está abierto
+        cerrarTooltip();
+        
+        // Forzar reflow del iframe para ajustar tamaño
+        setTimeout(() => {
+            if (mainIframe) {
+                const event = new Event('resize');
+                window.dispatchEvent(event);
+            }
+        }, 300);
+    }
+    
+    function expandSidebar() {
+        if (!sidebar) return;
+        if (sidebar.classList.contains('collapsed')) {
+            sidebar.classList.remove('collapsed');
+            localStorage.setItem('sidebar_collapsed', 'false');
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.querySelector('i').className = 'fas fa-chevron-left';
+            }
+        }
+    }
+    
+    function collapseSidebar() {
+        if (!sidebar) return;
+        if (!sidebar.classList.contains('collapsed')) {
+            sidebar.classList.add('collapsed');
+            localStorage.setItem('sidebar_collapsed', 'true');
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.querySelector('i').className = 'fas fa-chevron-right';
+            }
+        }
+    }
+    
+    function restaurarEstadoSidebar() {
+        // Solo en desktop (ancho > 1024px)
+        if (window.innerWidth > 1024) {
+            const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+            if (isCollapsed) {
+                collapseSidebar();
+            } else {
+                expandSidebar();
+            }
+        } else {
+            // En móvil, asegurar que no está colapsado y que el sidebar está oculto
+            if (sidebar && sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+            }
+        }
+    }
     
     // ============================================
     // FUNCIONES DEL MENÚ
@@ -65,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     // ============================================
-    // FUNCIONES DEL TOOLTIP (SOLO RESPONSIVE)
+    // FUNCIONES DEL TOOLTIP
     // ============================================
     function actualizarTooltipUsuario(usuario) {
         const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido_paterno || ''} ${usuario.apellido_materno || ''}`.trim();
@@ -77,19 +155,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     function mostrarTooltip(event) {
         if (!userTooltip) return;
         
-        // Actualizar contenido antes de mostrar
         if (currentUserData) {
             actualizarTooltipUsuario(currentUserData);
         }
         
-        // Obtener posición del avatar
         const rect = userAvatarBtn.getBoundingClientRect();
         
-        // Posicionar el tooltip debajo del avatar
         let top = rect.bottom + 8;
         let left = rect.left + (rect.width / 2) - (userTooltip.offsetWidth / 2);
         
-        // Ajustar si se sale de la pantalla
         if (left < 10) left = 10;
         if (left + userTooltip.offsetWidth > window.innerWidth - 10) {
             left = window.innerWidth - userTooltip.offsetWidth - 10;
@@ -100,7 +174,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         userTooltip.classList.add('active');
         
-        // Cerrar después de 3 segundos
         setTimeout(() => {
             cerrarTooltip();
         }, 3000);
@@ -121,7 +194,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
-    // Cerrar tooltip al hacer clic fuera
     function handleDocumentClickForTooltip(event) {
         if (!userTooltip) return;
         const isClickOnAvatar = userAvatarBtn && userAvatarBtn.contains(event.target);
@@ -148,7 +220,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         currentUserData = usuario;
         const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido_paterno || ''} ${usuario.apellido_materno || ''}`.trim();
         
-        // Header
         const headerUserName = document.getElementById('headerUserName');
         const headerUserRole = document.getElementById('headerUserRole');
         const headerUserArea = document.getElementById('headerUserArea');
@@ -157,14 +228,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (headerUserRole) headerUserRole.textContent = usuario.rol || 'SIN ROL';
         if (headerUserArea) headerUserArea.textContent = usuario.area || 'SIN ÁREA';
         
-        // Actualizar tooltip si está disponible
         actualizarTooltipUsuario(usuario);
         
-        // ✅ NUEVO: Establecer variable global si es usuario maestro (desde BD)
         window.USUARIO_MAESTRO = usuario.es_maestro === true || usuario.es_maestro === 1;
         
         if (window.USUARIO_MAESTRO) {
-            console.log('👑 Usuario MAESTRO detectado (desde base de datos)');
+            console.log('👑 Usuario MAESTRO detectado');
         } else {
             console.log('👤 Usuario normal detectado');
         }
@@ -236,8 +305,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 menuItems.forEach(item => {
                     const pageId = item.nombre.toLowerCase().replace(/ /g, '_');
-                    
-                    // Convertir campos_por_boton a string JSON para el atributo data
                     const camposPorBotonJSON = item.campos_por_boton ? JSON.stringify(item.campos_por_boton) : '';
                     
                     const li = document.createElement('li');
@@ -251,6 +318,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         <div class="nav-icon"><i class="fas ${getIconForModule(item.nombre)}"></i></div>
                         <span class="nav-text">${escapeHtml(item.nombre)}</span>
                         <div class="nav-glow"></div>
+                        <div class="nav-active-indicator"></div>
                     `;
                     navMenu.appendChild(li);
                     
@@ -303,8 +371,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ============================================
     function cargarPagina(pageId, ruta, nombrePagina, botones, camposPorBoton) {
         console.log(`📄 Cargando página: ${pageId}`);
-        console.log(`📋 Botones: ${botones}`);
-        console.log(`📋 Campos por botón:`, camposPorBoton);
         
         if (currentPageId === pageId && pageId !== 'inicio') {
             return;
@@ -326,22 +392,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (item.getAttribute('data-page') === pageId) item.classList.add('active');
         });
         
-        // Guardar botones
         if (botones) {
             sessionStorage.setItem('permisos_botones_' + pageId, botones);
         } else {
             sessionStorage.removeItem('permisos_botones_' + pageId);
         }
         
-        // Guardar campos por botón
         if (camposPorBoton) {
             if (typeof camposPorBoton === 'object') {
                 sessionStorage.setItem('permisos_campos_por_boton_' + pageId, JSON.stringify(camposPorBoton));
-            } 
-            else if (typeof camposPorBoton === 'string' && camposPorBoton.startsWith('{')) {
+            } else if (typeof camposPorBoton === 'string' && camposPorBoton.startsWith('{')) {
                 sessionStorage.setItem('permisos_campos_por_boton_' + pageId, camposPorBoton);
-            }
-            else if (typeof camposPorBoton === 'string') {
+            } else if (typeof camposPorBoton === 'string') {
                 const objetoSimple = { default: camposPorBoton };
                 sessionStorage.setItem('permisos_campos_por_boton_' + pageId, JSON.stringify(objetoSimple));
             }
@@ -507,6 +569,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             mobileMenuOverlay.addEventListener('click', handleMobileOverlayClick);
         }
         
+        // Evento para colapsar sidebar
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.removeEventListener('click', toggleSidebar);
+            sidebarToggleBtn.addEventListener('click', toggleSidebar);
+        }
+        
         document.removeEventListener('click', handleOutsideClick);
         document.addEventListener('click', handleOutsideClick);
         
@@ -588,6 +656,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
             document.body.style.overflow = '';
             cerrarTooltip();
+            
+            const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+            if (isCollapsed && !sidebar.classList.contains('collapsed')) {
+                collapseSidebar();
+            } else if (!isCollapsed && sidebar.classList.contains('collapsed')) {
+                expandSidebar();
+            }
+        } else {
+            if (sidebar && sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+            }
         }
     }
     
@@ -606,6 +685,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         configurarEventosMenu();
         initEventListeners();
         restaurarPaginaActiva();
+        restaurarEstadoSidebar();
         
         isInitialized = true;
         console.log('✅ Listo');

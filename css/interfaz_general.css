@@ -120,21 +120,32 @@ body {
     z-index: 100;
     display: flex;
     flex-direction: column;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
 }
 
+/* ==================== SIDEBAR HEADER CON BOTÓN INTEGRADO ==================== */
 .sidebar-header {
     padding: 1rem 1.5rem;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     border-bottom: 1px solid rgba(187, 147, 88, 0.2);
     margin-bottom: 0.5rem;
     min-height: 80px;
     flex-shrink: 0;
     background: linear-gradient(135deg, rgba(105, 26, 48, 0.3), transparent);
+    position: relative;
+}
+
+/* Contenedor del logo y texto */
+.sidebar-brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
 }
 
 .brand-icon {
@@ -175,6 +186,28 @@ body {
     color: var(--color-primary);
     letter-spacing: 1.5px;
     font-weight: 500;
+}
+
+/* Botón toggle - DENTRO del header, alineado a la derecha */
+.sidebar-toggle-btn {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    border: 1px solid rgba(187, 147, 88, 0.6);
+    border-radius: 8px;
+    color: var(--color-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-toggle-btn:hover {
+    background: linear-gradient(135deg, var(--color-secondary-light), var(--color-secondary));
+    transform: scale(1.05);
 }
 
 .sidebar-decoration {
@@ -220,15 +253,6 @@ body {
 .sidebar-nav::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     border-radius: 10px;
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, var(--color-primary-light), #8a2038);
-}
-
-.sidebar-nav {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-primary) rgba(187, 147, 88, 0.1);
 }
 
 .nav-menu {
@@ -426,6 +450,121 @@ body {
     font-size: 0.6rem;
 }
 
+/* ==================== SIDEBAR COLLAPSED - SOLO EN DESKTOP ==================== */
+@media (min-width: 1025px) {
+    .sidebar.collapsed {
+        width: 85px;
+    }
+    
+    /* Ocultar todo excepto el logo y el botón */
+    .sidebar.collapsed .brand-text-sidebar,
+    .sidebar.collapsed .sidebar-decoration,
+    .sidebar.collapsed .compact-info-sidebar,
+    .sidebar.collapsed .logout-btn-sidebar,
+    .sidebar.collapsed .security-badge-sidebar,
+    .sidebar.collapsed .sidebar-footer {
+        display: none;
+    }
+    
+    /* Header colapsado: centrar el logo y el botón debajo */
+    .sidebar.collapsed .sidebar-header {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem 0;
+        gap: 10px;
+    }
+    
+    .sidebar.collapsed .sidebar-brand-wrapper {
+        justify-content: center;
+        margin: 0;
+    }
+    
+    .sidebar.collapsed .brand-icon {
+        margin: 0 auto;
+        width: 50px;
+        height: 50px;
+    }
+    
+    /* Botón centrado debajo del logo en modo colapsado */
+    .sidebar.collapsed .sidebar-toggle-btn {
+        margin: 0 auto;
+    }
+    
+    .sidebar.collapsed .sidebar-toggle-btn i {
+        transform: rotate(180deg);
+    }
+    
+    /* Estilos del menú colapsado */
+    .sidebar.collapsed .nav-item {
+        justify-content: center;
+        padding: 14px 0;
+        margin: 5px 8px;
+    }
+    
+    .sidebar.collapsed .nav-text {
+        display: none;
+    }
+    
+    .sidebar.collapsed .nav-icon {
+        margin: 0;
+    }
+    
+    .sidebar.collapsed .nav-icon i {
+        font-size: 1.5rem;
+    }
+    
+    /* Tooltip flotante al hacer hover */
+    .sidebar.collapsed .nav-item {
+        position: relative;
+    }
+    
+    .sidebar.collapsed .nav-item:hover .nav-text {
+        display: inline-block;
+        position: absolute;
+        left: 85px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(135deg, var(--color-bg-dark), var(--color-secondary-dark));
+        padding: 8px 16px;
+        border-radius: 0 12px 12px 0;
+        white-space: nowrap;
+        z-index: 200;
+        border-left: 3px solid var(--color-primary);
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-primary);
+        animation: fadeInLeft 0.2s ease;
+    }
+    
+    /* Botón colapsado - estilo especial */
+    .sidebar.collapsed .sidebar-toggle-btn {
+        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    }
+    
+    .sidebar.collapsed .sidebar-toggle-btn i {
+        color: white;
+    }
+    
+    /* Ajuste del main-container */
+    .sidebar.collapsed + .main-container {
+        margin-left: 85px;
+    }
+}
+
+/* Animación para el tooltip flotante */
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 /* ==================== MAIN CONTAINER PREMIUM ==================== */
 .main-container {
     margin-left: 280px;
@@ -435,6 +574,7 @@ body {
     position: relative;
     z-index: 10;
     overflow: hidden;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==================== TOP HEADER PREMIUM ==================== */
@@ -1034,10 +1174,64 @@ body {
     .sidebar {
         transform: translateX(-100%);
         z-index: 150;
+        width: 280px;
     }
     
     .sidebar.open {
         transform: translateX(0);
+    }
+    
+    /* En móvil, el sidebar NO debe tener estilos colapsados */
+    .sidebar.collapsed {
+        width: 280px;
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.collapsed.open {
+        transform: translateX(0);
+    }
+    
+    .sidebar.collapsed .brand-text-sidebar {
+        display: flex;
+    }
+    
+    .sidebar.collapsed .compact-info-sidebar,
+    .sidebar.collapsed .logout-btn-sidebar,
+    .sidebar.collapsed .security-badge-sidebar {
+        display: block;
+    }
+    
+    .sidebar.collapsed .nav-text {
+        display: inline;
+    }
+    
+    .sidebar.collapsed .sidebar-header {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+    }
+    
+    .sidebar.collapsed .sidebar-brand-wrapper {
+        justify-content: flex-start;
+    }
+    
+    .sidebar.collapsed .brand-icon {
+        margin: 0;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .sidebar.collapsed .nav-item {
+        justify-content: flex-start;
+        padding: 12px 16px;
+    }
+    
+    .sidebar.collapsed .nav-icon i {
+        font-size: 1.1rem;
+    }
+    
+    .sidebar.collapsed .sidebar-toggle-btn {
+        display: none;
     }
     
     .main-container {
@@ -1048,6 +1242,10 @@ body {
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    
+    .sidebar-toggle-btn {
+        display: none;
     }
     
     .top-header {

@@ -22,17 +22,17 @@ if (isset($_SESSION['no_nomina']) && $_SESSION['no_nomina'] === $no_nomina) {
 }
 
 try {
-    $conn_permisos->beginTransaction();
+    $conn->beginTransaction();
     
     // 1. Eliminar permisos existentes
     $sqlDelete = "DELETE FROM permisos_op.permisos_user WHERE no_nomina = :no_nomina";
-    $stmtDelete = $conn_permisos->prepare($sqlDelete);
+    $stmtDelete = $conn->prepare($sqlDelete);
     $stmtDelete->execute([':no_nomina' => $no_nomina]);
     
     // 2. Insertar nuevos permisos
     $sqlInsert = "INSERT INTO permisos_op.permisos_user (no_nomina, id_interfaz, nombre_boton, nombre_campo) 
                   VALUES (:no_nomina, :id_interfaz, :nombre_boton, :nombre_campo)";
-    $stmtInsert = $conn_permisos->prepare($sqlInsert);
+    $stmtInsert = $conn->prepare($sqlInsert);
     
     foreach ($nuevosPermisos as $permiso) {
         $idInterfaz = $permiso['id_interfaz'];
@@ -70,12 +70,12 @@ try {
         }
     }
     
-    $conn_permisos->commit();
+    $conn->commit();
     
     echo json_encode(['success' => true, 'mensaje' => 'Permisos actualizados correctamente']);
     
 } catch(PDOException $e) {
-    $conn_permisos->rollBack();
+    $conn->rollBack();
     echo json_encode([
         'success' => false,
         'mensaje' => 'Error: ' . $e->getMessage()

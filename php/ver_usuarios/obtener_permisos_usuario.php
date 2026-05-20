@@ -16,7 +16,7 @@ try {
     $sql = "SELECT id_interfaz, nombre_boton, nombre_campo 
             FROM permisos_op.permisos_user 
             WHERE no_nomina = :no_nomina";
-    $stmt = $conn_permisos->prepare($sql);
+    $stmt = $conn->prepare($sql);
     $stmt->execute([':no_nomina' => $no_nomina]);
     $permisos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
