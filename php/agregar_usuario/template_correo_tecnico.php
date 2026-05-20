@@ -288,7 +288,7 @@ function generarTemplateCorreoTecnico($datosUsuario, $passwordTemporal) {
             
             <table class="datos-usuario">
                 <tr>
-                    <td class="label">IDENTIFICADOR</td>
+                    <td class="label">NUMERO DE NOMINA</td>
                     <td class="valor">{$identificador}</td>
                 </tr>
                 <tr>
