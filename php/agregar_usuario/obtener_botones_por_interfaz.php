@@ -10,7 +10,7 @@ if (!$id_interfaz) {
 }
 
 try {
-    $sql = "SELECT id, nombre_boton FROM accesos_op.botones WHERE id_interfaz = :id_interfaz";
+    $sql = "SELECT id, nombre_boton FROM botones WHERE id_interfaz = :id_interfaz";
     $stmt = $conn_accesos->prepare($sql);
     $stmt->execute([':id_interfaz' => $id_interfaz]);
     $botonesRaw = $stmt->fetchAll(PDO::FETCH_ASSOC);

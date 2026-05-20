@@ -13,7 +13,7 @@ if (!$id_interfaz || !$nombre_boton) {
 try {
     // Buscar el registro que CONTENGA este botón en la cadena
     $sql = "SELECT id, nombre_campo 
-            FROM accesos_op.campos 
+            FROM campos 
             WHERE id_interfaz = :id_interfaz 
             AND FIND_IN_SET(:nombre_boton, nombre_boton) > 0
             ORDER BY nombre_campo";
