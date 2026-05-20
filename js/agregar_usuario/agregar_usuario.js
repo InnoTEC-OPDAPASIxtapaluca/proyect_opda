@@ -118,12 +118,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // FUNCIÓN: LIMPIAR TEXTO (MAYÚSCULAS, SIN ACENTOS, SIN SÍMBOLOS)
     // ============================================
     function limpiarTextoMayusculas(valor) {
-        if (!valor) return '';
-        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u0301]/g, '');
-        const soloLetrasEspacios = sinAcentos.replace(/[^A-Za-z\s]/g, '');
-        const soloLetrasEspacios = sinAcentos.replace(/[^A-Za-zÑñ\s]/g, '');
-        return soloLetrasEspacios.toUpperCase();
-    }
+    if (!valor) return '';
+    // Primero convertir a mayúsculas
+    let resultado = valor.toUpperCase();
+    // Reemplazar vocales con tilde por vocales sin tilde
+    resultado = resultado.replace(/[ÁÀÄÂÃ]/g, 'A');
+    resultado = resultado.replace(/[ÉÈËÊ]/g, 'E');
+    resultado = resultado.replace(/[ÍÌÏÎ]/g, 'I');
+    resultado = resultado.replace(/[ÓÒÖÔÕ]/g, 'O');
+    resultado = resultado.replace(/[ÚÙÜÛ]/g, 'U');
+    // Eliminar cualquier otro carácter que no sea letra (A-Z), Ñ, o espacio
+    resultado = resultado.replace(/[^A-ZÑ\s]/g, '');
+    return resultado;
+}
 
     function limpiarNumeroNomina(valor) {
         if (!valor) return '';
