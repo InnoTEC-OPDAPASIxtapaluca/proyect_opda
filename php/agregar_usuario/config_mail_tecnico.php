@@ -25,7 +25,7 @@ class MailConfigTecnico {
             'auth' => true,
             'secure' => 'tls',
             'username' => 'innovacion.tecnologica.2024@gmail.com',
-            'password' => 'jgfp mdmu rgtq aghf',  // ⚠️ DEBES AGREGAR LA CONTRASEÑA DE APLICACIÓN
+            'password' => 'gpwj zonn tbkm qaoh',  // ⚠️ DEBES AGREGAR LA CONTRASEÑA DE APLICACIÓN
             'from_name' => 'OPDAPAS IXTAPALUCA',
             'from_email' => 'innovacion.tecnologica.2024@gmail.com'
         ]
