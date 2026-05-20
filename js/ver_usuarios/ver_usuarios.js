@@ -1,6 +1,7 @@
 /**
  * ver_usuarios.js - Gestión de usuarios (CRUD completo + Editar Permisos)
  * MODIFICADO: Usuario maestro detectado desde BD con campo es_maestro
+ * MODIFICADO: Botones de permisos colapsables - clic en contenedor despliega/contrae
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -481,7 +482,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================================
-    // CARGAR BOTONES POR INTERFAZ (EDITAR PERMISOS)
+    // ALTERNAR VISIBILIDAD DE LOS BOTONES (DESPLEGAR/CONTRAER)
+    // ============================================
+    function toggleBotonesContainer(card) {
+        const botonesContainer = card.querySelector('.botones-container');
+        if (!botonesContainer) return;
+        
+        // Si está oculto, lo mostramos; si está visible, lo ocultamos
+        if (botonesContainer.style.display === 'none') {
+            botonesContainer.style.display = 'block';
+        } else {
+            botonesContainer.style.display = 'none';
+        }
+    }
+    
+    // ============================================
+    // CARGAR BOTONES POR INTERFAZ (EDITAR PERMISOS) - CONTRAÍDOS POR DEFECTO
     // ============================================
     async function cargarBotonesPorInterfaz(card, idInterfaz, permisosActuales = {}) {
         if (!idInterfaz) return;
@@ -535,6 +551,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         botonesContainer.appendChild(botonItem);
                     });
                 }
+                
+                // ✅ NUEVO: Inicialmente los botones están ocultos (contraídos)
+                botonesContainer.style.display = 'none';
                 
                 configurarEventosBotonesPermisos(card);
             }
@@ -668,12 +687,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================================
-    // CREAR TARJETA DE PERMISO (EDITAR)
+    // CREAR TARJETA DE PERMISO (EDITAR) - CON CLIC PARA DESPLEGAR/CONTRAER
     // ============================================
     function crearTarjetaPermisoEdit(permisosData = {}) {
         if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'none';
         
         const card = templatePermisoCardEdit.content.cloneNode(true).querySelector('.permiso-card');
+        
+        // ✅ NUEVO: Agregar cursor pointer y evento de clic a la tarjeta
+        card.style.cursor = 'pointer';
+        
         const interfazSelect = card.querySelector('.interfaz-select');
         
         if (interfacesList.length > 0) {
@@ -688,19 +711,52 @@ document.addEventListener('DOMContentLoaded', function() {
             cargarInterfaces(interfazSelect);
         }
         
+        // Variable para evitar que el clic en el select propague y cierre/abra inmediatamente
+        let isSelectChanging = false;
+        
         interfazSelect.addEventListener('change', async (e) => {
+            e.stopPropagation();
+            isSelectChanging = true;
             const idInterfaz = e.target.value;
             if (idInterfaz) {
                 await cargarBotonesPorInterfaz(card, idInterfaz, {});
+                // ✅ Después de cargar, aseguramos que esté contraído
+                const botonesContainer = card.querySelector('.botones-container');
+                if (botonesContainer) {
+                    botonesContainer.style.display = 'none';
+                }
             } else {
                 const botonesContainer = card.querySelector('.botones-container');
-                if (botonesContainer) botonesContainer.innerHTML = '';
+                if (botonesContainer) {
+                    botonesContainer.innerHTML = '';
+                    botonesContainer.style.display = 'none';
+                }
             }
+            setTimeout(() => {
+                isSelectChanging = false;
+            }, 100);
+        });
+        
+        // ✅ Evento de clic en la tarjeta (pero NO cuando se hace clic en el select o en botones)
+        card.addEventListener('click', (e) => {
+            // Evitar que el clic en el select o en elementos internos dispare el toggle
+            if (e.target.closest('.interfaz-select') || 
+                e.target.closest('.btn-remove-card') ||
+                e.target.closest('.boton-checkbox') ||
+                e.target.closest('.btn-config-campos')) {
+                return;
+            }
+            
+            // Si estamos cambiando el select, no hacer toggle
+            if (isSelectChanging) return;
+            
+            toggleBotonesContainer(card);
         });
         
         const btnRemove = card.querySelector('.btn-remove-card');
         if (btnRemove) {
-            btnRemove.addEventListener('click', () => {
+            btnRemove.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que el clic en eliminar despliegue/contraiga
                 card.remove();
                 if (permisosContainerEdit && permisosContainerEdit.querySelectorAll('.permiso-card').length === 0) {
                     if (emptyPermisosMsgEdit) emptyPermisosMsgEdit.style.display = 'flex';
