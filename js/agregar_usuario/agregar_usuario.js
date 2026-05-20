@@ -124,10 +124,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function limpiarTextoMayusculas(valor) {
     if (!valor) return '';
     
-    // 1. Convertir a mayúsculas primero
+    // 1. Convertir a mayúsculas
     let texto = valor.toUpperCase();
     
-    // 2. Reemplazar caracteres acentuados (pero conservar Ñ)
+    // 2. Reemplazar caracteres acentuados (conservando Ñ)
     const acentos = {
         'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
         'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
@@ -140,36 +140,12 @@ function limpiarTextoMayusculas(valor) {
         texto = texto.replace(new RegExp(acento, 'g'), letra);
     }
     
-    // 3. Eliminar caracteres que no sean letras (A-Z), Ñ, espacios y números
-    texto = texto.replace(/[^A-ZÑ\s]/g, '');
+    // 3. PERMITIR: letras (A-Z), Ñ, espacios y números
+    //    NOTA: El \s ya incluye espacios, tabs, etc.
+    texto = texto.replace(/[^A-ZÑ0-9\s]/g, '');
     
-    // 4. Eliminar espacios múltiples
+    // 4. Reemplazar múltiples espacios por uno solo (opcional)
     texto = texto.replace(/\s+/g, ' ').trim();
-    
-    return texto;
-}
-
-function limpiarNumeroNomina(valor) {
-    if (!valor) return '';
-    
-    // Convertir a mayúsculas, permitir letras (incluyendo Ñ), números y guiones
-    let texto = valor.toUpperCase();
-    
-    // Reemplazar acentos
-    const acentos = {
-        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
-        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
-        'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
-        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
-        'Ã': 'A', 'Õ': 'O'
-    };
-    
-    for (let [acento, letra] of Object.entries(acentos)) {
-        texto = texto.replace(new RegExp(acento, 'g'), letra);
-    }
-    
-    // Permitir A-Z, Ñ, 0-9, y guiones
-    texto = texto.replace(/[^A-ZÑ0-9-]/g, '');
     
     return texto;
 }
