@@ -314,7 +314,7 @@ function generarTemplateCorreoTecnico($datosUsuario, $passwordTemporal) {
             <div class="notas">
                 <p><strong>📋 Notas importantes:</strong></p>
                 <p>• Guarde esta información en un lugar seguro.</p>
-                <p>• Si no solicitó esta cuenta, contacte al administrador del sistema.</p>
+                <p>• Si no solicitó esta cuenta, haga omiso a este mensaje.</p>
                 <p>• Para mayor seguridad, no comparta su contraseña con nadie.</p>
                 <p>• Recomendamos cambiar su contraseña en el primer inicio de sesión.</p>
             </div>
