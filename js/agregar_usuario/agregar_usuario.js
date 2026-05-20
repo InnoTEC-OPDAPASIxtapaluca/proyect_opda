@@ -1,6 +1,7 @@
 /**
  * agregar_usuario.js - Gestión de usuarios y permisos
  * MODIFICADO: Usuario maestro detectado desde BD con campo es_maestro
+ * MODIFICADO: Botones colapsables - clic en contenedor despliega/contrae
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -118,19 +119,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // FUNCIÓN: LIMPIAR TEXTO (MAYÚSCULAS, SIN ACENTOS, SIN SÍMBOLOS)
     // ============================================
     function limpiarTextoMayusculas(valor) {
-    if (!valor) return '';
-    // Primero convertir a mayúsculas
-    let resultado = valor.toUpperCase();
-    // Reemplazar vocales con tilde por vocales sin tilde
-    resultado = resultado.replace(/[ÁÀÄÂÃ]/g, 'A');
-    resultado = resultado.replace(/[ÉÈËÊ]/g, 'E');
-    resultado = resultado.replace(/[ÍÌÏÎ]/g, 'I');
-    resultado = resultado.replace(/[ÓÒÖÔÕ]/g, 'O');
-    resultado = resultado.replace(/[ÚÙÜÛ]/g, 'U');
-    // Eliminar cualquier otro carácter que no sea letra (A-Z), Ñ, o espacio
-    resultado = resultado.replace(/[^A-ZÑ\s]/g, '');
-    return resultado;
-}
+        if (!valor) return '';
+        // Primero convertir a mayúsculas
+        let resultado = valor.toUpperCase();
+        // Reemplazar vocales con tilde por vocales sin tilde
+        resultado = resultado.replace(/[ÁÀÄÂÃ]/g, 'A');
+        resultado = resultado.replace(/[ÉÈËÊ]/g, 'E');
+        resultado = resultado.replace(/[ÍÌÏÎ]/g, 'I');
+        resultado = resultado.replace(/[ÓÒÖÔÕ]/g, 'O');
+        resultado = resultado.replace(/[ÚÙÜÛ]/g, 'U');
+        // Eliminar cualquier otro carácter que no sea letra (A-Z), Ñ, o espacio
+        resultado = resultado.replace(/[^A-ZÑ\s]/g, '');
+        return resultado;
+    }
 
     function limpiarNumeroNomina(valor) {
         if (!valor) return '';
@@ -256,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================================
-    // CARGAR BOTONES POR INTERFAZ
+    // CARGAR BOTONES POR INTERFAZ (LOS MANTIENE OCULTOS INICIALMENTE)
     // ============================================
     async function cargarBotonesPorInterfaz(card, idInterfaz) {
         if (!idInterfaz) return;
@@ -271,6 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (data.botones.length === 0) {
                     botonesContainer.innerHTML = '<div class="sin-botones-msg">No hay botones configurados para esta interfaz</div>';
+                    // Si no hay botones, ocultamos el container o mostramos mensaje
                 } else {
                     data.botones.forEach(boton => {
                         const botonItem = document.createElement('div');
@@ -294,10 +296,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
                 
+                // ✅ NUEVO: Inicialmente los botones están ocultos (contraídos)
+                botonesContainer.style.display = 'none';
+                
                 configurarEventosBotones(card);
             }
         } catch (error) {
             console.error('Error cargando botones:', error);
+        }
+    }
+    
+    // ============================================
+    // ALTERNAR VISIBILIDAD DE LOS BOTONES (DESPLEGAR/CONTRAER)
+    // ============================================
+    function toggleBotonesContainer(card) {
+        const botonesContainer = card.querySelector('.botones-container');
+        if (!botonesContainer) return;
+        
+        // Si está oculto, lo mostramos; si está visible, lo ocultamos
+        if (botonesContainer.style.display === 'none') {
+            botonesContainer.style.display = 'block';
+        } else {
+            botonesContainer.style.display = 'none';
         }
     }
     
@@ -445,19 +465,60 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const card = templatePermisoCard.content.cloneNode(true).querySelector('.permiso-card');
         
+        // ✅ NUEVO: Agregar evento de clic a la tarjeta para desplegar/contraer botones
+        card.style.cursor = 'pointer';
+        
         const interfazSelect = card.querySelector('.interfaz-select');
         cargarInterfaces(interfazSelect);
         
+        // Variable para evitar que el clic en el select propague y cierre/abra inmediatamente
+        let isSelectChanging = false;
+        
         interfazSelect.addEventListener('change', async (e) => {
+            e.stopPropagation();
+            isSelectChanging = true;
             const idInterfaz = e.target.value;
             if (idInterfaz) {
                 await cargarBotonesPorInterfaz(card, idInterfaz);
+                // ✅ Después de cargar, aseguramos que esté contraído
+                const botonesContainer = card.querySelector('.botones-container');
+                if (botonesContainer) {
+                    botonesContainer.style.display = 'none';
+                }
+            } else {
+                // Si no selecciona interfaz, vaciamos y ocultamos
+                const botonesContainer = card.querySelector('.botones-container');
+                if (botonesContainer) {
+                    botonesContainer.innerHTML = '';
+                    botonesContainer.style.display = 'none';
+                }
             }
+            setTimeout(() => {
+                isSelectChanging = false;
+            }, 100);
+        });
+        
+        // ✅ Evento de clic en la tarjeta (pero NO cuando se hace clic en el select o en botones)
+        card.addEventListener('click', (e) => {
+            // Evitar que el clic en el select o en elementos internos (checkboxes, botones de config) dispare el toggle
+            if (e.target.closest('.interfaz-select') || 
+                e.target.closest('.btn-remove-card') ||
+                e.target.closest('.boton-checkbox') ||
+                e.target.closest('.btn-config-campos') ||
+                e.target.closest('.btn-add-permission')) {
+                return;
+            }
+            
+            // Si estamos cambiando el select, no hacer toggle
+            if (isSelectChanging) return;
+            
+            toggleBotonesContainer(card);
         });
         
         const btnRemove = card.querySelector('.btn-remove-card');
         if (btnRemove) {
-            btnRemove.addEventListener('click', () => {
+            btnRemove.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que el clic en eliminar despliegue/contraiga
                 card.remove();
                 if (permisosContainer.querySelectorAll('.permiso-card').length === 0) {
                     if (emptyPermisosMsg) emptyPermisosMsg.style.display = 'flex';
