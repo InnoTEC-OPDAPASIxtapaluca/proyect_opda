@@ -283,7 +283,7 @@ function generarTemplateCorreoTecnico($datosUsuario, $passwordTemporal) {
             </div>
             
             <div class="mensaje">
-                Su cuenta ha sido creada exitosamente en el sistema OPDAPAS IXTAPALUCA. A continuación encontrará sus credenciales de acceso:
+                Su cuenta ha sido creada exitosamente en el sistema Ixtec-Digital. A continuación encontrará sus credenciales de acceso:
             </div>
             
             <table class="datos-usuario">
