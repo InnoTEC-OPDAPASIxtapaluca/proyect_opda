@@ -33,8 +33,8 @@ try {
     // USUARIO MAESTRO: ACCESO TOTAL (detectado desde BD)
     // ============================================
     if ($es_maestro) {
-        // Obtener TODAS las interfaces
-        $sql_interfaces = "SELECT id, nombre_interfaz, ruta FROM interfaces";
+        // Obtener TODAS las interfaces (incluyendo icono)
+        $sql_interfaces = "SELECT id, nombre_interfaz, ruta, icono FROM interfaces";
         $stmt_interfaces = $conn_accesos->prepare($sql_interfaces);
         $stmt_interfaces->execute();
         $todas_interfaces = $stmt_interfaces->fetchAll(PDO::FETCH_ASSOC);
@@ -73,6 +73,7 @@ try {
                 'id' => $interfaz['id'],
                 'nombre' => strtoupper(str_replace('_', ' ', $interfaz['nombre_interfaz'])),
                 'ruta' => $interfaz['ruta'],
+                'icono' => $interfaz['icono'] ?? 'fa-folder',
                 'botones' => $botones_str,
                 'campos_por_boton' => $campos_por_boton
             ];
@@ -159,7 +160,7 @@ try {
     }
     
     $placeholders = implode(',', array_fill(0, count($ids_permitidos), '?'));
-    $sql_interfaces = "SELECT id, nombre_interfaz, ruta 
+    $sql_interfaces = "SELECT id, nombre_interfaz, ruta, icono 
                        FROM accesos_op.interfaces 
                        WHERE id IN ($placeholders)";
     $stmt_interfaces = $conn_accesos->prepare($sql_interfaces);
@@ -173,6 +174,7 @@ try {
             'id' => $id,
             'nombre' => strtoupper(str_replace('_', ' ', $interfaz['nombre_interfaz'])),
             'ruta' => $interfaz['ruta'],
+            'icono' => $interfaz['icono'] ?? 'fa-folder',
             'botones' => implode(',', $interfaces_permitidas[$id]['botones']),
             'campos_por_boton' => $interfaces_permitidas[$id]['campos_por_boton']
         ];

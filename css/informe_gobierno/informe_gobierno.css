@@ -1,0 +1,466 @@
+/* ==========================================================================
+   INFORME DE GOBIERNO - ESTILOS ESPECÍFICOS DEL MÓDULO
+   Depende de estilos_generales.css - Debe cargarse DESPUÉS
+   ========================================================================== */
+
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
+.informe-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    padding: 0 20px;
+}
+
+/* ==================== AJUSTES HEADER PREMIUM ==================== */
+.page-header-premium .header-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 18px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 60px;
+    border: 1px solid rgba(187, 147, 88, 0.2);
+}
+
+.page-header-premium .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-header-premium .stat-label {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-white-60);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.page-header-premium .stat-divider {
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(to bottom, transparent, var(--color-primary), transparent);
+}
+
+/* ==================== GRID DE TARJETAS (4 tarjetas) ==================== */
+.cards-grid-informe {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    padding: 20px 0 40px 0;
+}
+
+/* ==================== TARJETA PREMIUM ==================== */
+.card-informe {
+    position: relative;
+    background: linear-gradient(135deg, rgba(26, 4, 11, 0.85), rgba(26, 4, 11, 0.7));
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(187, 147, 88, 0.25);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(30px);
+    animation: cardReveal 0.5s ease forwards;
+}
+
+@keyframes cardReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-informe:hover {
+    transform: translateY(-10px);
+    border-color: rgba(187, 147, 88, 0.6);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(187, 147, 88, 0.2);
+}
+
+/* Card Glow Effect (sigue al mouse) */
+.card-glow-informe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(187, 147, 88, 0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.card-informe:hover .card-glow-informe {
+    opacity: 1;
+}
+
+/* Card Header */
+.card-header-informe {
+    position: relative;
+    height: 140px;
+    overflow: hidden;
+}
+
+.card-header-bg-informe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* Imagen de fondo dentro del header */
+.card-bg-image-informe {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.35;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.card-informe:hover .card-bg-image-informe {
+    transform: scale(1.05);
+    opacity: 0.5;
+}
+
+/* Icono inferior izquierdo */
+.card-icon-informe {
+    position: absolute;
+    bottom: 5px;
+    left: 20px;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #1a040b, #0a0205);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.card-informe:hover .card-icon-informe {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
+.card-icon-informe i {
+    font-size: 38px;
+    color: var(--color-primary);
+}
+
+/* Card Body */
+.card-body-informe {
+    padding: 30px 20px 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.card-title-informe {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.card-description-informe {
+    color: var(--text-white-70);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* Card Footer - Botones */
+.card-footer-informe {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(187, 147, 88, 0.15);
+    margin-top: 5px;
+}
+
+/* Botones de acción dentro de la tarjeta */
+.btn-informe-ver,
+.btn-informe-acceder {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-informe-ver {
+    background: rgba(187, 147, 88, 0.15);
+    border: 1px solid rgba(187, 147, 88, 0.4);
+    color: var(--color-primary);
+}
+
+.btn-informe-ver:hover {
+    background: rgba(187, 147, 88, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-informe-acceder {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    color: var(--text-white);
+}
+
+.btn-informe-acceder:hover {
+    background: linear-gradient(135deg, var(--color-secondary-light), var(--color-secondary));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(187, 147, 88, 0.3);
+}
+
+/* Tooltip para hover en tarjetas */
+.card-informe[data-tooltip] {
+    position: relative;
+}
+
+.card-informe[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: rgba(0, 0, 0, 0.9);
+    color: var(--color-primary);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+.card-informe[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* ==================== LOADING ANIMADO ==================== */
+.iframe-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 4, 11, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.loading-ring {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.loading-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: loadingRing 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: var(--color-primary) transparent transparent transparent;
+}
+
+.loading-ring div:nth-child(1) { animation-delay: -0.45s; }
+.loading-ring div:nth-child(2) { animation-delay: -0.3s; }
+.loading-ring div:nth-child(3) { animation-delay: -0.15s; }
+
+@keyframes loadingRing {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.iframe-loading p {
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+/* Tablets (1024px - 3 columnas) */
+@media (max-width: 1100px) {
+    .cards-grid-informe {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+}
+
+/* Tablets pequeñas (768px - 2 columnas) */
+@media (max-width: 768px) {
+    .informe-container {
+        padding: 0 15px;
+    }
+    
+    .page-header-premium {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .page-header-premium .header-text h1 {
+        font-size: 22px;
+        justify-content: center;
+    }
+    
+    .page-header-premium .header-text p {
+        font-size: 12px;
+    }
+    
+    .cards-grid-informe {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+    }
+    
+    .card-header-informe {
+        height: 120px;
+    }
+    
+    .card-icon-informe {
+        width: 55px;
+        height: 55px;
+        bottom: 5px;
+        left: 15px;
+    }
+    
+    .card-icon-informe i {
+        font-size: 28px;
+    }
+    
+    .card-body-informe {
+        padding: 25px 15px 15px;
+    }
+    
+    .card-title-informe {
+        font-size: 1.1rem;
+    }
+    
+    .card-description-informe {
+        font-size: 0.8rem;
+    }
+    
+    .btn-informe-ver,
+    .btn-informe-acceder {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+}
+
+/* Móviles (550px - 1 columna) */
+@media (max-width: 550px) {
+    .cards-grid-informe {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .page-header-premium .header-stats .stat-item i {
+        font-size: 16px;
+    }
+    
+    .page-header-premium .stat-label {
+        font-size: 8px;
+    }
+    
+    .page-header-premium .header-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .page-header-premium .header-icon i {
+        font-size: 24px;
+    }
+    
+    .card-icon-informe {
+        width: 50px;
+        height: 50px;
+        bottom: 5px;
+        left: 12px;
+    }
+    
+    .card-icon-informe i {
+        font-size: 24px;
+    }
+    
+    .card-footer-informe {
+        gap: 12px;
+    }
+    
+    .btn-informe-ver,
+    .btn-informe-acceder {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Landscape para móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+    .cards-grid-informe {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .card-header-informe {
+        height: 100px;
+    }
+    
+    .card-icon-informe {
+        width: 48px;
+        height: 48px;
+        bottom: 5px;
+        left: 12px;
+    }
+    
+    .card-icon-informe i {
+        font-size: 24px;
+    }
+    
+    .card-body-informe {
+        padding: 20px 12px 12px;
+    }
+}

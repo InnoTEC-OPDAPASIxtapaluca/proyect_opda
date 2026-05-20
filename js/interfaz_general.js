@@ -304,37 +304,41 @@ document.addEventListener('DOMContentLoaded', async function() {
                 menuItems = data.menu;
                 
                 menuItems.forEach(item => {
-                    const pageId = item.nombre.toLowerCase().replace(/ /g, '_');
-                    const camposPorBotonJSON = item.campos_por_boton ? JSON.stringify(item.campos_por_boton) : '';
-                    
-                    const li = document.createElement('li');
-                    li.className = 'nav-item';
-                    li.setAttribute('data-page', pageId);
-                    li.setAttribute('data-ruta', item.ruta);
-                    li.setAttribute('data-botones', item.botones || '');
-                    li.setAttribute('data-campos-por-boton', camposPorBotonJSON);
-                    li.setAttribute('data-nombre', item.nombre);
-                    li.innerHTML = `
-                        <div class="nav-icon"><i class="fas ${getIconForModule(item.nombre)}"></i></div>
-                        <span class="nav-text">${escapeHtml(item.nombre)}</span>
-                        <div class="nav-glow"></div>
-                        <div class="nav-active-indicator"></div>
-                    `;
-                    navMenu.appendChild(li);
-                    
-                    const mobileLi = document.createElement('li');
-                    mobileLi.className = 'mobile-nav-item';
-                    mobileLi.setAttribute('data-page', pageId);
-                    mobileLi.setAttribute('data-ruta', item.ruta);
-                    mobileLi.setAttribute('data-botones', item.botones || '');
-                    mobileLi.setAttribute('data-campos-por-boton', camposPorBotonJSON);
-                    mobileLi.setAttribute('data-nombre', item.nombre);
-                    mobileLi.innerHTML = `
-                        <div class="mobile-nav-icon"><i class="fas ${getIconForModule(item.nombre)}"></i></div>
-                        <span class="mobile-nav-text">${escapeHtml(item.nombre)}</span>
-                    `;
-                    mobileNavMenu.appendChild(mobileLi);
-                });
+    const pageId = item.nombre.toLowerCase().replace(/ /g, '_');
+    const camposPorBotonJSON = item.campos_por_boton ? JSON.stringify(item.campos_por_boton) : '';
+    
+    // Usar el ícono de la base de datos, si no existe usar el respaldo
+    const iconoModulo = item.icono ? item.icono : getIconForModule(item.nombre);
+    
+    const li = document.createElement('li');
+    li.className = 'nav-item';
+    li.setAttribute('data-page', pageId);
+    li.setAttribute('data-ruta', item.ruta);
+    li.setAttribute('data-botones', item.botones || '');
+    li.setAttribute('data-campos-por-boton', camposPorBotonJSON);
+    li.setAttribute('data-nombre', item.nombre);
+    li.innerHTML = `
+        <div class="nav-icon"><i class="fas ${iconoModulo}"></i></div>
+        <span class="nav-text">${escapeHtml(item.nombre)}</span>
+        <div class="nav-glow"></div>
+        <div class="nav-active-indicator"></div>
+    `;
+    navMenu.appendChild(li);
+    
+    // Menú mobile
+    const mobileLi = document.createElement('li');
+    mobileLi.className = 'mobile-nav-item';
+    mobileLi.setAttribute('data-page', pageId);
+    mobileLi.setAttribute('data-ruta', item.ruta);
+    mobileLi.setAttribute('data-botones', item.botones || '');
+    mobileLi.setAttribute('data-campos-por-boton', camposPorBotonJSON);
+    mobileLi.setAttribute('data-nombre', item.nombre);
+    mobileLi.innerHTML = `
+        <div class="mobile-nav-icon"><i class="fas ${iconoModulo}"></i></div>
+        <span class="mobile-nav-text">${escapeHtml(item.nombre)}</span>
+    `;
+    mobileNavMenu.appendChild(mobileLi);
+});
                 
                 console.log(`✅ Menú cargado: ${menuItems.length} módulos`);
                 return true;
@@ -349,16 +353,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     function getIconForModule(nombre) {
-        const nombreLower = nombre.toLowerCase();
-        if (nombreLower.includes('usuario') || nombreLower.includes('operativo')) return 'fa-users';
-        if (nombreLower.includes('programa')) return 'fa-list-alt';
-        if (nombreLower.includes('evento')) return 'fa-calendar-alt';
-        if (nombreLower.includes('solicitante')) return 'fa-user-plus';
-        if (nombreLower.includes('reporte')) return 'fa-chart-line';
-        if (nombreLower.includes('config')) return 'fa-cog';
-        if (nombreLower.includes('ayuda')) return 'fa-question-circle';
-        return 'fa-folder';
-    }
+    // Esta función ahora es solo un respaldo para cuando no haya ícono en BD
+    // Los íconos vendrán directamente de la base de datos
+    const nombreLower = nombre.toLowerCase();
+    if (nombreLower.includes('usuario') || nombreLower.includes('operativo')) return 'fa-users';
+    if (nombreLower.includes('programa')) return 'fa-list-alt';
+    if (nombreLower.includes('evento')) return 'fa-calendar-alt';
+    if (nombreLower.includes('solicitante')) return 'fa-user-plus';
+    if (nombreLower.includes('reporte')) return 'fa-chart-line';
+    if (nombreLower.includes('config')) return 'fa-cog';
+    if (nombreLower.includes('ayuda')) return 'fa-question-circle';
+    return 'fa-folder';
+}
     
     function escapeHtml(text) {
         const div = document.createElement('div');

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Informe de Gobierno | OPDAPAS Ixtapaluca</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="../../css/estilos_generales.css">
+    <link rel="stylesheet" href="../../css/informe_gobierno/informe_gobierno.css">
+</head>
+<body>
+    <div class="informe-container">
+        <!-- HEADER PREMIUM UNIFICADO -->
+        <div class="page-header-premium">
+            <div class="header-glow"></div>
+            <div class="header-icon-wrapper">
+                <div class="header-icon-pulse"></div>
+                <div class="header-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+            </div>
+            <div class="header-text">
+                <h1>INFORME DE GOBIERNO <span class="header-badge">GESTIÓN 2024-2026</span></h1>
+                <p>Informes y reportes oficiales de gestión del sistema hidráulico</p>
+            </div>
+            <div class="header-actions">
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-chart-line" style="font-size: 18px; color: var(--color-primary);"></i>
+                        <span class="stat-label" id="totalCardsStat">0</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <i class="fas fa-calendar-alt" style="font-size: 18px; color: var(--color-primary);"></i>
+                        <span class="stat-label">2024-2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENEDOR DE TARJETAS (4 tarjetas: AGUA, DRENAJE, DOMÉSTICO, COMERCIAL) -->
+        <div class="cards-grid-informe" id="cardsGridInforme"></div>
+    </div>
+
+    <!-- LOADING ANIMADO -->
+    <div class="iframe-loading" id="iframeLoading" style="display: none;">
+        <div class="loading-ring">
+            <div></div><div></div><div></div><div></div>
+        </div>
+        <p>Cargando módulo...</p>
+    </div>
+
+    <script src="../../js/informe_gobierno/informe_gobierno.js"></script>
+</body>
+</html>
