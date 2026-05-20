@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Formulario Editar
     const formEditar = document.getElementById('formEditarUsuario');
     const editNoNomina = document.getElementById('editNoNomina');
+    const editMatricula = document.getElementById('editMatricula');
     const editNombre = document.getElementById('editNombre');
     const editApellidoPaterno = document.getElementById('editApellidoPaterno');
     const editApellidoMaterno = document.getElementById('editApellidoMaterno');
@@ -171,6 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function aplicarEfectoBlurCamposEditar(camposPermitidos) {
         const camposMap = {
+            'MATRICULA': editMatricula,
             'NOMBRE': editNombre,
             'APELLIDO_PATERNO': editApellidoPaterno,
             'APELLIDO_MATERNO': editApellidoMaterno,
@@ -333,19 +335,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // FUNCIONES AUXILIARES
     // ============================================
     function limpiarTextoMayusculas(valor) {
-    if (!valor) return '';
-    // Primero convertir a mayúsculas
-    let resultado = valor.toUpperCase();
-    // Reemplazar vocales con tilde por vocales sin tilde
-    resultado = resultado.replace(/[ÁÀÄÂÃ]/g, 'A');
-    resultado = resultado.replace(/[ÉÈËÊ]/g, 'E');
-    resultado = resultado.replace(/[ÍÌÏÎ]/g, 'I');
-    resultado = resultado.replace(/[ÓÒÖÔÕ]/g, 'O');
-    resultado = resultado.replace(/[ÚÙÜÛ]/g, 'U');
-    // Eliminar cualquier otro carácter que no sea letra (A-Z), Ñ, o espacio
-    resultado = resultado.replace(/[^A-ZÑ\s]/g, '');
-    return resultado;
-}
+        if (!valor) return '';
+        // Primero convertir a mayúsculas
+        let resultado = valor.toUpperCase();
+        // Reemplazar vocales con tilde por vocales sin tilde
+        resultado = resultado.replace(/[ÁÀÄÂÃ]/g, 'A');
+        resultado = resultado.replace(/[ÉÈËÊ]/g, 'E');
+        resultado = resultado.replace(/[ÍÌÏÎ]/g, 'I');
+        resultado = resultado.replace(/[ÓÒÖÔÕ]/g, 'O');
+        resultado = resultado.replace(/[ÚÙÜÛ]/g, 'U');
+        // Eliminar cualquier otro carácter que no sea letra (A-Z), Ñ, o espacio
+        resultado = resultado.replace(/[^A-ZÑ\s]/g, '');
+        return resultado;
+    }
 
     function limpiarNumeroNomina(valor) {
         if (!valor) return '';
@@ -1115,6 +1117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Cargar valores
         if (editNoNomina) editNoNomina.value = usuario.no_nomina;
+        if (editMatricula) editMatricula.value = usuario.no_nomina;
         if (editNombre) editNombre.value = usuario.nombre;
         if (editApellidoPaterno) editApellidoPaterno.value = usuario.apellido_paterno;
         if (editApellidoMaterno) editApellidoMaterno.value = usuario.apellido_materno;
@@ -1136,8 +1139,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const camposPermitidos = obtenerCamposPermitidos('EDITAR_USUARIO');
         const esMaestroOCamposTodos = esUsuarioMaestro || camposPermitidos === null;
         
+        // ✅ MODIFICADO: Agregar matrícula a los datos enviados
         const datos = {
-            no_nomina: editNoNomina ? editNoNomina.value : ''
+            no_nomina: editNoNomina ? editNoNomina.value : '',
+            nueva_matricula: editMatricula ? editMatricula.value : ''  // ← Agregar esta línea
         };
         
         // Solo incluir campos que estén permitidos
@@ -1206,7 +1211,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 Swal.fire({ icon: 'success', title: '¡Actualizado!', text: 'Usuario actualizado correctamente', background: '#1a040b', color: '#fff', confirmButtonColor: '#bb9358' });
                 if (modalEditar) modalEditar.classList.remove('active');
-                cargarUsuarios();
+                cargarUsuarios();  // Esto ya refresca la tabla
             } else {
                 Swal.fire({ icon: 'error', title: 'Error', text: result.mensaje || 'Error al actualizar', background: '#1a040b', color: '#fff' });
             }

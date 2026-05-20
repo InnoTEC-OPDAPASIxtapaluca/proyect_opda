@@ -115,7 +115,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR USUARIO -->
+    <!-- MODAL EDITAR USUARIO (CON CAMPO MATRÍCULA AGREGADO) -->
     <div id="modalEditar" class="modal-usuario">
         <div class="modal-usuario-content">
             <div class="modal-header">
@@ -126,6 +126,11 @@
                 <form id="formEditarUsuario">
                     <input type="hidden" id="editNoNomina" name="no_nomina">
                     <div class="form-grid grid-2">
+                        <!-- CAMPO MATRÍCULA AGREGADO (no editable) -->
+                        <div class="form-group">
+                            <label><i class="fas fa-id-card"></i> Matrícula</label>
+                            <input type="text" id="editMatricula" name="matricula" class="form-control" required>
+                        </div>
                         <div class="form-group">
                             <label><i class="fas fa-user"></i> Nombre <span class="required">*</span></label>
                             <input type="text" id="editNombre" name="nombre" class="form-control" required>
@@ -262,7 +267,6 @@
                 
                 <div class="form-section">
                     <div class="section-title">
-            
                         <button type="button" id="btnAgregarInterfazPermisos" class="btn-add-permission">
                             <i class="fas fa-plus-circle"></i> AGREGAR INTERFAZ
                         </button>
