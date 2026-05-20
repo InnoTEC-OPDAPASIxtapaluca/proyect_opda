@@ -23,8 +23,8 @@ if (isset($_SESSION['no_nomina']) && $_SESSION['no_nomina'] === $no_nomina) {
 try {
     $conn->beginTransaction();
     
-    // 1. Eliminar permisos en permisos_op
-    $sqlPermisos = "DELETE FROM permisos_op.permisos_user WHERE no_nomina = :no_nomina";
+    // ✅ CORREGIDO: Eliminar permisos en login_op
+    $sqlPermisos = "DELETE FROM permisos_user WHERE no_nomina = :no_nomina";
     $stmtPermisos = $conn->prepare($sqlPermisos);
     $stmtPermisos->execute([':no_nomina' => $no_nomina]);
     

@@ -1,5 +1,5 @@
 <?php
-// php/agregar_usuario/guardar_usuario_permisos.php
+
 
 header('Content-Type: application/json');
 

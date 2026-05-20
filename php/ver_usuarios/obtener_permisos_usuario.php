@@ -13,8 +13,9 @@ if (!$no_nomina) {
 }
 
 try {
+    // ✅ CORREGIDO: Buscar en login_op.permisos_user
     $sql = "SELECT id_interfaz, nombre_boton, nombre_campo 
-            FROM permisos_op.permisos_user 
+            FROM permisos_user 
             WHERE no_nomina = :no_nomina";
     $stmt = $conn->prepare($sql);
     $stmt->execute([':no_nomina' => $no_nomina]);

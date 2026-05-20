@@ -332,26 +332,71 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // FUNCIONES AUXILIARES
     // ============================================
-    function limpiarTextoMayusculas(valor) {
-        if (!valor) return '';
-        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const soloLetrasEspacios = sinAcentos.replace(/[^A-Za-z\s]/g, '');
-        return soloLetrasEspacios.toUpperCase();
+    // ============================================
+// FUNCIÓN: LIMPIAR TEXTO (MAYÚSCULAS, CONSERVANDO Ñ)
+// ============================================
+function limpiarTextoMayusculas(valor) {
+    if (!valor) return '';
+    
+    // 1. Convertir a mayúsculas primero
+    let texto = valor.toUpperCase();
+    
+    // 2. Reemplazar caracteres acentuados (pero conservar Ñ)
+    const acentos = {
+        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
+        'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
+        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
+        'Ã': 'A', 'Õ': 'O'
+    };
+    
+    for (let [acento, letra] of Object.entries(acentos)) {
+        texto = texto.replace(new RegExp(acento, 'g'), letra);
     }
+    
+    // 3. Eliminar caracteres que no sean letras (A-Z), Ñ, espacios y números
+    texto = texto.replace(/[^A-ZÑ\s]/g, '');
+    
+    // 4. Eliminar espacios múltiples
+    texto = texto.replace(/\s+/g, ' ').trim();
+    
+    return texto;
+}
 
-    function limpiarNumeroNomina(valor) {
-        if (!valor) return '';
-        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return sinAcentos.replace(/[^A-Za-z0-9-]/g, '').toUpperCase();
+function limpiarNumeroNomina(valor) {
+    if (!valor) return '';
+    
+    // Convertir a mayúsculas, permitir letras (incluyendo Ñ), números y guiones
+    let texto = valor.toUpperCase();
+    
+    // Reemplazar acentos
+    const acentos = {
+        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
+        'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
+        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
+        'Ã': 'A', 'Õ': 'O'
+    };
+    
+    for (let [acento, letra] of Object.entries(acentos)) {
+        texto = texto.replace(new RegExp(acento, 'g'), letra);
     }
+    
+    // Permitir A-Z, Ñ, 0-9, y guiones
+    texto = texto.replace(/[^A-ZÑ0-9-]/g, '');
+    
+    return texto;
+}
 
-    function limpiarSoloNumeros(valor) {
-        return valor ? valor.replace(/[^0-9]/g, '') : '';
-    }
+function limpiarSoloNumeros(valor) {
+    if (!valor) return '';
+    return valor.replace(/[^0-9]/g, '');
+}
 
-    function forzarMinusculas(valor) {
-        return valor ? valor.toLowerCase() : '';
-    }
+function forzarMinusculas(valor) {
+    if (!valor) return '';
+    return valor.toLowerCase();
+}
     
     function configurarValidacionesFiltros() {
         if (filtroNombre) {

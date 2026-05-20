@@ -24,13 +24,13 @@ if (isset($_SESSION['no_nomina']) && $_SESSION['no_nomina'] === $no_nomina) {
 try {
     $conn->beginTransaction();
     
-    // 1. Eliminar permisos existentes
-    $sqlDelete = "DELETE FROM permisos_op.permisos_user WHERE no_nomina = :no_nomina";
+    // ✅ CORREGIDO: Eliminar permisos existentes de login_op
+    $sqlDelete = "DELETE FROM permisos_user WHERE no_nomina = :no_nomina";
     $stmtDelete = $conn->prepare($sqlDelete);
     $stmtDelete->execute([':no_nomina' => $no_nomina]);
     
-    // 2. Insertar nuevos permisos
-    $sqlInsert = "INSERT INTO permisos_op.permisos_user (no_nomina, id_interfaz, nombre_boton, nombre_campo) 
+    // ✅ CORREGIDO: Insertar nuevos permisos en login_op
+    $sqlInsert = "INSERT INTO permisos_user (no_nomina, id_interfaz, nombre_boton, nombre_campo) 
                   VALUES (:no_nomina, :id_interfaz, :nombre_boton, :nombre_campo)";
     $stmtInsert = $conn->prepare($sqlInsert);
     
