@@ -4,13 +4,13 @@ require_once dirname(__DIR__) . '/conexion/conexion.php';
 
 try {
     // Obtener áreas
-    $sqlAreas = "SELECT id_area, area FROM login_op.areas ORDER BY area";
+    $sqlAreas = "SELECT id_area, area FROM areas ORDER BY area";
     $stmtAreas = $conn->prepare($sqlAreas);
     $stmtAreas->execute();
     $areas = $stmtAreas->fetchAll(PDO::FETCH_ASSOC);
     
     // Obtener roles
-    $sqlRoles = "SELECT id_rol, rol FROM login_op.roles ORDER BY rol";
+    $sqlRoles = "SELECT id_rol, rol FROM roles ORDER BY rol";
     $stmtRoles = $conn->prepare($sqlRoles);
     $stmtRoles->execute();
     $roles = $stmtRoles->fetchAll(PDO::FETCH_ASSOC);
