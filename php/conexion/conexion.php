@@ -11,7 +11,7 @@ class Database {
         // Detectar si estamos en entorno local
         $this->isLocal = ($_SERVER['SERVER_NAME'] == 'localhost' || 
                           $_SERVER['SERVER_ADDR'] == '127.0.0.1' ||
-                          strpos($_SERVER['HTTP_HOST'], 'localhost') !== false);
+                          (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false));
         
         if ($this->isLocal) {
             // Configuración LOCAL
@@ -42,8 +42,8 @@ class Database {
                     'username' => 'u167111103_opda1',
                     'password' => '24092004.Jgl'
                 ],
-                'infra_op' => [
-                    'username' => 'u167111103_opda2',
+                'infraestructura_op' => [
+                    'username' => 'u167111103_opda2',  // Corregido: usuario correcto
                     'password' => '24092004.Jgl'
                 ]
             ];
@@ -87,7 +87,7 @@ class Database {
             $realDbNames = [
                 'login_op' => 'u167111103_login_op',
                 'accesos_op' => 'u167111103_accesos_op',
-                'infraestructura_op' => 'u167111103_infra_op' // Si existe en Hostinger
+                'infraestructura_op' => 'u167111103_infra_op'  // Nombre real en Hostinger
             ];
             
             return isset($realDbNames[$dbname]) ? $realDbNames[$dbname] : $dbname;
@@ -118,6 +118,16 @@ class Database {
     public function getEnvironment() {
         return $this->isLocal ? "LOCAL" : "HOSTINGER";
     }
+    
+    // Método para verificar si una conexión está disponible
+    public function isConnectionAvailable($dbname) {
+        try {
+            $this->getConnection($dbname);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 }
 
 // Crear instancia global
@@ -127,19 +137,11 @@ $db = new Database();
 try {
     $conn = $db->getDefaultConnection();
     $conn_accesos = $db->getAccesosConnection();
-    
-    // Solo intentar infraestructura si estamos en local
-    // o si sabes que existe en Hostinger
-    if ($db->getEnvironment() == "LOCAL") {
-        $conn_infraestructura = $db->getInfraestructuraConnection();
-    }
+    $conn_infraestructura = $db->getInfraestructuraConnection(); // Ahora funciona en ambos entornos
 } catch (Exception $e) {
     die("Error al establecer conexiones: " . $e->getMessage());
 }
 
 // Opcional: puedes definir variables globales por compatibilidad
 // con código existente
-if (!isset($conn_infraestructura) && $db->getEnvironment() == "HOSTINGER") {
-    $conn_infraestructura = null; // o manejarlo de otra forma
-}
 ?>
