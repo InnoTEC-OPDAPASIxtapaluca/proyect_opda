@@ -119,8 +119,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     function limpiarTextoMayusculas(valor) {
         if (!valor) return '';
-        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const sinAcentos = valor.normalize('NFD').replace(/[\u0300-\u0301]/g, '');
         const soloLetrasEspacios = sinAcentos.replace(/[^A-Za-z\s]/g, '');
+        const soloLetrasEspacios = sinAcentos.replace(/[^A-Za-zÑñ\s]/g, '');
         return soloLetrasEspacios.toUpperCase();
     }
 
