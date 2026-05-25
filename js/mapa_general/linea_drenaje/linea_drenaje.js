@@ -14,9 +14,9 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
             lineaColor: '#3b8b13b8',
             lineaWeight: 4,
             lineaOpacity: 0.85,
-            poligonoColor: '#8B4513',
+            poligonoColor: '#3b8b13b8',
             poligonoWeight: 2,
-            poligonoFillColor: '#8B4513',
+            poligonoFillColor: '#3b8b13b8',
             poligonoFillOpacity: 0.15,
             
             // Configuración de iconos (para puntos si los hubiera)
