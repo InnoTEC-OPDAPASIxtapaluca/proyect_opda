@@ -378,6 +378,10 @@ function procesarPermisos(permisosString) {
             modulosPermitidos.push('VALVULAS');
         } else if (botonTrim === 'LINEA_DRENAJE') {
             modulosPermitidos.push('LINEA_DRENAJE');
+        } else if (botonTrim === 'LINEA_AGUA') {
+            modulosPermitidos.push('LINEA_AGUA');
+        } else if (botonTrim === 'ZONAS_INUNDACION') {
+            modulosPermitidos.push('ZONAS_INUNDACION');
         }
     }
     
@@ -469,6 +473,8 @@ function crearMenuLateral() {
         'tanques': { nombre: 'Tanques', icono: 'fa-leaf', rutaJS: './tanques/tanques.js', permisoRequerido: 'TANQUES' },
         'valvulas': { nombre: 'Valvulas', icono: 'fa-leaf', rutaJS: './valvulas/valvulas.js', permisoRequerido: 'VALVULAS' },
         'linea_drenaje': { nombre: 'Linea de Drenaje', icono: 'fa-leaf', rutaJS: './linea_drenaje/linea_drenaje.js', permisoRequerido: 'LINEA_DRENAJE' },
+        'linea_agua': { nombre: 'Linea de Agua', icono: 'fa-leaf', rutaJS: './linea_agua/linea_agua.js', permisoRequerido: 'LINEA_AGUA' },
+        'zonas_inundacion': { nombre: 'Zonas Inundacion', icono: 'fa-leaf', rutaJS: './zonas_inundacion/zonas_inundacion.js', permisoRequerido: 'ZONAS_INUNDACION' },
     };
     
     // Filtrar solo los módulos permitidos
