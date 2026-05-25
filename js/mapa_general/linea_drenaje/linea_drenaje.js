@@ -10,16 +10,15 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
         const config = {
             phpBasePath: '../../php/mapa_general/linea_drenaje/',
             
-            // Colores específicos para líneas de drenaje (marrón/terracota)
-            lineaColor: '#3b8b13b8',
+            // Colores específicos para líneas de drenaje (verde tierra/olivo con transparencia)
+            lineaColor: '#3b8b13',
             lineaWeight: 4,
-            lineaOpacity: 0.85,
-            poligonoColor: '#3b8b13b8',
+            lineaOpacity: 0.72,
+            poligonoColor: '#3b8b13',
             poligonoWeight: 2,
-            poligonoFillColor: '#3b8b13b8',
+            poligonoFillColor: '#3b8b13',
             poligonoFillOpacity: 0.15,
             
-            // Configuración de iconos (para puntos si los hubiera)
             iconSize: [32, 32],
             iconAnchor: [16, 32],
             popupAnchor: [0, -28],
@@ -73,13 +72,13 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
     crearLineaDrenaje(coordenadas, datos) {
         const { calle, diametro, descripcion, colonia, idLinea } = datos;
         
-        // Determinar color según diámetro
+        // Determinar color según diámetro (manteniendo la base del color)
         const getColorByDiametro = () => {
             if (!diametro) return this.config.lineaColor;
             const diam = diametro.toLowerCase();
-            if (diam.includes('30') || diam.includes('30cm')) return '#e67e22';
-            if (diam.includes('20') || diam.includes('20cm')) return '#f39c12';
-            if (diam.includes('15') || diam.includes('15cm')) return '#f1c40f';
+            if (diam.includes('30') || diam.includes('30cm')) return '#3b8b13';
+            if (diam.includes('20') || diam.includes('20cm')) return '#4ca61a';
+            if (diam.includes('15') || diam.includes('15cm')) return '#5db821';
             return this.config.lineaColor;
         };
         
@@ -137,7 +136,6 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
         
         const longitudTexto = formatoLongitud();
         
-        // Contenido simple para hover
         const contenidoSimple = `
             <div class="popup-contenido">
                 <b>🕳️ ${this.escapeHtml(calle || "Línea de drenaje")}</b><br>
@@ -146,13 +144,12 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
             </div>
         `;
         
-        // Contenido completo para click
         const contenidoCompleto = `
             <div class="popup-contenido" style="min-width: 280px; max-width: 350px;">
                 <b>🕳️ Línea de drenaje</b><br>
                 ${idLinea ? `<small style="color: #888;">ID: ${this.escapeHtml(idLinea)}</small><br><br>` : '<br>'}
                 
-                <div style="background: rgba(139, 69, 19, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                <div style="background: rgba(59, 139, 19, 0.15); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
                     <strong>📋 Información de la línea:</strong><br>
                     ${calle ? `<span>📍 Calle: <b>${this.escapeHtml(calle)}</b></span><br>` : ''}
                     ${colonia ? `<span>🏘️ Colonia: ${this.escapeHtml(colonia)}</span><br>` : ''}
@@ -160,12 +157,12 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
                     ${longitudTexto ? `<span>📐 Longitud: <b>${longitudTexto}</b></span>` : ''}
                 </div>
                 
-                <div style="background: rgba(139, 69, 19, 0.1); padding: 10px; border-radius: 8px; margin: 8px 0;">
+                <div style="background: rgba(59, 139, 19, 0.15); padding: 10px; border-radius: 8px; margin: 8px 0;">
                     <strong>📝 Descripción:</strong><br>
                     ${this.escapeHtml(descripcion || "Sin descripción disponible")}
                 </div>
                 
-                <div style="background: rgba(139, 69, 19, 0.1); padding: 10px; border-radius: 8px;">
+                <div style="background: rgba(59, 139, 19, 0.15); padding: 10px; border-radius: 8px;">
                     <strong>💧 Función:</strong><br>
                     <small>• Recolección de aguas residuales</small><br>
                     <small>• Drenaje pluvial</small><br>
@@ -227,7 +224,7 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
                     <div class="menu-item" data-nombre="linea_${linea.id}">
                         <span class="item-nombre" data-nombre="linea_${linea.id}" title="${this.escapeHtml(linea.descripcion || '')}">
                             ${diametroIcono} ${this.escapeHtml(linea.calle || linea.id)}
-                            ${linea.diametro ? `<small style="color: #8B4513;"> (${linea.diametro})</small>` : ''}
+                            ${linea.diametro ? `<small style="color: #3b8b13;"> (${linea.diametro})</small>` : ''}
                             ${longitudTexto ? `<small style="color: #888;"> | ${longitudTexto}</small>` : ''}
                             ${linea.colonia ? `<small style="color: #666;"> - ${this.escapeHtml(linea.colonia)}</small>` : ''}
                         </span>
@@ -239,7 +236,6 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
                 `;
             }
             
-            // Estadísticas
             const totalLongitud = data.lineas.reduce((sum, l) => sum + (l.longitud_km || 0), 0);
             const diametros = {};
             data.lineas.forEach(l => {
@@ -252,9 +248,9 @@ export default class LineaDrenajeModulo extends ModuloBaseMapa {
             let estadisticasHTML = '';
             if (totalLongitud > 0 || Object.keys(diametros).length > 0) {
                 estadisticasHTML = `
-                    <div style="padding: 6px 12px; border-bottom: 1px solid rgba(139,69,19,0.2); text-align: center;">
-                        ${totalLongitud > 0 ? `<small style="color: #8B4513;">📏 Longitud total: ${totalLongitud.toFixed(2)} km</small>` : ''}
-                        ${Object.keys(diametros).length > 0 ? `<br><small style="color: #8B4513;">📊 ${Object.entries(diametros).map(([diam, count]) => `${diam}: ${count}`).join(' | ')}</small>` : ''}
+                    <div style="padding: 6px 12px; border-bottom: 1px solid rgba(59,139,19,0.2); text-align: center;">
+                        ${totalLongitud > 0 ? `<small style="color: #3b8b13;">📏 Longitud total: ${totalLongitud.toFixed(2)} km</small>` : ''}
+                        ${Object.keys(diametros).length > 0 ? `<br><small style="color: #3b8b13;">📊 ${Object.entries(diametros).map(([diam, count]) => `${diam}: ${count}`).join(' | ')}</small>` : ''}
                     </div>
                 `;
             }
