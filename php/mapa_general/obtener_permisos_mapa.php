@@ -27,7 +27,7 @@ try {
         echo json_encode([
             'success' => true,
             'tiene_boton_capas' => true,
-            'modulos_permitidos' => ['TROLEBUS', 'CARCAMOS', 'PLANTAS', 'CANALES_CIELO_ABIERTO', 'PLANTAS_SEDIMENTADORAS', 'POZOS', 'PRESAS_GAVION', 'TANQUES', 'VALVULAS']
+            'modulos_permitidos' => ['TROLEBUS', 'CARCAMOS', 'PLANTAS', 'CANALES_CIELO_ABIERTO', 'PLANTAS_SEDIMENTADORAS', 'POZOS', 'PRESAS_GAVION', 'TANQUES', 'VALVULAS', 'LINEA_DRENAJE']
         ]);
         exit;
     }
@@ -73,6 +73,8 @@ try {
                 $modulos_permitidos[] = 'TANQUES';
             } elseif ($boton === 'VALVULAS' && !in_array('VALVULAS', $modulos_permitidos)) {
                 $modulos_permitidos[] = 'VALVULAS';
+            } elseif ($boton === 'LINEA_DRENAJE' && !in_array('LINEA_DRENAJE', $modulos_permitidos)) {
+                $modulos_permitidos[] = 'LINEA_DRENAJE';
             } 
         }
     }
