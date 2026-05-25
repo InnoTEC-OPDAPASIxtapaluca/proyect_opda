@@ -27,7 +27,7 @@ try {
         echo json_encode([
             'success' => true,
             'tiene_boton_capas' => true,
-            'modulos_permitidos' => ['TROLEBUS', 'CARCAMOS', 'PLANTAS']
+            'modulos_permitidos' => ['TROLEBUS', 'CARCAMOS', 'PLANTAS', 'CANALES_CIELO_ABIERTO', 'PLANTAS_SEDIMENTADORAS', 'POZOS', 'PRESAS_GAVION']
         ]);
         exit;
     }
@@ -61,7 +61,15 @@ try {
                 $modulos_permitidos[] = 'CARCAMOS';
             } elseif ($boton === 'PLANTAS' && !in_array('PLANTAS', $modulos_permitidos)) {
                 $modulos_permitidos[] = 'PLANTAS';
-            }
+            } elseif ($boton === 'CANALES_CIELO_ABIERTO' && !in_array('CANALES_CIELO_ABIERTO', $modulos_permitidos)) {
+                $modulos_permitidos[] = 'CANALES_CIELO_ABIERTO';
+            } elseif ($boton === 'PLANTAS_SEDIMENTADORAS' && !in_array('PLANTAS_SEDIMENTADORAS', $modulos_permitidos)) {
+                $modulos_permitidos[] = 'PLANTAS_SEDIMENTADORAS';
+            } elseif ($boton === 'POZOS' && !in_array('POZOS', $modulos_permitidos)) {
+                $modulos_permitidos[] = 'POZOS';
+            } elseif ($boton === 'PRESAS_GAVION' && !in_array('PRESAS_GAVION', $modulos_permitidos)) {
+                $modulos_permitidos[] = 'PRESAS_GAVION';
+            } 
         }
     }
     

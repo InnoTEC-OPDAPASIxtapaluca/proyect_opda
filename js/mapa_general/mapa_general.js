@@ -364,6 +364,14 @@ function procesarPermisos(permisosString) {
             modulosPermitidos.push('CARCAMOS');
         } else if (botonTrim === 'PLANTAS') {
             modulosPermitidos.push('PLANTAS');
+        } else if (botonTrim === 'CANALES_CIELO_ABIERTO') {
+            modulosPermitidos.push('CANALES_CIELO_ABIERTO');
+        } else if (botonTrim === 'PLANTAS_SEDIMENTADORAS') {
+            modulosPermitidos.push('PLANTAS_SEDIMENTADORAS');
+        } else if (botonTrim === 'POZOS') {
+            modulosPermitidos.push('POZOS');
+        } else if (botonTrim === 'PRESAS_GAVION') {
+            modulosPermitidos.push('PRESAS_GAVION');
         }
     }
     
@@ -447,7 +455,11 @@ function crearMenuLateral() {
     const MODULOS_CONFIG = {
         'trolebus': { nombre: 'Trolebús', icono: 'fa-bus', rutaJS: './trolebus/trolebus.js', permisoRequerido: 'TROLEBUS' },
         'carcamos': { nombre: 'Carcamos', icono: 'fa-water', rutaJS: './carcamos/carcamos.js', permisoRequerido: 'CARCAMOS' },
-        'plantas': { nombre: 'Plantas', icono: 'fa-leaf', rutaJS: './plantas/plantas.js', permisoRequerido: 'PLANTAS' }
+        'plantas': { nombre: 'Plantas', icono: 'fa-leaf', rutaJS: './plantas/plantas.js', permisoRequerido: 'PLANTAS' },
+        'canales_cielo_abierto': { nombre: 'Canales de Cielo Abierto', icono: 'fa-water', rutaJS: './canales_cielo_abierto/canales_cielo_abierto.js', permisoRequerido: 'CANALES_CIELO_ABIERTO' },
+        'plantas_sedimentadoras': { nombre: 'Plantas Sedimentadoras', icono: 'fa-leaf', rutaJS: './plantas_sedimentadoras/plantas_sedimentadoras.js', permisoRequerido: 'PLANTAS_SEDIMENTADORAS' },
+        'pozos': { nombre: 'Pozos', icono: 'fa-leaf', rutaJS: './pozos/pozos.js', permisoRequerido: 'POZOS' },
+        'presas_gavion': { nombre: 'Presas de Gavión', icono: 'fa-leaf', rutaJS: './presas_gavion/presas_gavion.js', permisoRequerido: 'PRESAS_GAVION' },
     };
     
     // Filtrar solo los módulos permitidos
