@@ -374,6 +374,8 @@ function procesarPermisos(permisosString) {
             modulosPermitidos.push('PRESAS_GAVION');
         } else if (botonTrim === 'TANQUES') {
             modulosPermitidos.push('TANQUES');
+        } else if (botonTrim === 'VALVULAS') {
+            modulosPermitidos.push('VALVULAS');
         }
     }
     
@@ -463,6 +465,7 @@ function crearMenuLateral() {
         'pozos': { nombre: 'Pozos', icono: 'fa-leaf', rutaJS: './pozos/pozos.js', permisoRequerido: 'POZOS' },
         'presas_gavion': { nombre: 'Presas de Gavión', icono: 'fa-leaf', rutaJS: './presas_gavion/presas_gavion.js', permisoRequerido: 'PRESAS_GAVION' },
         'tanques': { nombre: 'Tanques', icono: 'fa-leaf', rutaJS: './tanques/tanques.js', permisoRequerido: 'TANQUES' },
+        'valvulas': { nombre: 'Valvulas', icono: 'fa-leaf', rutaJS: './valvulas/valvulas.js', permisoRequerido: 'VALVULAS' },
     };
     
     // Filtrar solo los módulos permitidos
