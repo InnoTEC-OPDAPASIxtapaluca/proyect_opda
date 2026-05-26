@@ -45,7 +45,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(26, 4, 11, 0.75), rgba(26, 4, 11, 0.85));
+    background: linear-gradient(135deg, rgba(26, 4, 11, 0.65), rgba(26, 4, 11, 0.75));
     z-index: 1;
     pointer-events: none;
 }
@@ -111,9 +111,9 @@ body {
     opacity: 0;
 }
 
-/* ==================== TÍTULO ==================== */
+/* ==================== TÍTULO (MÁS ARRIBA) ==================== */
 .title-container {
-    margin-bottom: 40px;
+    margin-bottom: 80px;  /* Aumentado para separar del texto */
 }
 
 .main-title {
@@ -159,7 +159,7 @@ body {
     border-radius: 3px;
 }
 
-/* ==================== TEXTO DE VISIÓN ==================== */
+/* ==================== TEXTO DE VISIÓN (MÁS ABAJO) ==================== */
 .vision-container {
     margin-bottom: 50px;
     padding: 0 20px;
@@ -259,6 +259,10 @@ body {
 
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
+    .title-container {
+        margin-bottom: 50px;
+    }
+    
     .title-main {
         font-size: 32px;
         letter-spacing: 3px;
@@ -311,6 +315,10 @@ body {
 }
 
 @media (max-width: 480px) {
+    .title-container {
+        margin-bottom: 40px;
+    }
+    
     .title-main {
         font-size: 28px;
         letter-spacing: 2px;
