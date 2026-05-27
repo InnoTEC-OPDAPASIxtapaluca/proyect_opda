@@ -1,6 +1,6 @@
 /**
  * inicio.js - Pantalla de inicio con video de fondo premium
- * Incluye cambio de video responsive y manejo de reproducción
+ * Incluye cambio de video responsive y toggle de audio al hacer click/scroll
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const VIDEO_MOBILE = '../../videos/video_intprin4.1.mp4';
     
     let currentVideoSrc = '';
+    let audioEnabled = false;
+    let interactionHandlerAdded = false;
     
     // ============================================
     // FUNCIONES PARA VIDEO RESPONSIVE
@@ -27,13 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function getVideoByWidth() {
         const width = window.innerWidth;
         
-        // Basado en los breakpoints del interfaz_general.css
-        // Móvil (768px o menos)
         if (width <= 768) {
             return VIDEO_MOBILE;
-        }
-        // Desktop y tablet (769px o más)
-        else {
+        } else {
             return VIDEO_DESKTOP;
         }
     }
@@ -46,51 +44,89 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const newSrc = getVideoByWidth();
         
-        // Solo cambiar si es diferente al actual
         if (currentVideoSrc !== newSrc) {
-            currentVideoSrc = newSrc;
-            
-            // Guardar el tiempo actual
+            const wasPlaying = !video.paused;
+            const currentVolume = video.volume;
             const currentTime = video.currentTime;
             
-            // Cambiar el src del video
+            currentVideoSrc = newSrc;
             video.src = newSrc;
             video.load();
-            
-            // Restaurar el tiempo aproximado
+            video.volume = currentVolume;
             video.currentTime = currentTime;
             
-            // Intentar reproducir
-            video.play().catch(function(error) {
-                console.log('Auto-play prevenido:', error);
-            });
+            if (wasPlaying) {
+                video.play().catch(function(error) {
+                    console.log('Reproducción después de cambio:', error);
+                });
+            }
         }
     }
     
     /**
-     * Fuerza la reproducción en móviles (por si el autoplay falla)
+     * Toggle de audio (activa o silencia)
      */
-    function forcePlayOnMobile() {
-        const width = window.innerWidth;
-        if (width <= 768 && video) {
-            // En móvil, intentar reproducir al tocar cualquier parte
-            const tryPlay = function() {
-                if (video.paused) {
-                    video.play().catch(function(e) {
-                        console.log('No se pudo reproducir:', e);
-                    });
-                }
-            };
-            document.addEventListener('click', tryPlay);
-            document.addEventListener('touchstart', tryPlay);
+    function toggleAudio() {
+        if (!video) return;
+        
+        if (audioEnabled) {
+            // Silenciar
+            video.muted = true;
+            audioEnabled = false;
+            console.log('🔇 Audio silenciado');
+        } else {
+            // Activar audio
+            video.muted = false;
+            video.volume = 0.7;
+            audioEnabled = true;
+            console.log('🔊 Audio activado');
+            
+            // Asegurar que el video se esté reproduciendo
+            if (video.paused) {
+                video.play().catch(function(e) {
+                    console.log('Error al reproducir:', e);
+                });
+            }
         }
     }
     
     /**
-     * Inicializa el video correcto
+     * Maneja la interacción del usuario (click o scroll)
+     */
+    function handleUserInteraction() {
+        toggleAudio();
+    }
+    
+    /**
+     * Agrega los listeners de interacción
+     */
+    function addInteractionListeners() {
+        if (interactionHandlerAdded) return;
+        
+        document.addEventListener('click', handleUserInteraction);
+        document.addEventListener('touchstart', handleUserInteraction);
+        document.addEventListener('scroll', handleUserInteraction);
+        
+        // También el scroll en el contenido
+        const content = document.querySelector('.inicio-content');
+        if (content) {
+            content.addEventListener('scroll', handleUserInteraction);
+        }
+        
+        interactionHandlerAdded = true;
+        console.log('🎧 Listeners de interacción agregados');
+    }
+    
+    /**
+     * Inicializa el video
      */
     function initVideo() {
         if (!video) return;
+        
+        // Iniciar silenciado para autoplay
+        video.muted = true;
+        audioEnabled = false;
+        video.volume = 0.7;
         
         currentVideoSrc = getVideoByWidth();
         video.src = currentVideoSrc;
@@ -100,23 +136,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const playPromise = video.play();
         
         if (playPromise !== undefined) {
-            playPromise.catch(function(error) {
-                console.log('Auto-play prevenido en', window.innerWidth <= 768 ? 'móvil' : 'desktop', error);
-                // Si falla, esperar interacción del usuario
-                forcePlayOnMobile();
+            playPromise.then(() => {
+                console.log('📹 Video reproduciéndose (silenciado)');
+                // Agregar listeners para toggle de audio
+                addInteractionListeners();
+            }).catch(function(error) {
+                console.log('Auto-play prevenido:', error);
+                addInteractionListeners();
             });
         }
         
-        // Asegurar loop del video
+        // Loop del video
         video.addEventListener('ended', function() {
             video.currentTime = 0;
-            video.play().catch(function() {});
+            if (!video.paused) {
+                video.play().catch(function() {});
+            }
         });
         
         // Manejar errores
         video.addEventListener('error', function(e) {
             console.log('Error en el video:', e);
-            // Si hay error, intentar con el otro video
             const fallbackSrc = (video.src === VIDEO_DESKTOP) ? VIDEO_MOBILE : VIDEO_DESKTOP;
             video.src = fallbackSrc;
             video.load();
@@ -127,11 +167,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /**
-     * Verifica si el iframe está visible y reinicia el video si es necesario
+     * Verifica visibilidad del iframe
      */
     function checkIframeVisibility() {
         try {
-            // Obtener el iframe padre
             let parentIframe = null;
             if (window.parent && window.parent.document) {
                 const iframes = window.parent.document.querySelectorAll('iframe');
@@ -155,19 +194,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     video.play().catch(function() {});
                 }
             }
-        } catch(e) {
-            console.log('No se pudo verificar visibilidad del iframe');
-        }
+        } catch(e) {}
     }
     
     // ============================================
     // INICIALIZACIÓN
     // ============================================
     
-    // Inicializar video
     initVideo();
     
-    // Escuchar cambios de tamaño para cambiar video (útil para rotación de pantalla)
     let resizeTimeout;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimeout);
@@ -176,14 +211,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 250);
     });
     
-    // Escuchar cambios de orientación
     window.addEventListener('orientationchange', function() {
         setTimeout(switchVideo, 100);
     });
     
-    // Verificar visibilidad cada 5 segundos
     setInterval(checkIframeVisibility, 5000);
     
-    // LOG PARA DEPURACIÓN
     console.log('✅ Inicio Premium - Listo');
 });
