@@ -1,29 +1,26 @@
 /**
  * agn_cal.js - Gestión de módulos de Agenda y Calendario
- * Maneja la navegación entre Inicio, Agenda y Calendario mediante iframe dinámico
+ * Maneja la navegación entre Agenda y Calendario mediante iframe dinámico
  */
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📅 Agenda y Calendario - Inicializado');
 
     // ============================================
-    // CONFIGURACIÓN DE MÓDULOS (3 BOTONES)
+    // CONFIGURACIÓN DE MÓDULOS (SOLO AGENDA Y CALENDARIO)
     // ============================================
     const MODULOS = {
-        inicio: {
-            nombre: 'Inicio',
-            ruta: null,  // No tiene iframe, muestra el video
-            icono: 'fa-home'
-        },
         agenda: {
             nombre: 'Agenda',
             ruta: './agenda/agenda.html',
-            icono: 'fa-calendar-check'
+            icono: 'fa-calendar-check',
+            descripcion: 'Administra tus eventos, citas y programaciones'
         },
         calendario: {
             nombre: 'Calendario',
             ruta: './calendario/calendario.html',
-            icono: 'fa-calendar-alt'
+            icono: 'fa-calendar-alt',
+            descripcion: 'Visualiza tus eventos en formato calendario'
         }
     };
 
@@ -33,11 +30,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const moduloIframe = document.getElementById('moduloIframe');
     const iframeLoading = document.getElementById('iframeLoading');
     const iframeWrapper = document.getElementById('iframeWrapper');
-    const videoBackground = document.getElementById('videoBackground');
     const moduloBtns = document.querySelectorAll('.modulo-btn');
     const totalEventosStat = document.getElementById('totalEventosStat');
+    const moduloBadge = document.getElementById('moduloBadge');
+    const headerDescripcion = document.getElementById('headerDescripcion');
 
-    let currentModulo = 'inicio';
+    let currentModulo = 'agenda';
     let isIframeLoading = false;
 
     // ============================================
@@ -70,38 +68,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
-    // MOSTRAR VIDEO DE INICIO (con overlay)
+    // ACTUALIZAR HEADER SEGÚN MÓDULO
     // ============================================
-    function mostrarVideo() {
-        // Ocultar iframe wrapper con animación
-        if (iframeWrapper) {
-            iframeWrapper.style.opacity = '0';
-            setTimeout(() => {
-                iframeWrapper.style.display = 'none';
-                if (moduloIframe) {
-                    moduloIframe.src = 'about:blank';
-                }
-            }, 300);
+    function actualizarHeader(moduloId) {
+        const modulo = MODULOS[moduloId];
+        if (!modulo) return;
+        
+        if (moduloBadge) {
+            moduloBadge.textContent = modulo.nombre;
         }
         
-        // Mostrar video
-        if (videoBackground) {
-            videoBackground.style.display = 'block';
-            setTimeout(() => {
-                videoBackground.style.opacity = '1';
-            }, 50);
-            
-            // Reiniciar y reproducir video
-            const video = videoBackground.querySelector('video');
-            if (video) {
-                video.currentTime = 0;
-                video.play().catch(e => console.log('⚠️ Autoplay bloqueado:', e));
-            }
+        if (headerDescripcion) {
+            headerDescripcion.textContent = modulo.descripcion;
         }
     }
 
     // ============================================
-    // CARGAR MÓDULO EN IFRAME (Agenda o Calendario)
+    // CARGAR MÓDULO EN IFRAME
     // ============================================
     function cargarModulo(moduloId) {
         const modulo = MODULOS[moduloId];
@@ -110,39 +93,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Si es el módulo de inicio, solo mostrar el video
-        if (moduloId === 'inicio') {
-            mostrarVideo();
-            actualizarBotonActivo(moduloId);
-            currentModulo = moduloId;
-            return;
-        }
-        
         const url = BASE_PATH + modulo.ruta;
         console.log(`🔄 Cargando módulo: ${modulo.nombre} → ${url}`);
-        
-        // Ocultar video
-        if (videoBackground) {
-            videoBackground.style.opacity = '0';
-            setTimeout(() => {
-                videoBackground.style.display = 'none';
-            }, 300);
-        }
-        
-        // Mostrar iframe wrapper
-        if (iframeWrapper) {
-            iframeWrapper.style.display = 'block';
-            iframeWrapper.style.opacity = '0';
-            setTimeout(() => {
-                iframeWrapper.style.opacity = '1';
-            }, 50);
-        }
         
         // Mostrar loading
         if (iframeLoading) {
             iframeLoading.style.display = 'flex';
         }
         isIframeLoading = true;
+        
+        // Actualizar header
+        actualizarHeader(moduloId);
         
         // Cambiar el src del iframe
         if (moduloIframe) {
@@ -151,6 +112,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         actualizarBotonActivo(moduloId);
         currentModulo = moduloId;
+        
+        // Guardar módulo actual
+        saveCurrentModulo(moduloId);
     }
 
     // ============================================
@@ -211,13 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 isIframeLoading = false;
             }
             
-            // Navegar a inicio (mostrar video)
-            if (data.type === 'goToInicio') {
-                mostrarVideo();
-                actualizarBotonActivo('inicio');
-                currentModulo = 'inicio';
-            }
-            
             // Actualizar contadores
             if (data.type === 'updateEventosCount' && data.total) {
                 if (totalEventosStat) totalEventosStat.textContent = data.total;
@@ -240,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return saved;
             }
         } catch(e) {}
-        return 'inicio';
+        return 'agenda';
     }
 
     function saveCurrentModulo(moduloId) {
@@ -264,52 +221,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Escuchar mensajes de iframes hijos
         window.addEventListener('message', handlePostMessage);
         
-        // Ocultar loading inicial
-        if (iframeLoading) {
-            iframeLoading.style.display = 'none';
-        }
-        
-        // Ocultar iframe inicialmente, mostrar video
-        if (iframeWrapper) {
-            iframeWrapper.style.display = 'none';
-        }
-        
-        if (videoBackground) {
-            videoBackground.style.display = 'block';
-            videoBackground.style.opacity = '1';
-            
-            // Intentar reproducir video automáticamente
-            const video = videoBackground.querySelector('video');
-            if (video) {
-                video.play().catch(e => console.log('⚠️ Autoplay bloqueado por el navegador'));
-            }
-        }
-        
-        // Cargar último módulo visitado
+        // Cargar último módulo visitado o agenda por defecto
         const moduloToLoad = getSavedModulo();
-        if (moduloToLoad === 'inicio') {
-            mostrarVideo();
-            actualizarBotonActivo('inicio');
-            currentModulo = 'inicio';
-        } else if (moduloToLoad) {
-            cargarModulo(moduloToLoad);
-        } else {
-            mostrarVideo();
-            actualizarBotonActivo('inicio');
-            currentModulo = 'inicio';
-        }
+        cargarModulo(moduloToLoad);
         
         // Actualizar contadores (demo)
         actualizarContadores();
         
-        // Guardar módulo actual al cambiar
-        moduloBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                saveCurrentModulo(currentModulo);
-            });
-        });
-        
-        console.log('✅ Agenda y Calendario - Listo (3 módulos: Inicio, Agenda, Calendario)');
+        console.log('✅ Agenda y Calendario - Listo (2 módulos: Agenda y Calendario)');
     }
     
     init();
