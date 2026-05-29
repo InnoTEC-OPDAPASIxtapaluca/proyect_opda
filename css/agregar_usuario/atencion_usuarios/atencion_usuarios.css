@@ -1,0 +1,349 @@
+/* ==========================================================================
+   ATENCIÓN A USUARIOS - ESTILOS ESPECÍFICOS DEL MÓDULO
+   Depende de estilos_generales.css - Debe cargarse DESPUÉS
+   ========================================================================== */
+
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
+.atencion-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==================== AJUSTES HEADER PREMIUM ==================== */
+.page-header-premium .header-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 18px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 60px;
+    border: 1px solid rgba(187, 147, 88, 0.2);
+}
+
+.page-header-premium .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-header-premium .stat-label {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-white-60);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.page-header-premium .stat-divider {
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(to bottom, transparent, var(--color-primary), transparent);
+}
+
+/* ==================== NAVEGACIÓN DE MÓDULOS ==================== */
+.modulos-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: rgba(26, 4, 11, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 60px;
+    padding: 8px 16px;
+    border: 1px solid rgba(187, 147, 88, 0.2);
+}
+
+.modulo-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 50px;
+    color: var(--text-white-70);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+}
+
+.modulo-btn i {
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.modulo-btn .badge-count {
+    background: rgba(187, 147, 88, 0.3);
+    border-radius: 50px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-left: 5px;
+}
+
+/* Estilo especial para el botón Inicio */
+.modulo-btn[data-modulo="inicio"] {
+    background: linear-gradient(135deg, rgba(187, 147, 88, 0.15), rgba(105, 26, 48, 0.15));
+    border: 1px solid rgba(187, 147, 88, 0.3);
+}
+
+.modulo-btn[data-modulo="inicio"] i {
+    color: var(--color-primary);
+}
+
+.modulo-btn[data-modulo="inicio"]:hover {
+    background: linear-gradient(135deg, rgba(187, 147, 88, 0.3), rgba(105, 26, 48, 0.3));
+    transform: translateY(-2px);
+}
+
+.modulo-btn[data-modulo="inicio"].active {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(187, 147, 88, 0.4);
+}
+
+.modulo-btn[data-modulo="inicio"].active i {
+    color: var(--color-primary);
+    text-shadow: 0 0 5px rgba(187, 147, 88, 0.5);
+}
+
+.modulo-btn:hover {
+    background: rgba(187, 147, 88, 0.1);
+    color: var(--text-white);
+    transform: translateY(-2px);
+}
+
+.modulo-btn.active {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(187, 147, 88, 0.3);
+}
+
+.modulo-btn.active i {
+    color: var(--color-primary);
+}
+
+.modulo-btn.active .badge-count {
+    background: rgba(187, 147, 88, 0.4);
+    color: var(--color-primary-light);
+}
+
+/* ==================== IFRAME WRAPPER ==================== */
+.iframe-wrapper {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: 500px;
+    background: rgba(26, 4, 11, 0.3);
+    border-radius: var(--border-radius-xl);
+    border: 1px solid rgba(187, 147, 88, 0.2);
+    overflow: hidden;
+}
+
+.modulo-iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 550px;
+    border: none;
+    background: transparent;
+    transition: opacity 0.3s ease;
+}
+
+/* Loading overlay dentro del iframe-wrapper */
+.iframe-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 4, 11, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    border-radius: var(--border-radius-xl);
+}
+
+.loading-ring {
+    display: inline-block;
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.loading-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    margin: 6px;
+    border: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: loadingRing 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: var(--color-primary) transparent transparent transparent;
+}
+
+.loading-ring div:nth-child(1) { animation-delay: -0.45s; }
+.loading-ring div:nth-child(2) { animation-delay: -0.3s; }
+.loading-ring div:nth-child(3) { animation-delay: -0.15s; }
+
+@keyframes loadingRing {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.iframe-loading-overlay p {
+    color: var(--color-primary);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
+    .page-header-premium {
+        flex-wrap: wrap;
+    }
+    
+    .page-header-premium .header-stats {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .modulos-nav {
+        padding: 6px 12px;
+        gap: 4px;
+    }
+    
+    .modulo-btn {
+        padding: 8px 14px;
+        font-size: 11px;
+    }
+    
+    .modulo-btn span:first-of-type {
+        display: inline-block;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header-premium {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 18px;
+    }
+    
+    .page-header-premium .header-text h1 {
+        font-size: 22px;
+        justify-content: center;
+    }
+    
+    .page-header-premium .header-text p {
+        font-size: 11px;
+    }
+    
+    .modulos-nav {
+        border-radius: 20px;
+        padding: 10px;
+        justify-content: flex-start;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: thin;
+    }
+    
+    .modulos-nav::-webkit-scrollbar {
+        height: 3px;
+    }
+    
+    .modulo-btn {
+        flex-shrink: 0;
+        padding: 8px 16px;
+        font-size: 11px;
+    }
+    
+    .modulo-btn i {
+        font-size: 12px;
+    }
+    
+    .modulo-btn .badge-count {
+        display: none;
+    }
+    
+    .iframe-wrapper {
+        min-height: 450px;
+    }
+    
+    .modulo-iframe {
+        min-height: 450px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header-premium .header-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .page-header-premium .header-icon i {
+        font-size: 24px;
+    }
+    
+    .page-header-premium .header-stats .stat-item i {
+        font-size: 16px;
+    }
+    
+    .page-header-premium .stat-label {
+        font-size: 8px;
+    }
+    
+    .modulo-btn span:first-of-type {
+        display: inline-block;
+    }
+    
+    .modulo-btn i {
+        display: inline-block;
+    }
+    
+    /* En móviles muy pequeños, el botón Inicio se reduce */
+    .modulo-btn[data-modulo="inicio"] {
+        padding: 8px 12px;
+    }
+}
+
+/* Landscape para móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modulos-nav {
+        margin-bottom: 12px;
+    }
+    
+    .iframe-wrapper {
+        min-height: 300px;
+    }
+    
+    .modulo-iframe {
+        min-height: 300px;
+    }
+}
