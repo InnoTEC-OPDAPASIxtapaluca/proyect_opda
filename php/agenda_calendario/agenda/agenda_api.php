@@ -2,7 +2,7 @@
 date_default_timezone_set('America/Mexico_City');
 /**
  * agenda_api.php - API para gestión de la agenda
- * VERSIÓN CON COMPARTIR POR ÁREA - ELIMINACIÓN FÍSICA
+ * VERSIÓN CON COMPARTIR POR ÁREA - USANDO no_nomina
  */
 
 header('Content-Type: application/json');
@@ -57,10 +57,11 @@ class AgendaAPI {
     
     /**
      * OBTENER USUARIOS AGRUPADOS POR ÁREA
+     * CAMBIO: usar no_nomina en lugar de identificador
      */
     private function getUsuariosPorArea() {
         try {
-            $identificadorActual = isset($_GET['identificador']) ? $_GET['identificador'] : '';
+            $noNominaActual = isset($_GET['no_nomina_actual']) ? $_GET['no_nomina_actual'] : '';
             
             $db = new Database();
             $connLogin = $db->getConnection('login_op');
@@ -72,7 +73,7 @@ class AgendaAPI {
             $query = "SELECT 
                         a.id_area, 
                         a.area as area_nombre,
-                        ui.no_nomina as identificador,
+                        ui.no_nomina,
                         ui.nombre_s as nombre,
                         ui.apellido_paterno,
                         ui.apellido_materno
@@ -80,16 +81,16 @@ class AgendaAPI {
                       INNER JOIN areas a ON ui.area_id = a.id_area
                       WHERE ui.no_nomina IS NOT NULL";
             
-            if (!empty($identificadorActual)) {
-                $query .= " AND ui.no_nomina != :identificador";
+            if (!empty($noNominaActual)) {
+                $query .= " AND ui.no_nomina != :no_nomina_actual";
             }
             
             $query .= " ORDER BY a.area ASC, ui.nombre_s ASC";
             
             $stmt = $connLogin->prepare($query);
             
-            if (!empty($identificadorActual)) {
-                $stmt->bindParam(':identificador', $identificadorActual, PDO::PARAM_STR);
+            if (!empty($noNominaActual)) {
+                $stmt->bindParam(':no_nomina_actual', $noNominaActual, PDO::PARAM_STR);
             }
             
             $stmt->execute();
@@ -109,7 +110,7 @@ class AgendaAPI {
                 }
                 
                 $areasMap[$areaId]['usuarios'][] = [
-                    'identificador' => $row['identificador'],
+                    'no_nomina' => $row['no_nomina'],  // CAMBIO: usar no_nomina
                     'nombre' => $row['nombre'],
                     'apellido_paterno' => $row['apellido_paterno'],
                     'apellido_materno' => $row['apellido_materno']
@@ -123,7 +124,7 @@ class AgendaAPI {
                 'data' => $areas,
                 'total_areas' => count($areas),
                 'total_usuarios' => array_sum(array_map(function($area) { return count($area['usuarios']); }, $areas)),
-                'usuario_actual' => $identificadorActual
+                'usuario_actual' => $noNominaActual
             ]);
             
         } catch(Exception $e) {
@@ -135,6 +136,9 @@ class AgendaAPI {
         }
     }
     
+    /**
+     * Guardar usuarios compartidos - CAMBIO: usar no_nomina_usuario
+     */
     private function guardarUsuariosCompartidos($id_evento, $usuariosCompartidos) {
         try {
             $queryDelete = "DELETE FROM anotaciones_compartidas WHERE id_evento = :id_evento";
@@ -143,13 +147,13 @@ class AgendaAPI {
             $stmtDelete->execute();
             
             if (!empty($usuariosCompartidos) && is_array($usuariosCompartidos)) {
-                $queryInsert = "INSERT INTO anotaciones_compartidas (id_evento, identificador_usuario) VALUES (:id_evento, :identificador)";
+                $queryInsert = "INSERT INTO anotaciones_compartidas (id_evento, no_nomina_usuario) VALUES (:id_evento, :no_nomina)";
                 $stmtInsert = $this->conn->prepare($queryInsert);
                 
-                foreach ($usuariosCompartidos as $identificador) {
-                    if (!empty($identificador)) {
+                foreach ($usuariosCompartidos as $no_nomina) {
+                    if (!empty($no_nomina)) {
                         $stmtInsert->bindParam(':id_evento', $id_evento);
-                        $stmtInsert->bindParam(':identificador', $identificador);
+                        $stmtInsert->bindParam(':no_nomina', $no_nomina);
                         $stmtInsert->execute();
                     }
                 }
@@ -162,34 +166,40 @@ class AgendaAPI {
         }
     }
     
+    /**
+     * Obtener usuarios compartidos - CAMBIO: usar no_nomina_usuario
+     */
     private function getUsuariosCompartidos($id_evento) {
         try {
-            $query = "SELECT identificador_usuario FROM anotaciones_compartidas WHERE id_evento = :id_evento";
+            $query = "SELECT no_nomina_usuario FROM anotaciones_compartidas WHERE id_evento = :id_evento";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':id_evento', $id_evento);
             $stmt->execute();
             
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return array_column($resultados, 'identificador_usuario');
+            return array_column($resultados, 'no_nomina_usuario');
         } catch(Exception $e) {
             return [];
         }
     }
     
+    /**
+     * Obtener todos los eventos - CAMBIO: usar no_nomina_creador y no_nomina_usuario
+     */
     private function getAll() {
         try {
-            $identificador = isset($_GET['identificador']) ? $_GET['identificador'] : '';
+            $no_nomina = isset($_GET['identificador']) ? $_GET['identificador'] : '';
             
             $query = "SELECT ae.* 
                       FROM agenda_eventos ae 
                       WHERE ae.estatus = 1 
-                      AND (ae.identificador_creador = :identificador 
-                           OR EXISTS (SELECT 1 FROM anotaciones_compartidas ac WHERE ac.id_evento = ae.id_evento AND ac.identificador_usuario = :identificador2))
+                      AND (ae.no_nomina_creador = :no_nomina 
+                           OR EXISTS (SELECT 1 FROM anotaciones_compartidas ac WHERE ac.id_evento = ae.id_evento AND ac.no_nomina_usuario = :no_nomina2))
                       ORDER BY ae.fecha DESC, ae.hora DESC";
             
             $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':identificador', $identificador);
-            $stmt->bindParam(':identificador2', $identificador);
+            $stmt->bindParam(':no_nomina', $no_nomina);
+            $stmt->bindParam(':no_nomina2', $no_nomina);
             $stmt->execute();
             
             $eventos = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -215,10 +225,13 @@ class AgendaAPI {
         }
     }
     
+    /**
+     * Obtener eventos por fecha - CAMBIO: usar no_nomina_creador y no_nomina_usuario
+     */
     private function getByDate() {
         try {
             $fecha = isset($_GET['fecha']) ? $_GET['fecha'] : '';
-            $identificador = isset($_GET['identificador']) ? $_GET['identificador'] : '';
+            $no_nomina = isset($_GET['identificador']) ? $_GET['identificador'] : '';
             
             if(empty($fecha)) {
                 echo json_encode(['success' => false, 'message' => 'Fecha no proporcionada']);
@@ -228,13 +241,13 @@ class AgendaAPI {
             $query = "SELECT ae.* 
                       FROM agenda_eventos ae 
                       WHERE ae.fecha = :fecha AND ae.estatus = 1 
-                      AND (ae.identificador_creador = :identificador 
-                           OR EXISTS (SELECT 1 FROM anotaciones_compartidas ac WHERE ac.id_evento = ae.id_evento AND ac.identificador_usuario = :identificador2))
+                      AND (ae.no_nomina_creador = :no_nomina 
+                           OR EXISTS (SELECT 1 FROM anotaciones_compartidas ac WHERE ac.id_evento = ae.id_evento AND ac.no_nomina_usuario = :no_nomina2))
                       ORDER BY ae.hora ASC";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':fecha', $fecha);
-            $stmt->bindParam(':identificador', $identificador);
-            $stmt->bindParam(':identificador2', $identificador);
+            $stmt->bindParam(':no_nomina', $no_nomina);
+            $stmt->bindParam(':no_nomina2', $no_nomina);
             $stmt->execute();
             
             $eventos = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -260,11 +273,14 @@ class AgendaAPI {
         }
     }
     
+    /**
+     * Obtener eventos por mes - CAMBIO: usar no_nomina_creador y no_nomina_usuario
+     */
     private function getByMonth() {
         try {
             $anio = isset($_GET['anio']) ? $_GET['anio'] : date('Y');
             $mes = isset($_GET['mes']) ? str_pad($_GET['mes'], 2, '0', STR_PAD_LEFT) : date('m');
-            $identificador = isset($_GET['identificador']) ? $_GET['identificador'] : '';
+            $no_nomina = isset($_GET['identificador']) ? $_GET['identificador'] : '';
             
             $fechaInicio = $anio . '-' . $mes . '-01';
             $fechaFin = date('Y-m-t', strtotime($fechaInicio));
@@ -273,14 +289,14 @@ class AgendaAPI {
                       FROM agenda_eventos ae 
                       WHERE ae.fecha BETWEEN :fechaInicio AND :fechaFin 
                       AND ae.estatus = 1 
-                      AND (ae.identificador_creador = :identificador 
-                           OR EXISTS (SELECT 1 FROM anotaciones_compartidas ac WHERE ac.id_evento = ae.id_evento AND ac.identificador_usuario = :identificador2))
+                      AND (ae.no_nomina_creador = :no_nomina 
+                           OR EXISTS (SELECT 1 FROM anotaciones_compartidas ac WHERE ac.id_evento = ae.id_evento AND ac.no_nomina_usuario = :no_nomina2))
                       ORDER BY ae.fecha ASC, ae.hora ASC";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':fechaInicio', $fechaInicio);
             $stmt->bindParam(':fechaFin', $fechaFin);
-            $stmt->bindParam(':identificador', $identificador);
-            $stmt->bindParam(':identificador2', $identificador);
+            $stmt->bindParam(':no_nomina', $no_nomina);
+            $stmt->bindParam(':no_nomina2', $no_nomina);
             $stmt->execute();
             
             $eventos = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -392,13 +408,16 @@ class AgendaAPI {
         }
     }
     
+    /**
+     * Insertar evento - CAMBIO: usar no_nomina_creador
+     */
     private function insert() {
         try {
             $fecha = isset($_POST['fecha']) ? $_POST['fecha'] : '';
             $hora = isset($_POST['hora']) ? $_POST['hora'] : null;
             $titulo = isset($_POST['titulo']) ? strtoupper(trim($_POST['titulo'])) : '';
             $descripcion = isset($_POST['descripcion']) ? strtoupper(trim($_POST['descripcion'])) : null;
-            $identificadorCreador = isset($_POST['identificador_creador']) ? $_POST['identificador_creador'] : '';
+            $noNominaCreador = isset($_POST['identificador_creador']) ? $_POST['identificador_creador'] : '';
             $usuariosCompartidos = isset($_POST['usuarios_compartidos']) ? json_decode($_POST['usuarios_compartidos'], true) : [];
             
             $ubicacionLink = isset($_POST['ubicacion_link']) ? $_POST['ubicacion_link'] : null;
@@ -416,8 +435,8 @@ class AgendaAPI {
             
             $this->conn->beginTransaction();
             
-            $queryCalendario = "INSERT INTO calendario_eventos (fecha, hora, titulo, descripcion, archivos, ubicacion_link, ubicacion_lat, ubicacion_lng, identificador_creador) 
-                                VALUES (:fecha, :hora, :titulo, :descripcion, :archivos, :ubicacion_link, :ubicacion_lat, :ubicacion_lng, :identificador_creador)";
+            $queryCalendario = "INSERT INTO calendario_eventos (fecha, hora, titulo, descripcion, archivos, ubicacion_link, ubicacion_lat, ubicacion_lng, no_nomina_creador) 
+                                VALUES (:fecha, :hora, :titulo, :descripcion, :archivos, :ubicacion_link, :ubicacion_lat, :ubicacion_lng, :no_nomina_creador)";
             
             $stmtCalendario = $this->conn->prepare($queryCalendario);
             $stmtCalendario->bindParam(':fecha', $fecha);
@@ -428,7 +447,7 @@ class AgendaAPI {
             $stmtCalendario->bindParam(':ubicacion_link', $ubicacionLink);
             $stmtCalendario->bindParam(':ubicacion_lat', $ubicacionLat);
             $stmtCalendario->bindParam(':ubicacion_lng', $ubicacionLng);
-            $stmtCalendario->bindParam(':identificador_creador', $identificadorCreador);
+            $stmtCalendario->bindParam(':no_nomina_creador', $noNominaCreador);
             
             if(!$stmtCalendario->execute()) {
                 $this->conn->rollBack();
@@ -438,8 +457,8 @@ class AgendaAPI {
             
             $id_calendario = $this->conn->lastInsertId();
             
-            $queryAgenda = "INSERT INTO agenda_eventos (id_calendario, fecha, hora, titulo, descripcion, archivos, ubicacion_link, ubicacion_lat, ubicacion_lng, identificador_creador) 
-                            VALUES (:id_calendario, :fecha, :hora, :titulo, :descripcion, :archivos, :ubicacion_link, :ubicacion_lat, :ubicacion_lng, :identificador_creador)";
+            $queryAgenda = "INSERT INTO agenda_eventos (id_calendario, fecha, hora, titulo, descripcion, archivos, ubicacion_link, ubicacion_lat, ubicacion_lng, no_nomina_creador) 
+                            VALUES (:id_calendario, :fecha, :hora, :titulo, :descripcion, :archivos, :ubicacion_link, :ubicacion_lat, :ubicacion_lng, :no_nomina_creador)";
             
             $stmtAgenda = $this->conn->prepare($queryAgenda);
             $stmtAgenda->bindParam(':id_calendario', $id_calendario);
@@ -451,7 +470,7 @@ class AgendaAPI {
             $stmtAgenda->bindParam(':ubicacion_link', $ubicacionLink);
             $stmtAgenda->bindParam(':ubicacion_lat', $ubicacionLat);
             $stmtAgenda->bindParam(':ubicacion_lng', $ubicacionLng);
-            $stmtAgenda->bindParam(':identificador_creador', $identificadorCreador);
+            $stmtAgenda->bindParam(':no_nomina_creador', $noNominaCreador);
             
             if($stmtAgenda->execute()) {
                 $id_evento = $this->conn->lastInsertId();
@@ -478,6 +497,9 @@ class AgendaAPI {
         }
     }
     
+    /**
+     * Actualizar evento - CAMBIO: usar no_nomina_creador
+     */
     private function update() {
         try {
             $id_evento = isset($_POST['id_evento']) ? $_POST['id_evento'] : 0;

@@ -50,7 +50,7 @@ const AgendaModule = {
         console.log('✅ Módulo de agenda listo');
     },
     
-    // Obtener identificador del usuario actual
+    // Obtener no_nomina del usuario actual
     obtenerIdentificadorActual: function() {
         try {
             let usuarioStr = sessionStorage.getItem('usuario');
@@ -63,22 +63,23 @@ const AgendaModule = {
                 const usuario = JSON.parse(usuarioStr);
                 console.log('👤 Usuario encontrado:', usuario);
                 
-                let identificador = usuario.identificador || '';
+                // CAMBIO: usar 'no_nomina' en lugar de 'identificador'
+                let identificador = usuario.no_nomina || '';
                 
                 if (!identificador) {
-                    console.warn('⚠️ No se encontró campo "identificador" en el usuario');
+                    console.warn('⚠️ No se encontró campo "no_nomina" en el usuario');
                     console.log('🔍 Campos disponibles:', Object.keys(usuario));
                     return '';
                 }
                 
-                console.log('✅ Identificador a usar:', identificador);
+                console.log('✅ No_nomina a usar:', identificador);
                 return String(identificador).trim();
             }
             
             console.error('❌ No se encontró usuario en sessionStorage ni localStorage');
             return '';
         } catch(e) {
-            console.error('❌ Error al obtener identificador:', e);
+            console.error('❌ Error al obtener no_nomina:', e);
             return '';
         }
     },
@@ -196,7 +197,7 @@ const AgendaModule = {
     cargarUsuariosPorArea: function() {
         const identificadorActual = this.obtenerIdentificadorActual();
         
-        console.log('🔍 Cargando usuarios por área - Mi identificador:', identificadorActual);
+        console.log('🔍 Cargando usuarios por área - Mi no_nomina:', identificadorActual);
         
         return new Promise((resolve, reject) => {
             $.ajax({
@@ -204,7 +205,7 @@ const AgendaModule = {
                 type: 'GET',
                 data: { 
                     action: 'getUsuariosPorArea', 
-                    identificador: identificadorActual
+                    no_nomina_actual: identificadorActual  // CAMBIO: parámetro más claro
                 },
                 dataType: 'json',
                 success: (response) => {
@@ -290,16 +291,16 @@ renderAreasConUsuarios: function() {
         `;
         
         usuarios.forEach(usuario => {
-            const identificador = usuario.identificador;
+            const noNomina = usuario.no_nomina;  // CAMBIO: usar no_nomina
             const nombreCompleto = `${usuario.nombre} ${usuario.apellido_paterno || ''} ${usuario.apellido_materno || ''}`.trim();
-            const isSelected = this.usuariosSeleccionados.includes(identificador);
+            const isSelected = this.usuariosSeleccionados.includes(noNomina);
             
             html += `
-                <div class="usuario-item-book ${isSelected ? 'selected' : ''}" data-identificador="${identificador}">
-                    <input type="checkbox" class="usuario-checkbox" value="${identificador}" ${isSelected ? 'checked' : ''}>
+                <div class="usuario-item-book ${isSelected ? 'selected' : ''}" data-no_nomina="${noNomina}">
+                    <input type="checkbox" class="usuario-checkbox" value="${noNomina}" ${isSelected ? 'checked' : ''}>
                     <div class="usuario-nombre-book">
                         ${this.escapeHTML(nombreCompleto)}
-                        <small>${this.escapeHTML(identificador)}</small>
+                        <small>${this.escapeHTML(noNomina)}</small>
                     </div>
                 </div>
             `;
@@ -342,16 +343,16 @@ renderAreasConUsuarios: function() {
     $('.usuario-checkbox').off('change').on('change', (e) => {
         e.stopPropagation();
         const checkbox = $(e.currentTarget);
-        const identificador = checkbox.val();
+        const noNomina = checkbox.val();
         const item = checkbox.closest('.usuario-item-book');
         
         if (checkbox.prop('checked')) {
-            if (!this.usuariosSeleccionados.includes(identificador)) {
-                this.usuariosSeleccionados.push(identificador);
+            if (!this.usuariosSeleccionados.includes(noNomina)) {
+                this.usuariosSeleccionados.push(noNomina);
             }
             item.addClass('selected');
         } else {
-            this.usuariosSeleccionados = this.usuariosSeleccionados.filter(n => n !== identificador);
+            this.usuariosSeleccionados = this.usuariosSeleccionados.filter(n => n !== noNomina);
             item.removeClass('selected');
         }
     });
@@ -365,9 +366,9 @@ renderAreasConUsuarios: function() {
         
         if (area && area.usuarios) {
             area.usuarios.forEach(usuario => {
-                const identificador = usuario.identificador;
-                if (!self.usuariosSeleccionados.includes(identificador)) {
-                    self.usuariosSeleccionados.push(identificador);
+                const noNomina = usuario.no_nomina;
+                if (!self.usuariosSeleccionados.includes(noNomina)) {
+                    self.usuariosSeleccionados.push(noNomina);
                 }
             });
             // Re-renderizar SIN perder el estado de los acordeones
@@ -383,7 +384,7 @@ renderAreasConUsuarios: function() {
         
         if (area && area.usuarios) {
             area.usuarios.forEach(usuario => {
-                self.usuariosSeleccionados = self.usuariosSeleccionados.filter(n => n !== usuario.identificador);
+                self.usuariosSeleccionados = self.usuariosSeleccionados.filter(n => n !== usuario.no_nomina);
             });
             // Re-renderizar SIN perder el estado de los acordeones
             self.renderAreasConUsuarios();
@@ -415,7 +416,7 @@ renderAreasConUsuarios: function() {
         const self = this;
         const identificador = this.obtenerIdentificadorActual();
         
-        console.log('🔍 Cargando eventos para identificador:', identificador);
+        console.log('🔍 Cargando eventos para no_nomina:', identificador);
         
         $.ajax({
             url: this.config.api.agenda,
@@ -447,119 +448,141 @@ renderAreasConUsuarios: function() {
     
     // Actualizar contadores del header
     actualizarContadores: function() {
-        const identificadorActual = this.obtenerIdentificadorActual();
-        const misEventos = this.eventos.filter(e => e.identificador_creador === identificadorActual);
-        const totalEventos = this.eventos.length;
-        
-        $('#totalEventosStat').text(totalEventos);
-        $('#totalEventos').text(`${totalEventos} ANOTACIONES`);
-    },
+    const noNominaActual = this.obtenerIdentificadorActual();
+    // CORREGIDO: Filtrar por no_nomina_creador
+    const misEventos = this.eventos.filter(e => e.no_nomina_creador === noNominaActual);
+    const totalEventos = this.eventos.length;
     
-    // Aplicar filtros (fecha + pestañas)
-    aplicarFiltros: function() {
-        const dia = $('#filtroDia').val();
-        const mes = $('#filtroMes').val();
-        const anio = $('#filtroAnio').val();
-        const identificadorActual = this.obtenerIdentificadorActual();
-        
-        let eventosFiltrados = [...this.eventos];
-        
-        // Filtro por pestaña
-        if (this.filtroActual === 'mine') {
-            eventosFiltrados = eventosFiltrados.filter(e => e.identificador_creador === identificadorActual);
-        } else if (this.filtroActual === 'shared') {
-            eventosFiltrados = eventosFiltrados.filter(e => e.identificador_creador !== identificadorActual);
-        }
-        
-        // Filtro por fecha
-        if (dia || mes || anio) {
-            eventosFiltrados = eventosFiltrados.filter(evento => {
-                const fechaEvento = evento.fecha;
-                const [eventoAnio, eventoMes, eventoDia] = fechaEvento.split('-');
-                
-                let coincide = true;
-                if (anio && eventoAnio !== anio) coincide = false;
-                if (coincide && mes && eventoMes !== mes) coincide = false;
-                if (coincide && dia && eventoDia !== dia.padStart(2, '0')) coincide = false;
-                
-                return coincide;
-            });
-        }
-        
-        this.renderEventos(eventosFiltrados);
-        $('#totalEventos').text(`${eventosFiltrados.length} ANOTACIONES`);
-    },
+    console.log('📊 Contadores - Mis eventos:', misEventos.length, 'Total:', totalEventos);
     
-    // Renderizar eventos en tarjetas
-    renderEventos: function(eventos) {
-        const lista = $('#eventosLista');
-        const identificadorActual = this.obtenerIdentificadorActual();
-        
-        if (!eventos || eventos.length === 0) {
-            lista.html(`
-                <div class="no-results-book">
-                    <i class="fas fa-book-open"></i>
-                    <h3>BITÁCORA VACÍA</h3>
-                    <p>NO HAY EVENTOS EN LA AGENDA</p>
-                </div>
-            `);
-            return;
-        }
-        
-        // Ordenar por fecha descendente
-        eventos.sort((a, b) => b.fecha.localeCompare(a.fecha));
-        
-        let html = '';
-        eventos.forEach(evento => {
-            const fechaObj = new Date(evento.fecha + 'T12:00:00');
-            const fechaFormateada = fechaObj.toLocaleDateString('es-MX', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            }).toUpperCase();
+    $('#totalEventosStat').text(totalEventos);
+    $('#totalEventos').text(`${totalEventos} ANOTACIONES`);
+},
+    
+    // ============================================
+// FUNCIÓN CORREGIDA - aplicarFiltros
+// ============================================
+aplicarFiltros: function() {
+    const dia = $('#filtroDia').val();
+    const mes = $('#filtroMes').val();
+    const anio = $('#filtroAnio').val();
+    const noNominaActual = this.obtenerIdentificadorActual(); // Esto obtiene el no_nomina
+    
+    console.log('🔍 Filtro actual:', this.filtroActual);
+    console.log('🔍 No_nomina actual:', noNominaActual);
+    
+    let eventosFiltrados = [...this.eventos];
+    
+    // Filtro por pestaña
+    if (this.filtroActual === 'mine') {
+        // CORREGIDO: Comparar con no_nomina_creador (no 'identificador_creador')
+        eventosFiltrados = eventosFiltrados.filter(e => e.no_nomina_creador === noNominaActual);
+        console.log('📌 Mostrando solo MIS anotaciones:', eventosFiltrados.length);
+    } else if (this.filtroActual === 'shared') {
+        // CORREGIDO: Anotaciones donde NO soy el creador
+        eventosFiltrados = eventosFiltrados.filter(e => e.no_nomina_creador !== noNominaActual);
+        console.log('📌 Mostrando anotaciones COMPARTIDAS:', eventosFiltrados.length);
+    }
+    
+    // Filtro por fecha (sin cambios)
+    if (dia || mes || anio) {
+        eventosFiltrados = eventosFiltrados.filter(evento => {
+            const fechaEvento = evento.fecha;
+            const [eventoAnio, eventoMes, eventoDia] = fechaEvento.split('-');
             
-            const esCreador = (evento.identificador_creador === identificadorActual);
-            const archivos = evento.archivos ? JSON.parse(evento.archivos) : [];
+            let coincide = true;
+            if (anio && eventoAnio !== anio) coincide = false;
+            if (coincide && mes && eventoMes !== mes) coincide = false;
+            if (coincide && dia && eventoDia !== dia.padStart(2, '0')) coincide = false;
             
-            html += `
-                <div class="event-card" data-id="${evento.id_evento}">
-                    <div class="event-card-header">
-                        <div class="event-fecha">
-                            <i class="fas fa-calendar-alt"></i>
-                            ${fechaFormateada}
-                        </div>
-                        <div class="event-badge ${esCreador ? 'mine' : 'shared'}">
-                            <i class="fas ${esCreador ? 'fa-user-pen' : 'fa-share-alt'}"></i>
-                            ${esCreador ? 'MÍA' : 'COMPARTIDA'}
-                        </div>
+            return coincide;
+        });
+    }
+    
+    this.renderEventos(eventosFiltrados);
+    $('#totalEventos').text(`${eventosFiltrados.length} ANOTACIONES`);
+},
+    
+    // ============================================
+// FUNCIÓN CORREGIDA - renderEventos
+// ============================================
+renderEventos: function(eventos) {
+    const lista = $('#eventosLista');
+    const noNominaActual = this.obtenerIdentificadorActual();
+    
+    console.log('🎨 Renderizando eventos - Usuario actual:', noNominaActual);
+    
+    if (!eventos || eventos.length === 0) {
+        lista.html(`
+            <div class="no-results-book">
+                <i class="fas fa-book-open"></i>
+                <h3>BITÁCORA VACÍA</h3>
+                <p>NO HAY EVENTOS EN LA AGENDA</p>
+            </div>
+        `);
+        return;
+    }
+    
+    // Ordenar por fecha descendente
+    eventos.sort((a, b) => b.fecha.localeCompare(a.fecha));
+    
+    let html = '';
+    eventos.forEach(evento => {
+        console.log('📅 Evento:', evento.titulo, 'Creador:', evento.no_nomina_creador, 'Actual:', noNominaActual);
+        
+        const fechaObj = new Date(evento.fecha + 'T12:00:00');
+        const fechaFormateada = fechaObj.toLocaleDateString('es-MX', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }).toUpperCase();
+        
+        // CORREGIDO: Comparar correctamente con no_nomina_creador
+        const esCreador = (evento.no_nomina_creador === noNominaActual);
+        
+        console.log('🏷️ ¿Es creador?', esCreador, ' - ', evento.no_nomina_creador, '===', noNominaActual);
+        
+        const archivos = evento.archivos ? JSON.parse(evento.archivos) : [];
+        
+        html += `
+            <div class="event-card" data-id="${evento.id_evento}">
+                <div class="event-card-header">
+                    <div class="event-fecha">
+                        <i class="fas fa-calendar-alt"></i>
+                        ${fechaFormateada}
                     </div>
-                    <div class="event-titulo">
-                        <h4>${this.escapeHTML(evento.titulo || 'SIN TÍTULO')}</h4>
-                    </div>
-                    <div class="event-hora">
-                        <i class="fas fa-clock"></i>
-                        ${evento.hora || 'HORA NO ESPECIFICADA'}
-                    </div>
-                    <div class="event-descripcion">
-                        ${this.escapeHTML(evento.descripcion || 'SIN DESCRIPCIÓN')}
-                    </div>
-                    <div class="event-footer">
-                        ${archivos.length > 0 ? `<span><i class="fas fa-paperclip"></i> ${archivos.length} ARCHIVOS</span>` : ''}
-                        ${evento.ubicacion_link || (evento.ubicacion_lat && evento.ubicacion_lng) ? `<span><i class="fas fa-map-marker-alt"></i> UBICACIÓN</span>` : ''}
+                    <div class="event-badge ${esCreador ? 'mine' : 'shared'}">
+                        <i class="fas ${esCreador ? 'fa-user-pen' : 'fa-share-alt'}"></i>
+                        ${esCreador ? 'MÍA' : 'COMPARTIDA'}
                     </div>
                 </div>
-            `;
-        });
-        
-        lista.html(html);
-        
-        // Evento click en tarjeta
-        $('.event-card').off('click').on('click', (e) => {
-            const id = $(e.currentTarget).data('id');
-            this.mostrarDetalleAnotacion(id);
-        });
-    },
+                <div class="event-titulo">
+                    <h4>${this.escapeHTML(evento.titulo || 'SIN TÍTULO')}</h4>
+                </div>
+                <div class="event-hora">
+                    <i class="fas fa-clock"></i>
+                    ${evento.hora || 'HORA NO ESPECIFICADA'}
+                </div>
+                <div class="event-descripcion">
+                    ${this.escapeHTML(evento.descripcion || 'SIN DESCRIPCIÓN')}
+                </div>
+                <div class="event-footer">
+                    ${archivos.length > 0 ? `<span><i class="fas fa-paperclip"></i> ${archivos.length} ARCHIVOS</span>` : ''}
+                    ${evento.ubicacion_link || (evento.ubicacion_lat && evento.ubicacion_lng) ? `<span><i class="fas fa-map-marker-alt"></i> UBICACIÓN</span>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    lista.html(html);
+    
+    // Evento click en tarjeta
+    $('.event-card').off('click').on('click', (e) => {
+        const id = $(e.currentTarget).data('id');
+        this.mostrarDetalleAnotacion(id);
+    });
+},
     
     // Limpiar filtros
     limpiarFiltros: function() {
@@ -573,25 +596,28 @@ renderAreasConUsuarios: function() {
     },
     
     // ============================================
-    // MOSTRAR DETALLE DE ANOTACIÓN
-    // ============================================
-    mostrarDetalleAnotacion: function(id) {
-        const evento = this.eventos.find(e => e.id_evento == id);
-        if (!evento) return;
-        
-        this.editandoId = id;
-        
-        const usuarioActual = this.obtenerIdentificadorActual();
-        const esCreador = (evento.identificador_creador === usuarioActual);
-        
-        // Habilitar/deshabilitar botones según permisos
-        if (!esCreador) {
-            $('#btnEditarAnotacion').prop('disabled', true).css('opacity', '0.5').css('cursor', 'not-allowed');
-            $('#btnEliminarAnotacion').prop('disabled', true).css('opacity', '0.5').css('cursor', 'not-allowed');
-        } else {
-            $('#btnEditarAnotacion').prop('disabled', false).css('opacity', '1').css('cursor', 'pointer');
-            $('#btnEliminarAnotacion').prop('disabled', false).css('opacity', '1').css('cursor', 'pointer');
-        }
+// FUNCIÓN CORREGIDA - mostrarDetalleAnotacion
+// ============================================
+mostrarDetalleAnotacion: function(id) {
+    const evento = this.eventos.find(e => e.id_evento == id);
+    if (!evento) return;
+    
+    this.editandoId = id;
+    
+    const noNominaActual = this.obtenerIdentificadorActual();
+    // CORREGIDO: Comparar correctamente con no_nomina_creador
+    const esCreador = (evento.no_nomina_creador === noNominaActual);
+    
+    console.log('🔍 Detalle - ¿Es creador?', esCreador);
+    
+    // Habilitar/deshabilitar botones según permisos
+    if (!esCreador) {
+        $('#btnEditarAnotacion').prop('disabled', true).css('opacity', '0.5').css('cursor', 'not-allowed');
+        $('#btnEliminarAnotacion').prop('disabled', true).css('opacity', '0.5').css('cursor', 'not-allowed');
+    } else {
+        $('#btnEditarAnotacion').prop('disabled', false).css('opacity', '1').css('cursor', 'pointer');
+        $('#btnEliminarAnotacion').prop('disabled', false).css('opacity', '1').css('cursor', 'pointer');
+    }
         
         const fechaObj = new Date(evento.fecha + 'T12:00:00');
         const fechaFormateada = fechaObj.toLocaleDateString('es-MX', {
