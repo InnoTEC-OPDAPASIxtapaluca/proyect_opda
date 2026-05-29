@@ -139,7 +139,7 @@ const VisorArchivos = {
     // Obtener URL de la API según el origen
     obtenerApiUrl: function() {
         if (!this.archivoActual || !this.archivoActual.origen) {
-            return '../../php/agenda_calendario/agenda_api.php';
+            return '../../php/agenda_calendario/agenda/agenda_api.php';
         }
         
         if (this.archivoActual.origen === 'reporte') {
@@ -147,8 +147,8 @@ const VisorArchivos = {
         }
         
         return this.archivoActual.origen === 'agenda' 
-            ? '../../php/agenda_calendario/agenda_api.php'
-            : '../../php/agenda_calendario/calendario_api.php';
+            ? '../../php/agenda_calendario/agenda/agenda_api.php'
+            : '../../php/agenda_calendario/calendario/calendario_api.php';
     },
     
     // Abrir visor con archivo
