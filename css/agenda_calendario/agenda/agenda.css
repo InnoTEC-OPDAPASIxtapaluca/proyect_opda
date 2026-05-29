@@ -6,16 +6,17 @@
 /* ==================== CONTENEDOR PRINCIPAL - PANTALLA COMPLETA ==================== */
 .agenda-container-full {
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     margin: 0;
     padding: 20px;
     background: transparent;
-    overflow-y: auto;
+    overflow-y: visible;
     display: flex;
     flex-direction: column;
 }
 
-/* Scroll personalizado para el contenedor */
+/* Scroll personalizado para el contenedor - solo si es necesario */
 .agenda-container-full::-webkit-scrollbar {
     width: 6px;
 }
@@ -366,10 +367,9 @@
     border-radius: 20px;
     border: 1px solid rgba(187, 147, 88, 0.2);
     overflow: hidden;
-    flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    max-height: 450px;
 }
 
 .agenda-container-full .events-header {
@@ -417,8 +417,8 @@
 /* Lista de eventos - Tarjetas estilo libro */
 .agenda-container-full .events-list {
     padding: 20px;
-    flex: 1;
     overflow-y: auto;
+    flex: 1;
     min-height: 0;
 }
 
@@ -436,7 +436,7 @@
     border-radius: 10px;
 }
 
-/* Tarjeta de evento - Estilo libro/página */
+/* Tarjeta de evento - Estilo libro/página (Vista LISTA) */
 .agenda-container-full .event-card {
     background: linear-gradient(145deg, rgba(26, 4, 11, 0.85), rgba(15, 2, 18, 0.85));
     border-radius: 16px;
@@ -559,17 +559,6 @@
     color: var(--color-primary);
 }
 
-/* Modo grid (opcional) */
-.agenda-container-full .events-list.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
-}
-
-.agenda-container-full .events-list.grid .event-card {
-    margin-bottom: 0;
-}
-
 /* Loading */
 .agenda-container-full .loading-container {
     text-align: center;
@@ -630,7 +619,7 @@
     color: var(--text-white-50);
 }
 
-/* ==================== MODALES ESTILO LIBRO (sin cambios) ==================== */
+/* ==================== MODALES ESTILO LIBRO ==================== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1616,9 +1605,17 @@ textarea.form-control-book {
     .event-card-header {
         flex-direction: column;
     }
-    
-    .agenda-container-full .events-list.grid {
-        grid-template-columns: 1fr;
+}
+
+@media (max-width: 768px) {
+    .agenda-container-full .events-section {
+        max-height: 350px;
+    }
+}
+
+@media (max-width: 480px) {
+    .agenda-container-full .events-section {
+        max-height: 300px;
     }
 }
 
@@ -1681,4 +1678,110 @@ textarea.form-control-book {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* ==================== ESTILOS EXCLUSIVOS PARA VISTA GRID ==================== */
+/* Contenedor grid con scroll vertical */
+.agenda-container-full .events-list.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    align-content: flex-start;
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+/* Tarjetas en modo grid - Tamaño pequeño y fijo */
+.agenda-container-full .events-list.grid .event-card {
+    min-height: 100px;
+    max-height: 100px;
+    padding: 12px 15px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+/* Ocultar elementos no deseados en grid (solo descripción y footer) */
+.agenda-container-full .events-list.grid .event-descripcion,
+.agenda-container-full .events-list.grid .event-footer {
+    display: none;
+}
+
+/* Mostrar hora en grid */
+.agenda-container-full .events-list.grid .event-hora {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--text-white-50);
+    margin: 5px 0;
+}
+
+.agenda-container-full .events-list.grid .event-hora i {
+    font-size: 9px;
+    color: var(--color-primary);
+}
+
+/* Header del grid más compacto */
+.agenda-container-full .events-list.grid .event-card-header {
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Fecha más pequeña en grid */
+.agenda-container-full .events-list.grid .event-fecha {
+    font-size: 10px;
+    padding: 2px 8px;
+}
+
+.agenda-container-full .events-list.grid .event-fecha i {
+    font-size: 9px;
+}
+
+/* Badge más pequeño en grid */
+.agenda-container-full .events-list.grid .event-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+}
+
+.agenda-container-full .events-list.grid .event-badge i {
+    font-size: 8px;
+}
+
+/* Título compacto en grid */
+.agenda-container-full .events-list.grid .event-titulo {
+    margin-bottom: 0;
+}
+
+.agenda-container-full .events-list.grid .event-titulo h4 {
+    font-size: 13px;
+    margin-bottom: 0;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mostrar el creador en grid - más compacto */
+.agenda-container-full .events-list.grid .event-creador {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid rgba(187, 147, 88, 0.15);
+    font-size: 10px;
+    color: var(--text-white-60);
+}
+
+.agenda-container-full .events-list.grid .event-creador i {
+    color: var(--color-primary);
+    font-size: 10px;
+}
+
+.agenda-container-full .events-list.grid .event-creador span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
