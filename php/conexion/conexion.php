@@ -28,6 +28,10 @@ class Database {
                 'infraestructura_op' => [
                     'username' => 'root',
                     'password' => ''
+                ],
+                'agn_cal_op' => [  // NUEVA BASE DE DATOS
+                    'username' => 'root',
+                    'password' => ''
                 ]
             ];
         } else {
@@ -44,6 +48,10 @@ class Database {
                 ],
                 'infraestructura_op' => [
                     'username' => 'u167111103_opda2',  // Corregido: usuario correcto
+                    'password' => '24092004.Jgl'
+                ],
+                'agn_cal_op' => [  // NUEVA BASE DE DATOS - ACTUALIZAR NOMBRE EN HOSTINGER
+                    'username' => 'u167111103_opda3',  // Crear este usuario en Hostinger
                     'password' => '24092004.Jgl'
                 ]
             ];
@@ -87,7 +95,8 @@ class Database {
             $realDbNames = [
                 'login_op' => 'u167111103_login_op',
                 'accesos_op' => 'u167111103_accesos_op',
-                'infraestructura_op' => 'u167111103_infra_op'  // Nombre real en Hostinger
+                'infraestructura_op' => 'u167111103_infra_op',
+                'agn_cal_op' => 'PENDIENTE_ACTUALIZAR'  // ← ACTUALIZAR cuando sepas el nombre real en Hostinger
             ];
             
             return isset($realDbNames[$dbname]) ? $realDbNames[$dbname] : $dbname;
@@ -105,6 +114,11 @@ class Database {
     
     public function getInfraestructuraConnection() {
         return $this->getConnection("infraestructura_op");
+    }
+    
+    // NUEVO MÉTODO PARA AGN_CAL_OP
+    public function getAgnCalConnection() {
+        return $this->getConnection("agn_cal_op");
     }
     
     // Método para cerrar todas las conexiones
@@ -137,7 +151,8 @@ $db = new Database();
 try {
     $conn = $db->getDefaultConnection();
     $conn_accesos = $db->getAccesosConnection();
-    $conn_infraestructura = $db->getInfraestructuraConnection(); // Ahora funciona en ambos entornos
+    $conn_infraestructura = $db->getInfraestructuraConnection();
+    $conn_agn_cal = $db->getAgnCalConnection(); // NUEVA CONEXIÓN
 } catch (Exception $e) {
     die("Error al establecer conexiones: " . $e->getMessage());
 }
