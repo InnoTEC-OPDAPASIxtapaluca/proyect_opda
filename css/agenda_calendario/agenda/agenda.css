@@ -1621,3 +1621,64 @@ textarea.form-control-book {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==================== BOTÓN DE CALENDARIO ==================== */
+.agenda-container-full .calendar-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.agenda-container-full .btn-calendar {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    border: none;
+    border-radius: 40px;
+    padding: 10px 24px;
+    color: var(--text-white);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.agenda-container-full .btn-calendar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(187, 147, 88, 0.3);
+    gap: 15px;
+}
+
+.agenda-container-full .btn-calendar i {
+    font-size: 14px;
+}
+
+.agenda-container-full .btn-calendar i:first-child {
+    color: var(--color-primary);
+}
+
+.agenda-container-full .btn-calendar i:last-child {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.agenda-container-full .btn-calendar:hover i:last-child {
+    transform: translateX(4px);
+}
+
+/* Responsive para el botón de calendario */
+@media (max-width: 600px) {
+    .agenda-container-full .calendar-button-container {
+        justify-content: center;
+    }
+    
+    .agenda-container-full .btn-calendar {
+        padding: 8px 20px;
+        font-size: 12px;
+        width: 100%;
+        justify-content: center;
+    }
+}
