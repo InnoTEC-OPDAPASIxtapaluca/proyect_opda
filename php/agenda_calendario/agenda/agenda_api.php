@@ -2,7 +2,7 @@
 date_default_timezone_set('America/Mexico_City');
 /**
  * agenda_api.php - API para gestión de la agenda
- * VERSIÓN CON COMPARTIR POR ÁREA
+ * VERSIÓN CON COMPARTIR POR ÁREA - ELIMINACIÓN FÍSICA
  */
 
 header('Content-Type: application/json');
@@ -55,19 +55,13 @@ class AgendaAPI {
         }
     }
     
-        /**
+    /**
      * OBTENER USUARIOS AGRUPADOS POR ÁREA
-     * Esta función hace JOIN con la tabla areas para obtener el nombre del área
-     */
-        /**
-     * OBTENER USUARIOS AGRUPADOS POR ÁREA
-     * Esta función hace JOIN con la tabla areas para obtener el nombre del área
      */
     private function getUsuariosPorArea() {
         try {
             $identificadorActual = isset($_GET['identificador']) ? $_GET['identificador'] : '';
             
-            // Conectar a login_op (NO login_reg)
             $db = new Database();
             $connLogin = $db->getConnection('login_op');
             
@@ -75,7 +69,6 @@ class AgendaAPI {
                 throw new Exception('No se pudo conectar a login_op');
             }
             
-            // Consulta con JOIN para obtener área y usuarios
             $query = "SELECT 
                         a.id_area, 
                         a.area as area_nombre,
@@ -102,7 +95,6 @@ class AgendaAPI {
             $stmt->execute();
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            // Agrupar por área
             $areasMap = [];
             foreach ($resultados as $row) {
                 $areaId = $row['id_area'];
@@ -124,7 +116,6 @@ class AgendaAPI {
                 ];
             }
             
-            // Convertir a array indexado
             $areas = array_values($areasMap);
             
             echo json_encode([
@@ -650,7 +641,8 @@ class AgendaAPI {
                 return;
             }
             
-            $querySelect = "SELECT id_calendario FROM agenda_eventos WHERE id_evento = :id_evento AND estatus = 1";
+            // Obtener id_calendario antes de eliminar
+            $querySelect = "SELECT id_calendario FROM agenda_eventos WHERE id_evento = :id_evento";
             $stmtSelect = $this->conn->prepare($querySelect);
             $stmtSelect->bindParam(':id_evento', $id_evento);
             $stmtSelect->execute();
@@ -659,12 +651,14 @@ class AgendaAPI {
             
             $this->conn->beginTransaction();
             
+            // 1. Eliminar de anotaciones_compartidas
             $queryDeleteCompartidas = "DELETE FROM anotaciones_compartidas WHERE id_evento = :id_evento";
             $stmtDeleteCompartidas = $this->conn->prepare($queryDeleteCompartidas);
             $stmtDeleteCompartidas->bindParam(':id_evento', $id_evento);
             $stmtDeleteCompartidas->execute();
             
-            $queryAgenda = "UPDATE agenda_eventos SET estatus = 0 WHERE id_evento = :id_evento";
+            // 2. Eliminar de agenda_eventos
+            $queryAgenda = "DELETE FROM agenda_eventos WHERE id_evento = :id_evento";
             $stmtAgenda = $this->conn->prepare($queryAgenda);
             $stmtAgenda->bindParam(':id_evento', $id_evento);
             
@@ -674,8 +668,9 @@ class AgendaAPI {
                 return;
             }
             
+            // 3. Eliminar de calendario_eventos si existe
             if($id_calendario) {
-                $queryCalendario = "UPDATE calendario_eventos SET estatus = 0 WHERE id_evento = :id_calendario";
+                $queryCalendario = "DELETE FROM calendario_eventos WHERE id_evento = :id_calendario";
                 $stmtCalendario = $this->conn->prepare($queryCalendario);
                 $stmtCalendario->bindParam(':id_calendario', $id_calendario);
                 $stmtCalendario->execute();
