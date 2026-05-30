@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>CALENDARIO | OPDAPAS</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS y JS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- ESTILOS GENERALES (base) -->
+    <link rel="stylesheet" href="../../../css/estilos_generales.css">
+    
+    <!-- ESTILOS ESPECÍFICOS DE CALENDARIO -->
+    <link rel="stylesheet" href="../../../css/agenda_calendario/calendario/calendario.css">
+</head>
+<body>
+    <div class="calendario-container-full">
+        <!-- ============================================ -->
+        <!-- HEADER PREMIUM UNIFICADO (como en agenda) -->
+        <!-- ============================================ -->
+        <div class="page-header-premium">
+            <div class="header-glow"></div>
+            <div class="header-icon-wrapper">
+                <div class="header-icon-pulse"></div>
+                <div class="header-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+            </div>
+            <div class="header-text">
+                <h1>CALENDARIO <span class="header-badge">VISUALIZACIÓN</span></h1>
+                <p>Visualiza tus eventos, citas y programaciones</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <i class="fas fa-calendar-week" style="font-size: 20px; color: var(--color-primary);"></i>
+                    <span class="stat-label">GESTIÓN</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <i class="fas fa-list-check" style="font-size: 20px; color: var(--color-primary);"></i>
+                    <span class="stat-label" id="totalEventosStat">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTÓN PARA VER AGENDA -->
+        <div class="agenda-button-container">
+            <button id="btnIrAgenda" class="btn-agenda">
+                <i class="fas fa-book-open"></i>
+                <span>VER AGENDA</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- FILTROS DE BÚSQUEDA                         -->
+        <!-- ============================================ -->
+        <div class="filtros-container">
+            <div class="filtros-header">
+                <div class="filtros-title">
+                    <i class="fas fa-filter"></i>
+                    <span>FILTROS DE BÚSQUEDA</span>
+                </div>
+                <button id="btnLimpiarFiltros" class="btn-limpiar-filtros">
+                    <i class="fas fa-eraser"></i>
+                    <span>LIMPIAR</span>
+                </button>
+            </div>
+            
+            <div class="filtros-grid">
+                <div class="filtro-group">
+                    <label class="filtro-label">
+                        <i class="fas fa-calendar-day"></i>
+                        DÍA
+                    </label>
+                    <input type="text" id="filtroDia" class="filtro-input" placeholder="DD" maxlength="2">
+                </div>
+                
+                <div class="filtro-group">
+                    <label class="filtro-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        MES
+                    </label>
+                    <select id="filtroMes" class="filtro-input">
+                        <option value="">SELECCIONAR MES</option>
+                    </select>
+                </div>
+                
+                <div class="filtro-group">
+                    <label class="filtro-label">
+                        <i class="fas fa-calendar"></i>
+                        AÑO
+                    </label>
+                    <input type="text" id="filtroAnio" class="filtro-input" placeholder="AAAA" maxlength="4">
+                </div>
+                
+                <div class="filtro-group filtro-acciones">
+                    <button class="btn-buscar" id="btnBuscarCalendario">
+                        <i class="fas fa-search"></i>
+                        BUSCAR
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SELECTOR DE VISTA                           -->
+        <!-- ============================================ -->
+        <div class="vista-selector">
+            <button class="btn-vista active" data-vista="mes">
+                <i class="fas fa-calendar-alt"></i>
+                <span>MES</span>
+            </button>
+            <button class="btn-vista" data-vista="semana">
+                <i class="fas fa-calendar-week"></i>
+                <span>SEMANA</span>
+            </button>
+            <button class="btn-vista" data-vista="dia">
+                <i class="fas fa-calendar-day"></i>
+                <span>DÍA</span>
+            </button>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- BOTONES DE ACCIÓN                           -->
+        <!-- ============================================ -->
+        <div class="acciones-container">
+            <button id="btnGenerarReporte" class="btn-reporte">
+                <i class="fas fa-file-pdf"></i>
+                <span>REPORTE PDF</span>
+            </button>
+            <button id="btnNuevoEvento" class="btn-nuevo-evento">
+                <i class="fas fa-plus-circle"></i>
+                <span>NUEVA ANOTACIÓN</span>
+            </button>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- LOADING                                     -->
+        <!-- ============================================ -->
+        <div id="calendarioLoading" class="loading-container" style="display: none;">
+            <div class="book-loader">
+                <div class="book-loader-page"></div>
+                <div class="book-loader-page"></div>
+                <div class="book-loader-page"></div>
+            </div>
+            <p>CARGANDO CALENDARIO...</p>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- VISTA MES                                   -->
+        <!-- ============================================ -->
+        <div id="vistaMes" class="vista-calendario active">
+            <div class="calendario-wrapper">
+                <div class="calendario-navegacion">
+                    <button class="btn-mes" id="btnMesAnterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 class="mes-actual" id="mesActual">MARZO 2026</h3>
+                    <button class="btn-mes" id="btnMesSiguiente">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div class="calendario-dias-semana">
+                    <div class="dia-semana">LUN</div>
+                    <div class="dia-semana">MAR</div>
+                    <div class="dia-semana">MIÉ</div>
+                    <div class="dia-semana">JUE</div>
+                    <div class="dia-semana">VIE</div>
+                    <div class="dia-semana">SÁB</div>
+                    <div class="dia-semana">DOM</div>
+                </div>
+                
+                <div class="calendario-grid" id="calendarioGrid">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- VISTA SEMANA                                -->
+        <!-- ============================================ -->
+        <div id="vistaSemana" class="vista-calendario">
+            <div class="calendario-wrapper semana-wrapper">
+                <div class="navegacion-fechas">
+                    <button class="btn-nav" id="btnSemanaAnterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 class="fecha-actual" id="semanaActual">SEMANA 10 - MARZO 2026</h3>
+                    <button class="btn-nav" id="btnSemanaSiguiente">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div class="semana-scroll-container">
+                    <div class="semana-grid" id="semanaGrid">
+                        <!-- Se genera dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- VISTA DÍA                                   -->
+        <!-- ============================================ -->
+        <div id="vistaDia" class="vista-calendario">
+            <div class="calendario-wrapper dia-wrapper">
+                <div class="navegacion-fechas">
+                    <button class="btn-nav" id="btnDiaAnterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 class="fecha-actual" id="diaActual">27 MARZO 2026</h3>
+                    <button class="btn-nav" id="btnDiaSiguiente">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div class="dia-scroll-container">
+                    <div class="dia-grid" id="diaGrid">
+                        <!-- Se genera dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL NUEVA/EDITAR ANOTACIÓN                 -->
+    <!-- ============================================ -->
+    <div id="modalNuevaAnotacion" class="modal-overlay">
+        <div class="modal-book-container">
+            <div class="modal-book-header">
+                <div class="modal-book-icon">
+                    <i class="fas fa-feather-alt"></i>
+                </div>
+                <h3 id="modalAnotacionTitulo">NUEVA ANOTACIÓN</h3>
+                <button id="btnCerrarModalAnotacion" class="modal-book-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="formAnotacion" class="modal-book-form">
+                <input type="hidden" id="anotacionId" value="">
+                <input type="hidden" id="anotacionIdCalendario" value="">
+                
+                <!-- Fila: Fecha y Hora -->
+                <div class="form-row-2">
+                    <div class="form-group-book">
+                        <label><i class="fas fa-calendar-day"></i> FECHA *</label>
+                        <input type="date" id="anotacionFecha" class="form-control-book" required>
+                    </div>
+                    <div class="form-group-book">
+                        <label><i class="fas fa-clock"></i> HORA</label>
+                        <input type="time" id="anotacionHora" class="form-control-book">
+                    </div>
+                </div>
+
+                <!-- Título -->
+                <div class="form-group-book">
+                    <label><i class="fas fa-heading"></i> TÍTULO *</label>
+                    <input type="text" id="anotacionTitulo" class="form-control-book" placeholder="TÍTULO DEL EVENTO" required>
+                </div>
+
+                <!-- Descripción -->
+                <div class="form-group-book">
+                    <label><i class="fas fa-align-left"></i> DESCRIPCIÓN</label>
+                    <textarea id="anotacionDescripcion" class="form-control-book" rows="3" placeholder="DESCRIPCIÓN DEL EVENTO"></textarea>
+                </div>
+
+                <!-- ===== UBICACIÓN - MODO MAPA Y GOOGLE MAPS ===== -->
+                <div class="form-group-book">
+                    <label><i class="fas fa-map-marker-alt"></i> UBICACIÓN</label>
+                    <div class="ubicacion-selector-book">
+                        <button type="button" id="btnModoMapa" class="modo-btn-book active">
+                            <i class="fas fa-map"></i> MAPA
+                        </button>
+                        <button type="button" id="btnModoGoogleMaps" class="modo-btn-book">
+                            <i class="fab fa-google"></i> GOOGLE MAPS
+                        </button>
+                    </div>
+                    
+                    <!-- MODO MAPA -->
+                    <div id="modoMapaContainer" class="modo-ubicacion-book">
+                        <div class="mapa-container-book">
+                            <div id="mapaEvento" class="mapa-leaflet"></div>
+                        </div>
+                        <div class="mapa-controls-book">
+                            <input type="text" id="buscarUbicacionEvento" placeholder="Buscar dirección o lugar..." autocomplete="off">
+                            <button type="button" id="btnBuscarUbicacionEvento" class="btn-mapa-book">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button type="button" id="btnMiUbicacionEvento" class="btn-mapa-book">
+                                <i class="fas fa-location-dot"></i>
+                            </button>
+                        </div>
+                        <div id="ubicacionPreviewEvento" class="ubicacion-preview-book"></div>
+                    </div>
+                    
+                    <!-- MODO GOOGLE MAPS -->
+                    <div id="modoGoogleMapsContainer" class="modo-ubicacion-book" style="display: none;">
+                        <div class="google-maps-card-book">
+                            <div class="google-maps-header-book">
+                                <i class="fab fa-google"></i>
+                                <span>UBICACIÓN CON GOOGLE MAPS</span>
+                            </div>
+                            <div class="google-maps-body-book">
+                                <button type="button" id="btnAbrirGoogleMapsEvento" class="btn-google-maps-link-book">
+                                    <i class="fab fa-google"></i> ABRIR GOOGLE MAPS
+                                </button>
+                                <div class="link-input-area-book">
+                                    <input type="text" id="linkGoogleMapsEvento" placeholder="Pega aquí el link de Google Maps">
+                                    <button type="button" id="btnGuardarLinkMapsEvento" class="btn-guardar-link-book">
+                                        <i class="fas fa-save"></i> GUARDAR
+                                    </button>
+                                </div>
+                                <div id="linkPreviewMapsEvento" class="link-preview-maps-book" style="display: none;">
+                                    <i class="fab fa-google"></i>
+                                    <span id="linkPreviewTextMapsEvento"></span>
+                                    <button type="button" id="btnQuitarLinkMapsEvento" class="btn-quitar-link-book">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <small class="ayuda-maps-book">
+                                    <i class="fas fa-info-circle"></i> Haz clic en "ABRIR GOOGLE MAPS", busca la ubicación, copia el link y pégalo aquí
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="ubicacion_link" id="ubicacion_link" value="">
+                    <input type="hidden" name="ubicacion_lat" id="ubicacion_lat" value="">
+                    <input type="hidden" name="ubicacion_lng" id="ubicacion_lng" value="">
+                </div>
+
+                <!-- ===== COMPARTIR CON USUARIOS - ORGANIZADO POR ÁREA ===== -->
+                <div class="form-group-book">
+                    <label><i class="fas fa-share-alt"></i> COMPARTIR CON USUARIOS</label>
+                    <div class="compartir-areas-container" id="compartirAreasContainer">
+                        <!-- Se carga dinámicamente: áreas con acordeón y usuarios -->
+                    </div>
+                    <small class="ayuda-compartir">SELECCIONA LOS USUARIOS CON QUIENES COMPARTIR ESTA ANOTACIÓN</small>
+                </div>
+
+                <!-- Archivos adjuntos -->
+                <div class="form-group-book">
+                    <label><i class="fas fa-paperclip"></i> ARCHIVOS ADJUNTOS</label>
+                    <div class="archivos-container-book" id="archivosContainer">
+                        <div class="archivo-input-group-book">
+                            <input type="file" id="anotacionArchivo1" class="form-control-book archivo-input" multiple>
+                            <button type="button" class="btn-agregar-archivo-book" onclick="CalendarioModule.agregarCampoArchivo()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <small>PUEDES AGREGAR MÚLTIPLES ARCHIVOS</small>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="form-actions-book">
+                    <button type="button" id="btnRegresarDesdeNueva" class="btn-book-cancel">
+                        <i class="fas fa-arrow-left"></i> REGRESAR
+                    </button>
+                    <div class="form-actions-right-book">
+                        <button type="button" id="btnCancelarAnotacion" class="btn-book-secondary-modal">CANCELAR</button>
+                        <button type="submit" class="btn-book-primary-modal">
+                            <i class="fas fa-save"></i> GUARDAR
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL DETALLE ANOTACIÓN                      -->
+    <!-- ============================================ -->
+    <div id="modalDetalleAnotacion" class="modal-overlay">
+        <div class="modal-book-container modal-book-small">
+            <div class="modal-book-header">
+                <div class="modal-book-icon">
+                    <i class="fas fa-scroll"></i>
+                </div>
+                <h3>DETALLE DE ANOTACIÓN</h3>
+                <button id="btnCerrarDetalleAnotacion" class="modal-book-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="detalleAnotacionContent" class="detalle-info-book"></div>
+            <div class="form-actions-detalle-book">
+                <button id="btnEditarAnotacion" class="btn-detalle-edit">
+                    <i class="fas fa-edit"></i> EDITAR
+                </button>
+                <button id="btnEliminarAnotacion" class="btn-detalle-delete">
+                    <i class="fas fa-trash"></i> ELIMINAR
+                </button>
+                <button id="btnRegresarDeDetalle" class="btn-detalle-back">
+                    <i class="fas fa-arrow-left"></i> REGRESAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL DÍA (OPCIONES)                        -->
+    <!-- ============================================ -->
+    <div id="modalDiaOpciones" class="modal-overlay">
+        <div class="modal-book-container modal-book-small">
+            <div class="modal-book-header">
+                <div class="modal-book-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <h3 id="diaSeleccionadoTitulo">27 FEBRERO 2026</h3>
+                <button id="btnCerrarModalDia" class="modal-book-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="opciones-container-book">
+                <div class="info-dia-book">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="totalEventosDia">0 ANOTACIONES EN ESTE DÍA</span>
+                </div>
+                
+                <button class="btn-opcion-dia" id="btnVerAnotaciones">
+                    <i class="fas fa-calendar-check"></i>
+                    VER ANOTACIONES
+                </button>
+                
+                <button class="btn-opcion-dia" id="btnNuevaAnotacionDia">
+                    <i class="fas fa-plus-circle"></i>
+                    NUEVA ANOTACIÓN
+                </button>
+                
+                <button class="btn-opcion-dia btn-regresar" id="btnRegresarDia">
+                    <i class="fas fa-arrow-left"></i>
+                    REGRESAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL LISTA DE ANOTACIONES                  -->
+    <!-- ============================================ -->
+    <div id="modalListaAnotaciones" class="modal-overlay">
+        <div class="modal-book-container">
+            <div class="modal-book-header">
+                <div class="modal-book-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <h3>ANOTACIONES DEL DÍA</h3>
+                <button id="btnCerrarListaAnotaciones" class="modal-book-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="lista-anotaciones" id="listaAnotacionesContainer">
+                <!-- Se carga dinámicamente -->
+            </div>
+            
+            <div class="form-actions-book">
+                <button type="button" id="btnRegresarDeLista" class="btn-book-cancel">
+                    <i class="fas fa-arrow-left"></i> REGRESAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODALES PARA REPORTES                       -->
+    <!-- ============================================ -->
+    <div id="modalSeleccionarReporte" class="modal-overlay">
+        <div class="modal-book-container modal-book-small">
+            <div class="modal-book-header">
+                <div class="modal-book-icon"><i class="fas fa-file-pdf"></i></div>
+                <h3>GENERAR REPORTE PDF</h3>
+                <button id="btnCerrarSeleccionarReporte" class="modal-book-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="opciones-reporte-book">
+                <div class="info-reporte-book">
+                    <i class="fas fa-info-circle"></i>
+                    <span>SELECCIONA EL TIPO DE REPORTE</span>
+                </div>
+                <button class="btn-opcion-reporte-book" data-tipo="dia">
+                    <i class="fas fa-calendar-day"></i> POR DÍA
+                </button>
+                <button class="btn-opcion-reporte-book" data-tipo="semana">
+                    <i class="fas fa-calendar-week"></i> POR SEMANA
+                </button>
+                <button class="btn-opcion-reporte-book" data-tipo="mes">
+                    <i class="fas fa-calendar-alt"></i> POR MES
+                </button>
+                <button class="btn-opcion-reporte-book btn-back" id="btnRegresarDeReporte">
+                    <i class="fas fa-arrow-left"></i> REGRESAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalSeleccionarDia" class="modal-overlay">
+        <div class="modal-book-container modal-book-small">
+            <div class="modal-book-header">
+                <div class="modal-book-icon"><i class="fas fa-calendar-day"></i></div>
+                <h3>SELECCIONAR DÍA</h3>
+                <button id="btnCerrarSeleccionarDia" class="modal-book-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formSeleccionarDia" class="modal-book-form">
+                <div class="form-group-book">
+                    <label><i class="fas fa-calendar-day"></i> DÍA *</label>
+                    <input type="number" id="reporteDia" class="form-control-book" placeholder="DD" min="1" max="31" required>
+                </div>
+                <div class="form-group-book">
+                    <label><i class="fas fa-calendar-alt"></i> MES *</label>
+                    <select id="reporteMes" class="form-control-book" required></select>
+                </div>
+                <div class="form-group-book">
+                    <label><i class="fas fa-calendar"></i> AÑO *</label>
+                    <input type="number" id="reporteAnio" class="form-control-book" placeholder="AAAA" min="2026" max="2030" value="2026" required>
+                </div>
+                <div class="form-actions-reporte-book">
+                    <button type="button" id="btnRegresarDesdeDia" class="btn-book-cancel"><i class="fas fa-arrow-left"></i> REGRESAR</button>
+                    <button type="submit" class="btn-book-primary-modal"><i class="fas fa-file-pdf"></i> GENERAR PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalSeleccionarSemana" class="modal-overlay">
+        <div class="modal-book-container modal-book-small">
+            <div class="modal-book-header">
+                <div class="modal-book-icon"><i class="fas fa-calendar-week"></i></div>
+                <h3>SELECCIONAR SEMANA</h3>
+                <button id="btnCerrarSeleccionarSemana" class="modal-book-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formSeleccionarSemana" class="modal-book-form">
+                <div class="form-group-book">
+                    <label><i class="fas fa-calendar-alt"></i> SELECCIONAR FECHA</label>
+                    <input type="date" id="reporteFechaSemana" class="form-control-book" required>
+                    <small>SE TOMARÁ LA SEMANA QUE CONTIENE ESTA FECHA</small>
+                </div>
+                <div class="form-group-book">
+                    <label><i class="fas fa-hashtag"></i> NÚMERO DE SEMANA</label>
+                    <input type="text" id="reporteNumeroSemana" class="form-control-book" readonly>
+                </div>
+                <div class="form-actions-reporte-book">
+                    <button type="button" id="btnRegresarDesdeSemana" class="btn-book-cancel"><i class="fas fa-arrow-left"></i> REGRESAR</button>
+                    <button type="submit" class="btn-book-primary-modal"><i class="fas fa-file-pdf"></i> GENERAR PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalSeleccionarMes" class="modal-overlay">
+        <div class="modal-book-container modal-book-small">
+            <div class="modal-book-header">
+                <div class="modal-book-icon"><i class="fas fa-calendar-alt"></i></div>
+                <h3>SELECCIONAR MES</h3>
+                <button id="btnCerrarSeleccionarMes" class="modal-book-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formSeleccionarMes" class="modal-book-form">
+                <div class="form-group-book">
+                    <label><i class="fas fa-calendar-alt"></i> MES *</label>
+                    <select id="reporteMesMes" class="form-control-book" required></select>
+                </div>
+                <div class="form-group-book">
+                    <label><i class="fas fa-calendar"></i> AÑO *</label>
+                    <input type="number" id="reporteMesAnio" class="form-control-book" placeholder="AAAA" min="2026" max="2030" value="2026" required>
+                </div>
+                <div class="form-actions-reporte-book">
+                    <button type="button" id="btnRegresarDesdeMes" class="btn-book-cancel"><i class="fas fa-arrow-left"></i> REGRESAR</button>
+                    <button type="submit" class="btn-book-primary-modal"><i class="fas fa-file-pdf"></i> GENERAR PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN ELIMINAR -->
+    <div id="modalConfirmarEliminar" class="modal-overlay">
+        <div class="modal-book-container modal-book-small">
+            <div class="modal-book-header">
+                <div class="modal-book-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h3>CONFIRMAR ELIMINACIÓN</h3>
+                <button id="btnCerrarConfirmarEliminar" class="modal-book-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="confirmar-mensaje-book">
+                <i class="fas fa-trash-alt"></i>
+                <p>¿ESTÁS SEGURO DE ELIMINAR ESTA ANOTACIÓN?</p>
+                <small>ESTA ACCIÓN NO SE PUEDE DESHACER</small>
+            </div>
+            <div class="form-actions-confirmar-book">
+                <button id="btnCancelarEliminar" class="btn-book-cancel"><i class="fas fa-times"></i> CANCELAR</button>
+                <button id="btnConfirmarEliminar" class="btn-book-delete"><i class="fas fa-trash"></i> ELIMINAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../../../js/agenda_calendario/visor_archivos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="../../../js/agenda_calendario/calendario/calendario.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+</body>
+</html>
