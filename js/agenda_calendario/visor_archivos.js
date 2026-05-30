@@ -1,6 +1,6 @@
 /**
  * visor_archivos.js - Visor de Archivos Personalizado
- * CORREGIDO - Manejo de descarga para reportes y archivos normales
+ * CORREGIDO - Manejo de rutas API para descarga de archivos
  */
 
 const VisorArchivos = {
@@ -20,6 +20,11 @@ const VisorArchivos = {
     pdfCanvas: null,
     pdfContext: null,
     pdfScale: 1.5,
+    
+    // Configuración de rutas - CORREGIDO
+    config: {
+        apiAgenda: '../../../php/agenda_calendario/agenda/agenda_api.php'
+    },
     
     // Inicializar
     init: function() {
@@ -136,19 +141,12 @@ const VisorArchivos = {
         });
     },
     
-    // Obtener URL de la API según el origen
-    obtenerApiUrl: function() {
-        if (!this.archivoActual || !this.archivoActual.origen) {
-            return '../../php/agenda_calendario/agenda/agenda_api.php';
-        }
-        
-        if (this.archivoActual.origen === 'reporte') {
-            return null; // No necesita API
-        }
-        
-        return this.archivoActual.origen === 'agenda' 
-            ? '../../php/agenda_calendario/agenda/agenda_api.php'
-            : '../../php/agenda_calendario/calendario/calendario_api.php';
+    // Obtener URL absoluta de la API - CORREGIDO
+    obtenerUrlApi: function() {
+        // Usar ruta absoluta desde la raíz del proyecto
+        // Asumiendo que la estructura es: html/agenda_calendario/agenda/agenda.html
+        // La API está en: php/agenda_calendario/agenda/agenda_api.php
+        return '../../../php/agenda_calendario/agenda/agenda_api.php';
     },
     
     // Abrir visor con archivo
@@ -261,7 +259,7 @@ const VisorArchivos = {
         $('#visorZoomInfo').text(this.zoom + '%');
     },
     
-    // Renderizar imagen
+    // Renderizar imagen - CORREGIDO
     renderizarImagen: function() {
         const contenedor = $('#visorContenido');
         
@@ -278,7 +276,7 @@ const VisorArchivos = {
         
         const idEvento = this.archivoActual.id_evento;
         const nombreArchivo = encodeURIComponent(this.archivoActual.nombre);
-        const apiUrl = this.obtenerApiUrl();
+        const apiUrl = this.obtenerUrlApi();
         const urlArchivo = `${apiUrl}?descargar=1&id_evento=${idEvento}&nombre=${nombreArchivo}`;
         
         console.log('🖼️ Cargando imagen desde:', urlArchivo);
@@ -293,7 +291,7 @@ const VisorArchivos = {
                     <div class="visor-error">
                         <i class="fas fa-exclamation-triangle"></i>
                         <h3>ERROR AL CARGAR IMAGEN</h3>
-                        <p>No se pudo cargar la imagen</p>
+                        <p>No se pudo cargar la imagen. Verifica que el archivo existe.</p>
                     </div>
                 `);
             })
@@ -310,10 +308,18 @@ const VisorArchivos = {
         contenedor.empty().append(img);
     },
     
-    // Renderizar PDF (CORREGIDO)
+    // Renderizar PDF - CORREGIDO
     renderizarPDF: function() {
         const contenedor = $('#visorContenido');
         const self = this;
+        
+        // Mostrar loading
+        contenedor.html(`
+            <div class="visor-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>CARGANDO PDF...</p>
+            </div>
+        `);
         
         // Si es un reporte, ya tiene el contenido en base64
         if (this.archivoActual.origen === 'reporte' && this.archivoActual.contenido) {
@@ -361,6 +367,7 @@ const VisorArchivos = {
                         <i class="fas fa-exclamation-triangle"></i>
                         <h3>ERROR AL CARGAR PDF</h3>
                         <p>El archivo PDF no se pudo cargar correctamente</p>
+                        <p><small>${error.message || 'Error desconocido'}</small></p>
                     </div>
                 `);
             });
@@ -368,7 +375,7 @@ const VisorArchivos = {
             return;
         }
         
-        // Archivo normal de agenda/calendario
+        // Archivo normal de agenda
         if (!this.archivoActual.id_evento) {
             contenedor.html(`
                 <div class="visor-error">
@@ -382,7 +389,7 @@ const VisorArchivos = {
         
         const idEvento = this.archivoActual.id_evento;
         const nombreArchivo = encodeURIComponent(this.archivoActual.nombre);
-        const apiUrl = this.obtenerApiUrl();
+        const apiUrl = this.obtenerUrlApi();
         const urlArchivo = `${apiUrl}?descargar=1&id_evento=${idEvento}&nombre=${nombreArchivo}`;
         
         console.log('📄 Cargando PDF desde:', urlArchivo);
@@ -403,11 +410,16 @@ const VisorArchivos = {
         
         this.pdfContext = this.pdfCanvas[0].getContext('2d');
         
-        pdfjsLib.getDocument(urlArchivo).promise.then(function(pdf) {
+        // Usar withCredentials si es necesario
+        pdfjsLib.getDocument({
+            url: urlArchivo,
+            withCredentials: false
+        }).promise.then(function(pdf) {
             self.pdfDoc = pdf;
             self.totalPaginas = pdf.numPages;
             self.paginaActual = 1;
             
+            console.log(`✅ PDF cargado correctamente. ${self.totalPaginas} páginas.`);
             $('#visorInfoPagina').text(`1 / ${pdf.numPages}`);
             self.cargarPaginaPDF(1);
             
@@ -418,8 +430,14 @@ const VisorArchivos = {
                     <i class="fas fa-exclamation-triangle"></i>
                     <h3>ERROR AL CARGAR PDF</h3>
                     <p>El archivo PDF no se pudo cargar correctamente</p>
+                    <p><small>${error.message || 'Error desconocido'}</small></p>
+                    <button class="btn-descargar-visor" id="visorDescargarDesdeError" style="margin-top: 15px;">
+                        <i class="fas fa-download"></i> DESCARGAR ARCHIVO
+                    </button>
                 </div>
             `);
+            
+            $('#visorDescargarDesdeError').off('click').on('click', () => this.descargarArchivo());
         });
     },
     
@@ -469,7 +487,7 @@ const VisorArchivos = {
         }
     },
     
-    // Renderizar texto
+    // Renderizar texto - CORREGIDO
     renderizarTexto: function() {
         const contenedor = $('#visorContenido');
         
@@ -486,7 +504,7 @@ const VisorArchivos = {
         
         const idEvento = this.archivoActual.id_evento;
         const nombreArchivo = encodeURIComponent(this.archivoActual.nombre);
-        const apiUrl = this.obtenerApiUrl();
+        const apiUrl = this.obtenerUrlApi();
         const self = this;
         
         contenedor.html('<div class="visor-loading"><i class="fas fa-spinner fa-spin"></i> CARGANDO...</div>');
@@ -500,12 +518,14 @@ const VisorArchivos = {
                     <pre class="visor-texto">${self.escapeHTML(data)}</pre>
                 `);
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Error al cargar texto:', error);
                 contenedor.html(`
                     <div class="visor-error">
                         <i class="fas fa-exclamation-triangle"></i>
                         <h3>ERROR AL CARGAR TEXTO</h3>
                         <p>No se pudo cargar el contenido del archivo</p>
+                        <p><small>${error}</small></p>
                     </div>
                 `);
             }
@@ -631,24 +651,20 @@ const VisorArchivos = {
             return;
         }
         
-        // Caso 2: Archivo normal de agenda/calendario (con id_evento)
+        // Caso 2: Archivo normal de agenda (con id_evento)
         if (this.archivoActual.id_evento) {
             console.log('📥 Descargando archivo normal desde API');
             const idEvento = this.archivoActual.id_evento;
             const nombreArchivo = encodeURIComponent(this.archivoActual.nombre);
-            const apiUrl = this.obtenerApiUrl();
+            const apiUrl = this.obtenerUrlApi();
             
-            if (apiUrl) {
-                const enlace = document.createElement('a');
-                enlace.href = `${apiUrl}?descargar=1&id_evento=${idEvento}&nombre=${nombreArchivo}`;
-                enlace.download = this.archivoActual.nombre;
-                document.body.appendChild(enlace);
-                enlace.click();
-                document.body.removeChild(enlace);
-                this.mostrarNotificacion(`Descargando: ${this.archivoActual.nombre}`, 'success');
-            } else {
-                this.mostrarNotificacion('Error: No se pudo determinar la API', 'error');
-            }
+            const enlace = document.createElement('a');
+            enlace.href = `${apiUrl}?descargar=1&id_evento=${idEvento}&nombre=${nombreArchivo}`;
+            enlace.download = this.archivoActual.nombre;
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            this.mostrarNotificacion(`Descargando: ${this.archivoActual.nombre}`, 'success');
             return;
         }
         
@@ -693,6 +709,7 @@ const VisorArchivos = {
     
     // Escapar HTML para texto
     escapeHTML: function(text) {
+        if (!text) return '';
         return String(text).replace(/[&<>"]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
