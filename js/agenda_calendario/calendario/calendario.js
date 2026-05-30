@@ -466,64 +466,90 @@ const CalendarioModule = {
     },
     
     // Renderizar vista día
-    renderVistaDia: function() {
-        try {
-            if (!this.diaSeleccionado) {
-                const hoy = new Date();
-                this.anioActual = hoy.getFullYear();
-                this.mesActual = hoy.getMonth();
-                this.diaSeleccionado = hoy.getDate();
-            }
+    // Renderizar vista día - CORREGIDO para mostrar siempre la fecha actual o la seleccionada
+renderVistaDia: function() {
+    try {
+        // Si no hay un día seleccionado, usar la fecha actual
+        if (!this.diaSeleccionado) {
+            const hoy = new Date();
+            this.anioActual = hoy.getFullYear();
+            this.mesActual = hoy.getMonth();
+            this.diaSeleccionado = hoy.getDate();
+        }
+        
+        // Crear fecha con los valores actuales
+        const fecha = new Date(this.anioActual, this.mesActual, this.diaSeleccionado);
+        
+        // Validar que la fecha sea válida
+        if (isNaN(fecha.getTime())) {
+            console.error('Fecha inválida:', this.anioActual, this.mesActual, this.diaSeleccionado);
+            const hoy = new Date();
+            this.anioActual = hoy.getFullYear();
+            this.mesActual = hoy.getMonth();
+            this.diaSeleccionado = hoy.getDate();
+            fecha.setFullYear(this.anioActual, this.mesActual, this.diaSeleccionado);
+        }
+        
+        // Actualizar variables de clase con la fecha correcta
+        this.anioActual = fecha.getFullYear();
+        this.mesActual = fecha.getMonth();
+        this.diaSeleccionado = fecha.getDate();
+        
+        const fechaStr = `${this.anioActual}-${String(this.mesActual + 1).padStart(2, '0')}-${String(this.diaSeleccionado).padStart(2, '0')}`;
+        this.fechaSeleccionadaStr = fechaStr;
+        
+        // Obtener eventos para este día
+        const elementosDia = this.obtenerElementosPorFecha(fechaStr);
+        
+        // Formatear el título del día
+        const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+        $('#diaActual').text(`${this.diaSeleccionado} ${meses[this.mesActual]} ${this.anioActual}`);
+        
+        // Renderizar grid de horas
+        let html = `<div class="horas-diarias">`;
+        for (let h = 0; h < 24; h++) {
+            const hora = h < 10 ? `0${h}:00` : `${h}:00`;
+            html += `<div class="hora-diaria">${hora}</div>`;
+        }
+        html += '</div><div class="eventos-diarios">';
+        
+        // Para cada hora del día, mostrar eventos que coincidan
+        for (let h = 0; h < 24; h++) {
+            const elementosHora = elementosDia.filter(item => {
+                const horaItem = item.hora;
+                if (!horaItem) return false;
+                const horaEvento = parseInt(horaItem.split(':')[0]);
+                return horaEvento === h;
+            });
             
-            const fecha = new Date(this.anioActual, this.mesActual, this.diaSeleccionado);
-            this.anioActual = fecha.getFullYear();
-            this.mesActual = fecha.getMonth();
-            this.diaSeleccionado = fecha.getDate();
-            
-            const fechaStr = `${this.anioActual}-${String(this.mesActual + 1).padStart(2, '0')}-${String(this.diaSeleccionado).padStart(2, '0')}`;
-            this.fechaSeleccionadaStr = fechaStr;
-            const elementosDia = this.obtenerElementosPorFecha(fechaStr);
-            
-            const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
-            $('#diaActual').text(`${this.diaSeleccionado} ${meses[this.mesActual]} ${this.anioActual}`);
-            
-            let html = `<div class="horas-diarias">`;
-            for (let h = 0; h < 24; h++) {
-                const hora = h < 10 ? `0${h}:00` : `${h}:00`;
-                html += `<div class="hora-diaria">${hora}</div>`;
-            }
-            html += '</div><div class="eventos-diarios">';
-            
-            for (let h = 0; h < 24; h++) {
-                const elementosHora = elementosDia.filter(item => {
-                    const horaItem = item.hora;
-                    if (!horaItem) return false;
-                    const horaEvento = parseInt(horaItem.split(':')[0]);
-                    return horaEvento === h;
-                });
-                
-                html += `<div class="evento-hora" data-fecha="${fechaStr}" data-hora="${h}">`;
+            html += `<div class="evento-hora" data-fecha="${fechaStr}" data-hora="${h}">`;
+            if (elementosHora.length > 0) {
                 elementosHora.forEach(item => {
                     html += `
-                        <div class="evento-titulo-dia">${this.escapeHTML(item.titulo)}</div>
+                        <div class="evento-titulo-dia">${this.escapeHTML(item.titulo || 'SIN TÍTULO')}</div>
                         <div class="evento-descripcion-dia">${this.escapeHTML(item.descripcion || 'SIN DESCRIPCIÓN')}</div>
                     `;
                 });
-                html += '</div>';
             }
             html += '</div>';
-            
-            $('#diaGrid').html(html);
-            
-            $('.evento-hora').off('click').on('click', (e) => {
-                const fecha = $(e.currentTarget).data('fecha');
-                const hora = $(e.currentTarget).data('hora');
-                this.seleccionarHora(fecha, hora);
-            });
-        } catch(e) {
-            console.error('Error renderizando día:', e);
         }
-    },
+        html += '</div>';
+        
+        $('#diaGrid').html(html);
+        
+        // Evento click para crear anotación en una hora específica
+        $('.evento-hora').off('click').on('click', (e) => {
+            const fecha = $(e.currentTarget).data('fecha');
+            const hora = $(e.currentTarget).data('hora');
+            if (fecha) {
+                this.seleccionarHora(fecha, hora);
+            }
+        });
+        
+    } catch(e) {
+        console.error('Error renderizando día:', e);
+    }
+},
     
     // Obtener elementos por fecha
     obtenerElementosPorFecha: function(fecha) {
