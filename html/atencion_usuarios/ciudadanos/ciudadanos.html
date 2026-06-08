@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Ciudadanos | Atención a Usuarios</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Estilos Generales (base) -->
+    <link rel="stylesheet" href="../../../css/estilos_generales.css">
+    
+    <!-- Estilos específicos de Ciudadanos -->
+    <link rel="stylesheet" href="../../../css/atencion_usuarios/ciudadanos/ciudadanos.css">
+</head>
+<body>
+    <div class="ciudadanos-module">
+        <!-- CABECERA DEL MÓDULO -->
+        <div class="module-header">
+            <div class="module-title">
+                <i class="fas fa-id-card"></i>
+                <h2>GESTIÓN DE CIUDADANOS</h2>
+            </div>
+            <button class="btn-agregar-ciudadano" id="btnAgregarCiudadano">
+                <i class="fas fa-plus-circle"></i>
+                <span>AGREGAR CIUDADANO</span>
+            </button>
+        </div>
+
+        <!-- FILTRO MINIMIZABLE -->
+        <div class="filtro-container minimizable" id="filtroContainer">
+            <div class="filtro-header" id="filtroHeader">
+                <div class="filtro-title">
+                    <i class="fas fa-search"></i>
+                    <span>FILTROS DE BÚSQUEDA</span>
+                </div>
+                <button class="filtro-toggle" id="filtroToggle">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            <div class="filtro-body" id="filtroBody">
+                <div class="filtro-grid">
+                    <div class="filtro-group">
+                        <label><i class="fas fa-user"></i> BUSCAR POR NOMBRE</label>
+                        <input type="text" id="filtroNombre" class="filtro-input" placeholder="NOMBRE, APELLIDO PATERNO O MATERNO..." autocomplete="off">
+                    </div>
+                    <div class="filtro-group">
+                        <label><i class="fas fa-graduation-cap"></i> BUSCAR POR FORMACIÓN</label>
+                        <div class="selector-container filtro-selector">
+                            <input type="text" id="filtroFormacionInput" class="filtro-input selector-input" placeholder="TODAS LAS FORMACIONES" readonly>
+                            <input type="hidden" id="filtroFormacion" value="">
+                            <button type="button" class="btn-selector-filtro" data-type="filtroFormacion">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filtro-group">
+                        <label><i class="fas fa-building"></i> BUSCAR POR DEPENDENCIA</label>
+                        <div class="selector-container filtro-selector">
+                            <input type="text" id="filtroDependenciaInput" class="filtro-input selector-input" placeholder="TODAS LAS DEPENDENCIAS" readonly>
+                            <input type="hidden" id="filtroDependencia" value="">
+                            <button type="button" class="btn-selector-filtro" data-type="filtroDependencia">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filtro-actions">
+                        <button class="btn-limpiar" id="btnLimpiarFiltros">
+                            <i class="fas fa-eraser"></i>
+                            <span>LIMPIAR</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTADOR DE RESULTADOS -->
+        <div class="resultados-info">
+            <span><i class="fas fa-users"></i> TOTAL CIUDADANOS: <strong id="totalCiudadanosCount">0</strong></span>
+            <span><i class="fas fa-filter"></i> MOSTRANDO: <strong id="mostrandoCount">0</strong></span>
+        </div>
+
+        <!-- GRID DE TARJETAS DE CIUDADANOS -->
+        <div class="ciudadanos-grid" id="ciudadanosGrid">
+            <div class="empty-state" id="emptyState">
+                <i class="fas fa-users-slash"></i>
+                <p>NO HAY CIUDADANOS REGISTRADOS</p>
+                <span>HAZ CLIC EN "AGREGAR CIUDADANO" PARA COMENZAR</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA AGREGAR/EDITAR CIUDADANO -->
+    <div class="modal-ciudadano" id="modalCiudadano">
+        <div class="modal-ciudadano-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> REGISTRAR NUEVO CIUDADANO</h3>
+                <button class="modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formCiudadano">
+                    <!-- NOMBRE COMPLETO (SE LLENA AUTOMÁTICAMENTE) -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-user-circle"></i>
+                            <span>DATOS PERSONALES</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label><i class="fas fa-id-card"></i> NOMBRE COMPLETO</label>
+                                <input type="text" id="nombreCompleto" class="form-control" readonly placeholder="SE LLENARÁ AUTOMÁTICAMENTE" style="background: rgba(0,0,0,0.3); cursor: not-allowed; font-weight: 600;">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-graduation-cap"></i> FORMACIÓN ACADÉMICA <span class="required">*</span></label>
+                                <div class="selector-container">
+                                    <input type="text" id="formacionAcademicaInput" class="form-control selector-input" placeholder="SELECCIONE FORMACIÓN" readonly required>
+                                    <input type="hidden" id="formacionAcademica" value="">
+                                    <button type="button" class="btn-selector" data-type="formacion">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> NOMBRE(S) <span class="required">*</span></label>
+                                <input type="text" id="nombre" class="form-control" placeholder="NOMBRE(S)" required autocomplete="off" style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-user-tag"></i> APELLIDO PATERNO <span class="required">*</span></label>
+                                <input type="text" id="apellidoPaterno" class="form-control" placeholder="APELLIDO PATERNO" required autocomplete="off" style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-user-tag"></i> APELLIDO MATERNO</label>
+                                <input type="text" id="apellidoMaterno" class="form-control" placeholder="APELLIDO MATERNO" autocomplete="off" style="text-transform: uppercase;">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-phone"></i> TELÉFONO CASA</label>
+                                <input type="tel" id="telefonoCasa" class="form-control" placeholder="EJ: 5512345678" autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-mobile-alt"></i> TELÉFONO CELULAR</label>
+                                <input type="tel" id="telefonoCelular" class="form-control" placeholder="EJ: 5512345678" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN DOMICILIO -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-home"></i>
+                            <span>DOMICILIO</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-road"></i> CALLE <span class="required">*</span></label>
+                                <input type="text" id="calle" class="form-control" placeholder="CALLE" required autocomplete="off" style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-hashtag"></i> NÚMERO EXTERIOR</label>
+                                <input type="text" id="numExterior" class="form-control" placeholder="NÚMERO EXTERIOR" autocomplete="off" style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-door-open"></i> NÚMERO INTERIOR</label>
+                                <input type="text" id="numInterior" class="form-control" placeholder="NÚMERO INTERIOR" autocomplete="off" style="text-transform: uppercase;">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-map-pin"></i> TIPO ASENTAMIENTO <span class="required">*</span></label>
+                                <input type="text" id="tipoAsentamiento" class="form-control" readonly placeholder="SE LLENARÁ AUTOMÁTICAMENTE" style="background: rgba(0,0,0,0.3); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-city"></i> ASENTAMIENTO <span class="required">*</span></label>
+                                <div class="selector-container">
+                                    <input type="text" id="asentamientoInput" class="form-control selector-input" placeholder="SELECCIONE ASENTAMIENTO" readonly required>
+                                    <input type="hidden" id="asentamiento" value="">
+                                    <button type="button" class="btn-selector" data-type="asentamiento">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-map-marker-alt"></i> MUNICIPIO <span class="required">*</span></label>
+                                <input type="text" id="municipio" class="form-control" readonly placeholder="SE LLENARÁ AUTOMÁTICAMENTE" style="background: rgba(0,0,0,0.3); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-mail-bulk"></i> CÓDIGO POSTAL</label>
+                                <input type="text" id="codigoPostal" class="form-control" placeholder="CÓDIGO POSTAL" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-building"></i> DEPENDENCIA <span class="required">*</span></label>
+                                <div class="selector-container">
+                                    <input type="text" id="dependenciaInput" class="form-control selector-input" placeholder="SELECCIONE DEPENDENCIA" readonly required>
+                                    <input type="hidden" id="dependencia" value="">
+                                    <button type="button" class="btn-selector" data-type="dependencia">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="btnCancelarModal">CANCELAR</button>
+                        <button type="submit" class="btn-save" id="btnGuardarCiudadano">
+                            <i class="fas fa-save"></i>
+                            <span>GUARDAR CIUDADANO</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR PARA FORMACIONES (Formulario) -->
+    <div class="modal-selector" id="modalSelectorFormacion">
+        <div class="modal-selector-content">
+            <div class="modal-selector-header">
+                <h3><i class="fas fa-graduation-cap"></i> SELECCIONE FORMACIÓN ACADÉMICA</h3>
+                <button class="modal-selector-close">&times;</button>
+            </div>
+            <div class="modal-selector-body">
+                <input type="text" class="selector-search" id="searchFormacion" placeholder="BUSCAR FORMACIÓN...">
+                <div class="selector-list" id="formacionList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR PARA DEPENDENCIAS (Formulario) -->
+    <div class="modal-selector" id="modalSelectorDependencia">
+        <div class="modal-selector-content">
+            <div class="modal-selector-header">
+                <h3><i class="fas fa-building"></i> SELECCIONE DEPENDENCIA</h3>
+                <button class="modal-selector-close">&times;</button>
+            </div>
+            <div class="modal-selector-body">
+                <input type="text" class="selector-search" id="searchDependencia" placeholder="BUSCAR DEPENDENCIA...">
+                <div class="selector-list" id="dependenciaList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR PARA ASENTAMIENTOS (Formulario) -->
+    <div class="modal-selector" id="modalSelectorAsentamiento">
+        <div class="modal-selector-content">
+            <div class="modal-selector-header">
+                <h3><i class="fas fa-city"></i> SELECCIONE ASENTAMIENTO</h3>
+                <button class="modal-selector-close">&times;</button>
+            </div>
+            <div class="modal-selector-body">
+                <input type="text" class="selector-search" id="searchAsentamiento" placeholder="BUSCAR ASENTAMIENTO...">
+                <div class="selector-list" id="asentamientoList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR PARA FILTRO DE FORMACIONES -->
+    <div class="modal-selector" id="modalSelectorFiltroFormacion">
+        <div class="modal-selector-content">
+            <div class="modal-selector-header">
+                <h3><i class="fas fa-graduation-cap"></i> FILTRAR POR FORMACIÓN</h3>
+                <button class="modal-selector-close">&times;</button>
+            </div>
+            <div class="modal-selector-body">
+                <input type="text" class="selector-search" id="searchFiltroFormacion" placeholder="BUSCAR FORMACIÓN...">
+                <div class="selector-list" id="filtroFormacionList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR PARA FILTRO DE DEPENDENCIAS -->
+    <div class="modal-selector" id="modalSelectorFiltroDependencia">
+        <div class="modal-selector-content">
+            <div class="modal-selector-header">
+                <h3><i class="fas fa-building"></i> FILTRAR POR DEPENDENCIA</h3>
+                <button class="modal-selector-close">&times;</button>
+            </div>
+            <div class="modal-selector-body">
+                <input type="text" class="selector-search" id="searchFiltroDependencia" placeholder="BUSCAR DEPENDENCIA...">
+                <div class="selector-list" id="filtroDependenciaList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../js/atencion_usuarios/ciudadanos/ciudadanos.js"></script>
+</body>
+</html>
