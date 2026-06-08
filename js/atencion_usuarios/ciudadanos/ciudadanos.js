@@ -78,6 +78,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchFiltroDependencia = document.getElementById('searchFiltroDependencia');
 
     // ============================================
+    // MODALES PARA NUEVO ASENTAMIENTO Y NUEVA DEPENDENCIA
+    // ============================================
+    const modalNuevoAsentamiento = document.getElementById('modalNuevoAsentamiento');
+    const modalNuevaDependencia = document.getElementById('modalNuevaDependencia');
+    const btnNuevoAsentamiento = document.getElementById('btnNuevoAsentamiento');
+    const btnNuevaDependencia = document.getElementById('btnNuevaDependencia');
+    const formNuevoAsentamiento = document.getElementById('formNuevoAsentamiento');
+    const formNuevaDependencia = document.getElementById('formNuevaDependencia');
+
+    // ============================================
+    // CAMPOS DEL MODAL NUEVO ASENTAMIENTO (MODIFICADOS)
+    // ============================================
+    const nuevoAsentamientoTipoInput = document.getElementById('nuevoAsentamientoTipoInput');
+    const nuevoAsentamientoTipoHidden = document.getElementById('nuevoAsentamientoTipo');
+    const nuevoAsentamientoLocalidadInput = document.getElementById('nuevoAsentamientoLocalidadInput');
+    const nuevoAsentamientoLocalidadHidden = document.getElementById('nuevoAsentamientoTipoLocalidad');
+
+    // ============================================
+    // NUEVOS MODALES SELECTORES
+    // ============================================
+    const modalSelectorTipoAsentamiento = document.getElementById('modalSelectorTipoAsentamiento');
+    const modalSelectorTipoLocalidad = document.getElementById('modalSelectorTipoLocalidad');
+    const tipoAsentamientoList = document.getElementById('tipoAsentamientoList');
+    const tipoLocalidadList = document.getElementById('tipoLocalidadList');
+
+    // ============================================
+    // LISTAS PREDEFINIDAS
+    // ============================================
+    const tiposAsentamiento = [
+        'COLONIA', 'FRACCIONAMIENTO', 'ASENTAMIENTO IRREGULAR', 
+        'UNIDAD HABITACIONAL', 'PUEBLO', 'EJIDO', 'BARRIO'
+    ];
+    const tiposLocalidad = ['LOCAL', 'FORANEO'];
+
+    // ============================================
     // FUNCIONES DE ACTUALIZACIÓN DE NOMBRE COMPLETO
     // ============================================
     function actualizarNombreCompleto() {
@@ -105,7 +140,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function cerrarModalesSelector() {
         const modales = [
             modalSelectorFormacion, modalSelectorDependencia, modalSelectorAsentamiento,
-            modalSelectorFiltroFormacion, modalSelectorFiltroDependencia
+            modalSelectorFiltroFormacion, modalSelectorFiltroDependencia,
+            modalSelectorTipoAsentamiento, modalSelectorTipoLocalidad
         ];
         modales.forEach(modal => {
             if (modal) modal.classList.remove('active');
@@ -115,6 +151,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (searchAsentamiento) searchAsentamiento.value = '';
         if (searchFiltroFormacion) searchFiltroFormacion.value = '';
         if (searchFiltroDependencia) searchFiltroDependencia.value = '';
+    }
+
+    // Cerrar modales nuevos
+    function cerrarModalesNuevos() {
+        if (modalNuevoAsentamiento) modalNuevoAsentamiento.classList.remove('active');
+        if (modalNuevaDependencia) modalNuevaDependencia.classList.remove('active');
     }
 
     // Formulario - Formaciones
@@ -153,6 +195,27 @@ document.addEventListener('DOMContentLoaded', function() {
         modalSelectorAsentamiento.classList.add('active');
     }
 
+    // Abrir modal nuevo asentamiento
+    function abrirModalNuevoAsentamiento() {
+        if (modalNuevoAsentamiento) {
+            if (formNuevoAsentamiento) formNuevoAsentamiento.reset();
+            // Resetear los campos de tipo asentamiento y localidad
+            if (nuevoAsentamientoTipoInput) nuevoAsentamientoTipoInput.value = '';
+            if (nuevoAsentamientoTipoHidden) nuevoAsentamientoTipoHidden.value = '';
+            if (nuevoAsentamientoLocalidadInput) nuevoAsentamientoLocalidadInput.value = 'LOCAL';
+            if (nuevoAsentamientoLocalidadHidden) nuevoAsentamientoLocalidadHidden.value = 'LOCAL';
+            modalNuevoAsentamiento.classList.add('active');
+        }
+    }
+
+    // Abrir modal nueva dependencia
+    function abrirModalNuevaDependencia() {
+        if (modalNuevaDependencia) {
+            if (formNuevaDependencia) formNuevaDependencia.reset();
+            modalNuevaDependencia.classList.add('active');
+        }
+    }
+
     // Filtro - Formaciones
     function abrirModalFiltroFormacion() {
         if (!modalSelectorFiltroFormacion) return;
@@ -175,6 +238,57 @@ document.addEventListener('DOMContentLoaded', function() {
             cerrarModalesSelector();
         }, true);
         modalSelectorFiltroDependencia.classList.add('active');
+    }
+
+    // Funciones para renderizar tipos de asentamiento y localidad
+    function renderizarListaTiposAsentamiento(container, datos, onSelect) {
+        if (!container) return;
+        container.innerHTML = '';
+        datos.forEach(tipo => {
+            const item = document.createElement('div');
+            item.className = 'selector-item';
+            item.textContent = tipo;
+            item.addEventListener('click', () => {
+                if (onSelect) onSelect(tipo);
+            });
+            container.appendChild(item);
+        });
+    }
+
+    function renderizarListaTiposLocalidad(container, datos, onSelect) {
+        if (!container) return;
+        container.innerHTML = '';
+        datos.forEach(tipo => {
+            const item = document.createElement('div');
+            item.className = 'selector-item';
+            item.textContent = tipo;
+            item.addEventListener('click', () => {
+                if (onSelect) onSelect(tipo);
+            });
+            container.appendChild(item);
+        });
+    }
+
+    // Abrir modal tipo asentamiento
+    function abrirModalTipoAsentamiento() {
+        if (!modalSelectorTipoAsentamiento) return;
+        renderizarListaTiposAsentamiento(tipoAsentamientoList, tiposAsentamiento, (tipo) => {
+            if (nuevoAsentamientoTipoInput) nuevoAsentamientoTipoInput.value = tipo;
+            if (nuevoAsentamientoTipoHidden) nuevoAsentamientoTipoHidden.value = tipo;
+            cerrarModalesSelector();
+        });
+        modalSelectorTipoAsentamiento.classList.add('active');
+    }
+
+    // Abrir modal tipo localidad
+    function abrirModalTipoLocalidad() {
+        if (!modalSelectorTipoLocalidad) return;
+        renderizarListaTiposLocalidad(tipoLocalidadList, tiposLocalidad, (tipo) => {
+            if (nuevoAsentamientoLocalidadInput) nuevoAsentamientoLocalidadInput.value = tipo;
+            if (nuevoAsentamientoLocalidadHidden) nuevoAsentamientoLocalidadHidden.value = tipo;
+            cerrarModalesSelector();
+        });
+        modalSelectorTipoLocalidad.classList.add('active');
     }
 
     function renderizarListaFormaciones(container, datos, filtro, onSelect, incluirTodos = false) {
@@ -348,6 +462,118 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error de conexión:', error);
             return [];
+        }
+    }
+
+    // Guardar nuevo asentamiento
+    async function guardarNuevoAsentamiento(e) {
+        e.preventDefault();
+        
+        const nombre = document.getElementById('nuevoAsentamientoNombre').value.trim().toUpperCase();
+        const municipioInput = document.getElementById('nuevoAsentamientoMunicipio').value.trim().toUpperCase();
+        const tipoAsentamientoInput = nuevoAsentamientoTipoHidden ? nuevoAsentamientoTipoHidden.value : '';
+        const tipoLocalidad = nuevoAsentamientoLocalidadHidden ? nuevoAsentamientoLocalidadHidden.value : 'LOCAL';
+        
+        if (!nombre || !municipioInput || !tipoAsentamientoInput) {
+            if (typeof Swal !== 'undefined') Swal.fire('ERROR', 'COMPLETE LOS CAMPOS REQUERIDOS', 'error');
+            else alert('COMPLETE LOS CAMPOS REQUERIDOS');
+            return;
+        }
+        
+        const btnGuardar = document.getElementById('btnGuardarNuevoAsentamiento');
+        const originalText = btnGuardar.innerHTML;
+        btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';
+        btnGuardar.disabled = true;
+        
+        try {
+            const response = await fetch('../../../php/atencion_usuarios/ciudadanos/guardar_asentamiento.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    asentamiento: nombre,
+                    municipio: municipioInput,
+                    tipo_asentamiento: tipoAsentamientoInput,
+                    tipo_localidad: tipoLocalidad
+                })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                asentamientos.push(result.data);
+                if (asentamientoList) {
+                    renderizarListaAsentamientos(asentamientoList, asentamientos, '', (item) => {
+                        if (asentamientoInput) asentamientoInput.value = item.ASENTAMIENTO;
+                        if (asentamientoHidden) asentamientoHidden.value = item.IDasentamiento;
+                        if (tipoAsentamiento) tipoAsentamiento.value = item.TIPO_ASENTAMIENTO || '';
+                        if (municipio) municipio.value = item.MUNICIPIO || '';
+                        cerrarModalesSelector();
+                    });
+                }
+                cerrarModalesNuevos();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ title: '¡ÉXITO!', text: 'ASENTAMIENTO REGISTRADO CORRECTAMENTE', icon: 'success', timer: 2000, showConfirmButton: false });
+                }
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            if (typeof Swal !== 'undefined') Swal.fire('ERROR', 'NO SE PUDO REGISTRAR EL ASENTAMIENTO', 'error');
+            else alert('ERROR AL GUARDAR');
+        } finally {
+            btnGuardar.innerHTML = originalText;
+            btnGuardar.disabled = false;
+        }
+    }
+
+    // Guardar nueva dependencia
+    async function guardarNuevaDependencia(e) {
+        e.preventDefault();
+        
+        const nombre = document.getElementById('nuevaDependenciaNombre').value.trim().toUpperCase();
+        
+        if (!nombre) {
+            if (typeof Swal !== 'undefined') Swal.fire('ERROR', 'INGRESE EL NOMBRE DE LA DEPENDENCIA', 'error');
+            else alert('INGRESE EL NOMBRE DE LA DEPENDENCIA');
+            return;
+        }
+        
+        const btnGuardar = document.getElementById('btnGuardarNuevaDependencia');
+        const originalText = btnGuardar.innerHTML;
+        btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';
+        btnGuardar.disabled = true;
+        
+        try {
+            const response = await fetch('../../../php/atencion_usuarios/ciudadanos/guardar_dependencia.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dependencia: nombre })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                dependenciasList.push(result.data);
+                if (dependenciaList) {
+                    renderizarListaDependencias(dependenciaList, dependenciasList, '', (item) => {
+                        if (dependenciaInput) dependenciaInput.value = item.DEPENDENCIA;
+                        if (dependenciaHidden) dependenciaHidden.value = item.IDDEPENDENCIA;
+                        cerrarModalesSelector();
+                    });
+                }
+                cerrarModalesNuevos();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ title: '¡ÉXITO!', text: 'DEPENDENCIA REGISTRADA CORRECTAMENTE', icon: 'success', timer: 2000, showConfirmButton: false });
+                }
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            if (typeof Swal !== 'undefined') Swal.fire('ERROR', 'NO SE PUDO REGISTRAR LA DEPENDENCIA', 'error');
+            else alert('ERROR AL GUARDAR');
+        } finally {
+            btnGuardar.innerHTML = originalText;
+            btnGuardar.disabled = false;
         }
     }
     
@@ -695,6 +921,20 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
+        // Botones selectores de tipo asentamiento y localidad (nuevo asentamiento)
+        document.querySelectorAll('.btn-selector[data-type="tipoAsentamientoNuevo"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                abrirModalTipoAsentamiento();
+            });
+        });
+        document.querySelectorAll('.btn-selector[data-type="tipoLocalidadNuevo"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                abrirModalTipoLocalidad();
+            });
+        });
+        
         // Botones selectores de filtros
         document.querySelectorAll('.btn-selector-filtro').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -712,6 +952,28 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.modal-selector').forEach(modal => {
             modal.addEventListener('click', (e) => { if (e.target === modal) cerrarModalesSelector(); });
         });
+        
+        // Botones nuevos asentamiento y dependencia
+        if (btnNuevoAsentamiento) btnNuevoAsentamiento.addEventListener('click', abrirModalNuevoAsentamiento);
+        if (btnNuevaDependencia) btnNuevaDependencia.addEventListener('click', abrirModalNuevaDependencia);
+
+        // Cerrar modales nuevos
+        document.querySelectorAll('.modal-nuevo-close').forEach(btn => {
+            btn.addEventListener('click', cerrarModalesNuevos);
+        });
+        document.querySelectorAll('.modal-nuevo').forEach(modal => {
+            modal.addEventListener('click', (e) => { if (e.target === modal) cerrarModalesNuevos(); });
+        });
+
+        // Submit forms nuevos
+        if (formNuevoAsentamiento) formNuevoAsentamiento.addEventListener('submit', guardarNuevoAsentamiento);
+        if (formNuevaDependencia) formNuevaDependencia.addEventListener('submit', guardarNuevaDependencia);
+
+        // Botones cancelar de modales nuevos
+        const btnCancelarNuevoAsentamiento = document.getElementById('btnCancelarNuevoAsentamiento');
+        const btnCancelarNuevaDependencia = document.getElementById('btnCancelarNuevaDependencia');
+        if (btnCancelarNuevoAsentamiento) btnCancelarNuevoAsentamiento.addEventListener('click', cerrarModalesNuevos);
+        if (btnCancelarNuevaDependencia) btnCancelarNuevaDependencia.addEventListener('click', cerrarModalesNuevos);
         
         // Búsquedas en tiempo real
         if (searchFormacion) searchFormacion.addEventListener('input', (e) => {

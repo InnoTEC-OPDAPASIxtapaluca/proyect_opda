@@ -180,11 +180,14 @@
                             </div>
                             <div class="form-group">
                                 <label><i class="fas fa-city"></i> ASENTAMIENTO <span class="required">*</span></label>
-                                <div class="selector-container">
+                                <div class="selector-container with-add">
                                     <input type="text" id="asentamientoInput" class="form-control selector-input" placeholder="SELECCIONE ASENTAMIENTO" readonly required>
                                     <input type="hidden" id="asentamiento" value="">
                                     <button type="button" class="btn-selector" data-type="asentamiento">
                                         <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <button type="button" class="btn-add-new" id="btnNuevoAsentamiento" title="NUEVO ASENTAMIENTO">
+                                        <i class="fas fa-plus-circle"></i>
                                     </button>
                                 </div>
                             </div>
@@ -202,11 +205,14 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label><i class="fas fa-building"></i> DEPENDENCIA <span class="required">*</span></label>
-                                <div class="selector-container">
+                                <div class="selector-container with-add">
                                     <input type="text" id="dependenciaInput" class="form-control selector-input" placeholder="SELECCIONE DEPENDENCIA" readonly required>
                                     <input type="hidden" id="dependencia" value="">
                                     <button type="button" class="btn-selector" data-type="dependencia">
                                         <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <button type="button" class="btn-add-new" id="btnNuevaDependencia" title="NUEVA DEPENDENCIA">
+                                        <i class="fas fa-plus-circle"></i>
                                     </button>
                                 </div>
                             </div>
@@ -263,6 +269,106 @@
             <div class="modal-selector-body">
                 <input type="text" class="selector-search" id="searchAsentamiento" placeholder="BUSCAR ASENTAMIENTO...">
                 <div class="selector-list" id="asentamientoList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA NUEVO ASENTAMIENTO -->
+    <div class="modal-nuevo" id="modalNuevoAsentamiento">
+        <div class="modal-nuevo-content">
+            <div class="modal-nuevo-header">
+                <h3><i class="fas fa-plus-circle"></i> NUEVO ASENTAMIENTO</h3>
+                <button class="modal-nuevo-close">&times;</button>
+            </div>
+            <div class="modal-nuevo-body">
+                <form id="formNuevoAsentamiento">
+                    <div class="form-group">
+                        <label><i class="fas fa-city"></i> ASENTAMIENTO <span class="required">*</span></label>
+                        <input type="text" id="nuevoAsentamientoNombre" class="form-control" placeholder="NOMBRE DEL ASENTAMIENTO" required style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> MUNICIPIO <span class="required">*</span></label>
+                        <input type="text" id="nuevoAsentamientoMunicipio" class="form-control" placeholder="MUNICIPIO" required style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-pin"></i> TIPO DE ASENTAMIENTO <span class="required">*</span></label>
+                        <div class="selector-container">
+                            <input type="text" id="nuevoAsentamientoTipoInput" class="form-control selector-input" placeholder="SELECCIONE TIPO" readonly required>
+                            <input type="hidden" id="nuevoAsentamientoTipo" value="">
+                            <button type="button" class="btn-selector" data-type="tipoAsentamientoNuevo">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> TIPO LOCALIDAD</label>
+                        <div class="selector-container">
+                            <input type="text" id="nuevoAsentamientoLocalidadInput" class="form-control selector-input" placeholder="SELECCIONE TIPO LOCALIDAD" readonly>
+                            <input type="hidden" id="nuevoAsentamientoTipoLocalidad" value="LOCAL">
+                            <button type="button" class="btn-selector" data-type="tipoLocalidadNuevo">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-nuevo-actions">
+                        <button type="button" class="btn-cancel" id="btnCancelarNuevoAsentamiento">CANCELAR</button>
+                        <button type="submit" class="btn-save" id="btnGuardarNuevoAsentamiento">
+                            <i class="fas fa-save"></i>
+                            <span>GUARDAR ASENTAMIENTO</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA NUEVA DEPENDENCIA -->
+    <div class="modal-nuevo" id="modalNuevaDependencia">
+        <div class="modal-nuevo-content">
+            <div class="modal-nuevo-header">
+                <h3><i class="fas fa-plus-circle"></i> NUEVA DEPENDENCIA</h3>
+                <button class="modal-nuevo-close">&times;</button>
+            </div>
+            <div class="modal-nuevo-body">
+                <form id="formNuevaDependencia">
+                    <div class="form-group">
+                        <label><i class="fas fa-building"></i> DEPENDENCIA <span class="required">*</span></label>
+                        <input type="text" id="nuevaDependenciaNombre" class="form-control" placeholder="NOMBRE DE LA DEPENDENCIA" required style="text-transform: uppercase;">
+                    </div>
+                    <div class="modal-nuevo-actions">
+                        <button type="button" class="btn-cancel" id="btnCancelarNuevaDependencia">CANCELAR</button>
+                        <button type="submit" class="btn-save" id="btnGuardarNuevaDependencia">
+                            <i class="fas fa-save"></i>
+                            <span>GUARDAR DEPENDENCIA</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR PARA TIPO DE ASENTAMIENTO (Nuevo Asentamiento) -->
+    <div class="modal-selector" id="modalSelectorTipoAsentamiento">
+        <div class="modal-selector-content">
+            <div class="modal-selector-header">
+                <h3><i class="fas fa-map-pin"></i> SELECCIONE TIPO DE ASENTAMIENTO</h3>
+                <button class="modal-selector-close">&times;</button>
+            </div>
+            <div class="modal-selector-body">
+                <div class="selector-list" id="tipoAsentamientoList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR PARA TIPO LOCALIDAD (Nuevo Asentamiento) -->
+    <div class="modal-selector" id="modalSelectorTipoLocalidad">
+        <div class="modal-selector-content">
+            <div class="modal-selector-header">
+                <h3><i class="fas fa-tag"></i> SELECCIONE TIPO LOCALIDAD</h3>
+                <button class="modal-selector-close">&times;</button>
+            </div>
+            <div class="modal-selector-body">
+                <div class="selector-list" id="tipoLocalidadList"></div>
             </div>
         </div>
     </div>
