@@ -32,6 +32,10 @@ class Database {
                 'agn_cal_op' => [
                     'username' => 'root',
                     'password' => ''
+                ],
+                'atencion_usuarios_op' => [
+                    'username' => 'root',
+                    'password' => ''
                 ]
             ];
         } else {
@@ -52,6 +56,10 @@ class Database {
                 ],
                 'agn_cal_op' => [
                     'username' => 'u167111103_opda3',
+                    'password' => '24092004.Jgl'
+                ],
+                'atencion_usuarios_op' => [
+                    'username' => 'u167111103_opda4',
                     'password' => '24092004.Jgl'
                 ]
             ];
@@ -96,7 +104,8 @@ class Database {
                 'login_op' => 'u167111103_login_op',
                 'accesos_op' => 'u167111103_accesos_op',
                 'infraestructura_op' => 'u167111103_infra_op',  // Nombre real en Hostinger
-                'agn_cal_op' => 'u167111103_agn_cal_op'
+                'agn_cal_op' => 'u167111103_agn_cal_op',
+                'atencion_usuarios_op' => 'u167111103_atencion_users'
             ];
             
             return isset($realDbNames[$dbname]) ? $realDbNames[$dbname] : $dbname;
@@ -119,6 +128,11 @@ class Database {
     // Nuevo método para la base de datos agn_cal_op
     public function getAgnCalConnection() {
         return $this->getConnection("agn_cal_op");
+    }
+    
+    // Nuevo método para la base de datos atencion_usuarios_op
+    public function getAtencionUsuariosConnection() {
+        return $this->getConnection("atencion_usuarios_op");
     }
     
     // Método para cerrar todas las conexiones
@@ -153,6 +167,7 @@ try {
     $conn_accesos = $db->getAccesosConnection();
     $conn_infraestructura = $db->getInfraestructuraConnection();
     $conn_agn_cal = $db->getAgnCalConnection(); // Nueva conexión
+    $conn_atencion_usuarios = $db->getAtencionUsuariosConnection(); // Conexión para atencion_usuarios_op
 } catch (Exception $e) {
     die("Error al establecer conexiones: " . $e->getMessage());
 }
